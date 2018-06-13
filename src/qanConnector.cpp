@@ -144,10 +144,11 @@ void    Connector::connectorReleased(QQuickItem* target) noexcept
             if ( create )
                 createdEdge = _graph->insertEdge( srcNode, dstNode );
             if ( createdEdge != nullptr ) {     // Special handling for src or dst port item binding
-                if ( srcPortItem != nullptr )
-                    _graph->bindEdgeSource(*createdEdge, *srcPortItem);
-                if ( dstPortItem != nullptr )
-                    _graph->bindEdgeDestination(*createdEdge, *dstPortItem );   // Bind created edge to a destination port
+//                if ( srcPortItem != nullptr )
+//                    _graph->bindEdgeSource(*createdEdge, *srcPortItem);
+//                if ( dstPortItem != nullptr )
+//                    _graph->bindEdgeDestination(*createdEdge, *dstPortItem );   // Bind created edge to a destination port
+                    _graph->bindEdge(createdEdge,srcPortItem.data(),(qan::PortItem*)dstPortItem);
             }
         } else
             emit requestEdgeCreation(srcNode, dstNode);

@@ -1071,6 +1071,7 @@ void    Graph::mousePressEvent( QMouseEvent* event )
 
 
 /* Port/Dock Management *///---------------------------------------------------
+
 qan::PortItem*  Graph::insertPort(qan::Node* node,
                                   qan::NodeItem::Dock dockType,
                                   qan::PortItem::Type portType,
@@ -1137,6 +1138,7 @@ qan::PortItem*  Graph::insertPort(qan::Node* node,
     }
     return portItem;
 }
+
 
 void    Graph::removePort(qan::Node* node, qan::PortItem* port) noexcept
 {

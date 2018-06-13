@@ -385,7 +385,7 @@ public:
     Q_INVOKABLE void        bindEdgeDestination( qan::Edge* edge, qan::PortItem* inPort ) noexcept;
 
     //! Shortcut to bindEdgeSource() and bindEdgeDestination() for edge on \c outPort and \c inPort.
-    Q_INVOKABLE void        bindEdge(qan::Edge* edge, qan::PortItem* outPort, qan::PortItem* inPort ) noexcept;
+    Q_INVOKABLE  virtual void        bindEdge(qan::Edge* edge, qan::PortItem* outPort, qan::PortItem* inPort ) noexcept;
 
     /*! \brief Test if an edge source is actually bindable to a given port.
      *
@@ -648,11 +648,82 @@ public:
      * \param label port visible label.
      * \param id    Optional unique ID for the port (caller must ensure uniqueness), could be used to retrieve ports using qan::NodeItem::getPort().
      */
+
     Q_INVOKABLE qan::PortItem*  insertPort(qan::Node* node,
                                            qan::NodeItem::Dock dock,
                                            qan::PortItem::Type portType = qan::PortItem::Type::InOut,
                                            QString label = "",
                                            QString id = "" ) noexcept;
+
+
+    template <typename Port_t>
+    Port_t*  insertPort(qan::Node* node,
+                                           qan::NodeItem::Dock dock,
+                                           qan::PortItem::Type portType = qan::PortItem::Type::InOut,
+                                           QString label = "",
+                                           QString id = "" ) noexcept
+    {
+        // PRECONDITIONS:
+            // node can't be nullptr
+            // node must have an item (to access node style)
+            // default _portDelegate must be valid
+        if ( node == nullptr ||
+             node->getItem() == nullptr )
+            return nullptr;
+        if ( !_portDelegate ) {
+            qWarning() << "qan::Graph::insertPort(): no default port delegate available.";
+            return nullptr;
+        }
+
+        Port_t* portItem{nullptr};
+        const auto nodeStyle = node->getItem()->getStyle();     // Use node style for dock item
+        if ( nodeStyle ) {
+            portItem = qobject_cast<Port_t*>(createFromComponent(_portDelegate.get(), *nodeStyle ));
+           //  portItem=qobject_cast<qan::PortItem*>(portItem);
+            if ( portItem != nullptr ) {
+                portItem->setType(portType);
+                portItem->setLabel(label);
+                portItem->setId(id);
+                portItem->setDockType(dock);
+
+                // Configure port mouse events forwarding to qan::Graph
+                const auto notifyPortClicked = [this] (qan::NodeItem* nodeItem, QPointF p) {
+                    const auto portItem = qobject_cast<qan::PortItem*>(nodeItem);
+                    if ( portItem != nullptr &&
+                         portItem->getNode() != nullptr )
+                        emit this->portClicked(portItem, p);
+                };
+                connect( portItem, &qan::NodeItem::nodeClicked, notifyPortClicked );
+
+                const auto notifyPortRightClicked = [this] (qan::NodeItem* nodeItem, QPointF p) {
+                    const auto portItem = qobject_cast<qan::PortItem*>(nodeItem);
+                    if ( portItem != nullptr &&
+                         portItem->getNode() != nullptr )
+                        emit this->portRightClicked(portItem, p);
+                };
+                connect( portItem, &qan::NodeItem::nodeRightClicked, notifyPortRightClicked );
+
+                if ( node->getItem() != nullptr ) {
+                    portItem->setNode(node); // portitem node in fact map to this concrete node.
+                    node->getItem()->getPorts().append(portItem);
+                    auto dockItem = node->getItem()->getDock(dock);
+                    if ( dockItem == nullptr ) {
+                        // Create a dock item from the default dock delegate
+                        dockItem = createDockFromDelegate(dock, *node);
+                        if ( dockItem != nullptr )
+                            node->getItem()->setDock(dock, dockItem);
+                    }
+                    if ( dockItem != nullptr )
+                        portItem->setParentItem(dockItem);
+                    else {
+                        portItem->setParentItem(node->getItem());
+                        portItem->setZ(1.5);    // 1.5 because port item should be on top of selection item and under node resizer (selection item z=1.0, resizer z=2.0)
+                    }
+                }
+            }
+        }
+        return portItem;
+    }
 
     /*! Remove a port from a node.
      *
