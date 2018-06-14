@@ -1,20 +1,27 @@
 /*
-    This file is part of Quick Qanava library.
+ Copyright (c) 2008-2018, Benoit AUTHEMAN All rights reserved.
 
-    Copyright (C) 2008-2015 Benoit AUTHEMAN
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions are met:
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+    * Neither the name of the author or Destrat.io nor the
+      names of its contributors may be used to endorse or promote products
+      derived from this software without specific prior written permission.
 
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ DISCLAIMED. IN NO EVENT SHALL AUTHOR BE LIABLE FOR ANY
+ DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 //-----------------------------------------------------------------------------
@@ -32,7 +39,6 @@
 
 // GTpo headers
 #include <GTpo>
-#include <gtpoProgressNotifier.h>
 
 // Google Test
 #include <gtest/gtest.h>
@@ -132,7 +138,7 @@ class GroupBehaviourMock : public gtpo::GroupBehaviour< Config >
 {
 public:
     GroupBehaviourMock() { }
-    virtual ~GroupBehaviourMock() { }
+    virtual ~GroupBehaviourMock() override { }
 
     using WeakNode      = std::weak_ptr< typename Config::FinalNode >;
     using WeakEdge      = std::weak_ptr< typename Config::FinalEdge >;
@@ -151,7 +157,11 @@ public:
     MOCK_METHOD0(mockGroupRemoved, void(void));
 };
 
-TEST(GTpoBehaviour, groupBehaviour)
+// FIXME groups:
+    // A contract should enforce the behaviour when a grouped node or edge is actually
+    // removed from topology, is a group edgeRemoved() or nodeRemoved() signal emitted ?
+
+TEST(GTpoBehaviour, groupBehaviourNodeInserted)
 {
     gtpo::GenGraph<> g;
     using MockGroupBehaviour = GroupBehaviourMock< gtpo::GenGraph<>::Configuration >;
@@ -165,16 +175,28 @@ TEST(GTpoBehaviour, groupBehaviour)
     // nodeInserted() notification
     EXPECT_CALL(*groupMockBehaviour, mockNodeInserted()).Times(1);
     g.groupNode(group, n);
-    EXPECT_CALL(*groupMockBehaviour, mockNodeInserted()).Times(AtLeast(1));
+    //EXPECT_CALL(*groupMockBehaviour, mockNodeInserted()).Times(0);
 
     // nodeRemoved() notification
     EXPECT_CALL(*groupMockBehaviour, mockNodeRemoved()).Times(1);
     g.ungroupNode(group, n);
-    EXPECT_CALL(*groupMockBehaviour, mockNodeRemoved()).Times(AtLeast(1));
+    //EXPECT_CALL(*groupMockBehaviour, mockNodeRemoved()).Times(0);
 
     // FIXME
     //EXPECT_CALL(*groupMockBehaviour, mockNodeRemoved()).Times(1);
     //g.removeNode(n);
+}
+
+TEST(GTpoBehaviour, groupBehaviourGroupInserted)
+{
+    gtpo::GenGraph<> g;
+    using MockGroupBehaviour = GroupBehaviourMock< gtpo::GenGraph<>::Configuration >;
+    auto group = g.createGroup();
+    auto n = g.createNode();
+
+    ASSERT_TRUE(group.lock());
+    auto groupMockBehaviour = new MockGroupBehaviour(); // Can't use unique_ptr here because of gmock
+    group.lock()->addGroupBehaviour( std::unique_ptr<MockGroupBehaviour>(groupMockBehaviour) );
 
     // nodeInserted() notification
     using WeakGroup = gtpo::GenGroup<>::WeakGroup;
@@ -186,7 +208,6 @@ TEST(GTpoBehaviour, groupBehaviour)
     EXPECT_CALL(*groupMockBehaviour, mockGroupRemoved()).Times(1);
     g.ungroupNode(group, WeakGroup{group2});
 }
-
 
 //-----------------------------------------------------------------------------
 // GTpo Node Behaviour tests

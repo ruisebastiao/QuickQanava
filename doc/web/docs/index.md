@@ -17,18 +17,19 @@ weight: 0
 
 !!! warning "QuickQanava is alpha, interface may change before 1.0.0 release, but QuickQanava is already used extensively in production code."
 
-!!! note "QuickQanava is licensed under BSD-3, support is available on demand: benoit@destrat.io"
+!!! note "QuickQanava is licensed under BSD-3, specific features or support is available on demand: benoit@destrat.io"
+
+## Introduction
 
 `QuickQanava` is a C++14 library designed to display graphs and relational content in a QtQuick application. QuickQanava provide QML components and C++ classes to visualize medium-sized directed graphs in a C++/QML application. QuickQanava does not provide advanced layout algorithms, but rather focus on displaying relational content in advanced dynamic user interfaces (with DnD support, resizable content, visual connection of nodes).
 
 QuickQanava main repository is hosted on GitHub: https://github.com/cneben/quickqanava
 
-QuickQanava is primarily developed with Qt >= 5.10 with MSVC2015 and g++5.4. Since 0.9.2, minimal required Qt version is **Qt 5.10**.
+QuickQanava is primarily developed with Qt >= 5.10 with MSVC2015 and g++7. minimal required Qt version is **Qt 5.10**.
 
-+ Project homepage: [http://www.destrat.io/quickqanava](http://www.destrat.io/quickqanava)
-+ Reference documentation: [http://www.destrat.io/qanava/doc/index.html](http://www.destrat.io/qanava/doc/index.html)
++ Project homepage: [http://cneben.github.io/QuickQanava/index.html](http://cneben.github.io/QuickQanava/index.html)
 
-Please refer to [Installation](installation.md) subsection and [Quickstart guide](topology.md) for more information about installing and using QuickQanava.
+Please refer to [Installation](installation.md) manual and [Graph](graph.md), [Nodes](nodes.md) and [Graph](edges.md) sections for more information about installing and using QuickQanava.
 
 ## Gallery
 
@@ -36,28 +37,29 @@ Please refer to [Installation](installation.md) subsection and [Quickstart guide
 
 | Node Grouping                | Visual Connection of Nodes         | 
 | :---:                       | :---:             | 
-| ![groups](images/sample-groups.gif) | ![connector](images/sample-nodes.gif) | 
+| ![groups](nodes/sample-groups.gif) | ![connector](images/sample-nodes.gif) | 
 | ![connector](images/sample-dataflow-short.gif) | ![styles](images/sample-styles.gif) | 
 
-![styles](images/topology.png)
+![styles](samples/topology.png)
 
 ## Roadmap
 
-  - **v0.9.2:**	 
-    - [X] Add smarter heuristics for edges's Bezier curve control points generation.
-    - [X] Integrate Qt Quick Shapes 1.0.
-    - [X] Remove QuickGeoGL support, QuickQanava will become Qt 5.10 only.
-  - **v0.9.3:**
-    - [ ] Add full support for groups inside group (ie subgraphs).
-    - [ ] Fix current qan::PointGrid bugs and add "snap to grid" support.
   - **v0.9.4:**	 
 	- QuickContainers (Qt/QML observable adapter for STL or Qt containers):
-		- [ ] Redesign QuickContainers: qcm::ContainerModel<> memory footprint is too high (inheritance from QAbstractItemModel comes with a strong virtual and signals/slots overhead)
-		- [ ] Add support for standard library containers.
-		- [ ] Increase test coverage.
+		- [X] Redesign QuickContainers: qcm::ContainerModel<> memory footprint is too high (inheritance from QAbstractItemModel comes with a strong virtual and signals/slots overhead)
+		- [X] Add support for standard library containers.
+		- [X] Increase test coverage.
+    - [X] Fix port remove issues.
+    - [X] Add full CMake support..    
+  - **v0.9.5:**
+    - [ ] Add support for direct visual dragging of port items.
+    - [ ] Add full support for groups inside group (ie subgraphs).
+    - [ ] Fix current qan::PointGrid bugs and add "snap to grid" support.
+  - **v0.9.6:**
+    - [ ] Add more configuration options to qan::Edge (source and destination arrow configuration).
   - **v1.0.0: Advanced edge visualization**	 
     - GTpo (Configurable topology library):
-	  - [ ] Push test coverage to 100% (ie increase coverage for subgroups).- [80%] Redesign qan::Graph interface for creating content.
+        - [ ] Push test coverage to 100% (ie increase coverage for subgroups).- [80%] Redesign qan::Graph interface for creating content.
     - [ ] Publish the 4k sample (40k is probably too much for QML without dedicated culling and LOD code).
 
 

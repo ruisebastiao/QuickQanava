@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2008-2017, Benoit AUTHEMAN All rights reserved.
+ Copyright (c) 2008-2018, Benoit AUTHEMAN All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
@@ -27,23 +27,21 @@
 //-----------------------------------------------------------------------------
 // This file is a part of the QuickQanava software. Copyright 2017 Benoit AUTHEMAN.
 //
-// \file	RectNodeBackground.qml
+// \file	RectSolidGlowBackground.qml
 // \author	benoit@destrat.io
-// \date	2017 11 17
+// \date	2018 03 23
 //-----------------------------------------------------------------------------
 
 import QtQuick              2.7
-import QtQuick.Layouts      1.3
-import QtQuick.Controls     2.0
 import QtGraphicalEffects   1.0
 
 import QuickQanava          2.0 as Qan
 
-/*! \brief Node or group background component with backOpacity property support
+/*! \brief Node or group background component with solid fill, glow effect and backOpacity style support
  *
  */
 Item {
-    id: nodeBackground
+    id: background
 
     // Public:
     property var    nodeItem: undefined
@@ -53,63 +51,55 @@ Item {
 
     // private:
     // Default settings for rect radius, shadow margin is the _maximum_ shadow radius (+vertical or horizontal offset).
-    property real   shadowMargin: 15
+    property real   glowRadius: nodeItem && nodeItem.style ? nodeItem.style.effectRadius : 15
+    property color  glowColor: nodeItem && nodeItem.style ? nodeItem.style.effectColor : Qt.rgba(0,0,0, 0.45)
+    property real   effectMargin: glowRadius * 2.
 
     Item {
         id: fakeBackground
-        anchors.centerIn: parent
-        layer.enabled: true
-        width: nodeItem.width + shadowMargin; height: nodeItem.height + shadowMargin
+        z: -1   // Effect should be behind edges , docks and connectors...
+        x: -glowRadius; y: -glowRadius
+        width: nodeItem.width + effectMargin; height: nodeItem.height + effectMargin
         visible: false
         Rectangle {
-            anchors.centerIn: parent
-            width: nodeItem.width - 1;  height: nodeItem.height - 1
+            x: glowRadius + 0.5 ; y: glowRadius + 0.5
+            width: nodeItem.width - 1.      // Avoid aliasing artifacts for mask at high scales.
+            height: nodeItem.height - 1.
             radius: nodeItem.style.backRadius
-            color: Qt.rgba(0,0,0,1)
+            color: Qt.rgba(0, 0, 0, 1)
             antialiasing: true
-            visible: false
             layer.enabled: true
-            layer.effect: DropShadow {
-                horizontalOffset: nodeItem.style.shadowRadius
-                verticalOffset: nodeItem.style.shadowRadius
-                radius: 4; samples: 8
-                color: nodeItem.style.shadowColor
-                visible: nodeItem.style.hasShadow
-                transparentBorder: true
-                cached: false
+            layer.effect: Glow {
+                color: background.glowColor
+                radius: background.glowRadius;     samples: Math.min( 15, background.glowRadius * 0.75)
+                spread: 0.25;   transparentBorder: true;    cached: false
+                visible: nodeItem.style.effectEnabled
             }
         }
     }
     Item {
         id: backgroundMask
-        anchors.centerIn: parent
-        width: parent.width + shadowMargin; height: parent.height + shadowMargin
+        x: -glowRadius; y: -glowRadius
+        width: nodeItem.width + effectMargin; height: nodeItem.height + effectMargin
         visible: false
         Rectangle {
-            anchors.centerIn: parent
-            width: nodeItem.width + 1;  height: nodeItem.height + 1
+            x: glowRadius + 0.5; y: glowRadius + 0.5
+            width: nodeItem.width - 1.;  height: nodeItem.height - 1.
             radius: nodeItem.style.backRadius
             color: Qt.rgba(0,0,0,1)
             antialiasing: true
         }
     }
     OpacityMask {
-        anchors.centerIn: parent
-        width: parent.width + shadowMargin; height: parent.height + shadowMargin
+        x: -glowRadius; y: -glowRadius
+        width: nodeItem.width + effectMargin; height: nodeItem.height + effectMargin
         source: ShaderEffectSource { sourceItem: fakeBackground; hideSource: false }
         maskSource: ShaderEffectSource { format: ShaderEffectSource.Alpha; sourceItem: backgroundMask; hideSource: false }
         invert: true
     }
 
-    Rectangle {
-        id: background
-        anchors.fill: parent    // Background follow the content layout implicit size
-        radius: nodeItem.style.backRadius
-        color: backColor
-        border.color: nodeItem.style.borderColor
-        border.width: nodeItem.style.borderWidth
-        antialiasing: true
-        opacity: nodeItem.style.backOpacity
-        // Note: Do not enable layer to avoid aliasing at high scale
+    RectSolidBackground {
+        anchors.fill: parent
+        nodeItem: background.nodeItem
     }
 }

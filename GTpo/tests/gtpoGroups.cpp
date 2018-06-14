@@ -1,20 +1,27 @@
 /*
-    This file is part of Quick Qanava library.
+ Copyright (c) 2008-2018, Benoit AUTHEMAN All rights reserved.
 
-    Copyright (C) 2008-2015 Benoit AUTHEMAN
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions are met:
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+    * Neither the name of the author or Destrat.io nor the
+      names of its contributors may be used to endorse or promote products
+      derived from this software without specific prior written permission.
 
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ DISCLAIMED. IN NO EVENT SHALL AUTHOR BE LIABLE FOR ANY
+ DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 //-----------------------------------------------------------------------------
@@ -32,7 +39,6 @@
 
 // GTpo headers
 #include <GTpo>
-#include <gtpoProgressNotifier.h>
 
 // Google Test
 #include <gtest/gtest.h>
@@ -85,6 +91,7 @@ TEST(GTpoGroups, groupNodeExcept)
 TEST(GTpoGroups, groupNode)
 {
     gtpo::GenGraph<> g;
+    EXPECT_EQ( g.getGroupCount(), 0 );
     auto group = g.createGroup().lock();
     ASSERT_TRUE(group);
     EXPECT_EQ( g.getGroupCount(), 1 );
@@ -128,6 +135,27 @@ TEST(GTpoGroups, ungroupUngroupedNode)
     EXPECT_THROW( g.ungroupNode(group, n), gtpo::bad_topology_error );
 }
 
+TEST(GTpoGroups, groupRootNodeContract)
+{
+    // Ensure that graph root node count is not modified when a node is grouped
+    // CONTRACT: A node with zero in-degree is a root node even when it is grouped.
+    gtpo::GenGraph<> g;
+    auto group = g.createGroup().lock();
+    ASSERT_TRUE(group);
+    EXPECT_EQ(g.getRootNodeCount(), 0);
+    auto n = g.createNode();
+    EXPECT_EQ(g.getRootNodeCount(), 1);
+
+    g.groupNode(group, n);
+    EXPECT_EQ( group->getNodeCount(), 1 );
+    EXPECT_EQ( g.getGroupCount(), 1 );
+    EXPECT_EQ(g.getRootNodeCount(), 1);
+
+    g.ungroupNode(group, n);
+    EXPECT_EQ( group->getNodeCount(), 0 );
+    EXPECT_EQ(g.getRootNodeCount(), 1);
+}
+
 TEST(GTpoGroups, groupGroup)
 {
     gtpo::GenGraph<> g;
@@ -152,29 +180,51 @@ TEST(GTpoGroups, ungroupGroup)
     EXPECT_EQ( group1->getNodeCount(), 0 );
 }
 
-TEST(GTpoGroups, clear)
+TEST(GTpoGroups, clearTopology)
 {
-    // TEST: clearing a graph with two nodes linked by an edge in a group should lead to an empty graph
-/*    gtpo::GenGraph<> g;
+    // TEST: clearing a graph with a group with content should remove group and group
+    // topology
+    gtpo::GenGraph<> g;
     auto n1 = g.createNode();
     auto n2 = g.createNode();
     auto e1 = g.createEdge(n1, n2);
     auto g1 = g.createGroup();
-    {
-        auto g1Ptr = g1.lock();     // g1Ptr is released at the end of block to ensure all groups are cleared
-        if ( g1Ptr ) {
-            g1Ptr->insertNode( n1 );
-            g1Ptr->insertNode( n2 );
-        }
-    }
+    EXPECT_EQ( g.getNodeCount(), 2 );
+    EXPECT_EQ( g.getGroupCount(), 1 );
+    EXPECT_EQ( g.getEdgeCount(), 1 );
+    g.groupNode( g1, n1 );
+    g.groupNode( g1, n2 );
     g.clear();
     EXPECT_TRUE( n1.expired() );
     EXPECT_EQ( g.getNodeCount(), 0 );
     EXPECT_EQ( g.getGroupCount(), 0 );
+    EXPECT_EQ( g.getEdgeCount(), 0 );
     EXPECT_TRUE( g1.expired() );
- */
 }
 
+TEST(GTpoGroups, removeGroupTopology)
+{
+    // TEST: removing a group with content should preserve group topology
+    gtpo::GenGraph<> g;
+    auto n1 = g.createNode();
+    auto n2 = g.createNode();
+    auto e1 = g.createEdge(n1, n2);
+    EXPECT_EQ( g.getNodeCount(), 2 );
+    EXPECT_EQ( g.getEdgeCount(), 1 );
+
+    auto g1 = g.createGroup();
+    EXPECT_EQ( g.getGroupCount(), 1 );
+    g.groupNode( g1, n1 );
+    g.groupNode( g1, n2 );
+
+    g.removeGroup(g1);
+    EXPECT_EQ( g.getGroupCount(), 0 );
+
+    // Group topology should remain in the graph
+    EXPECT_EQ( g.getNodeCount(), 2 );
+    EXPECT_EQ( g.getEdgeCount(), 1 );
+    g.clear();
+}
 
 //-----------------------------------------------------------------------------
 // GTpo Groups adjacent node/edge
