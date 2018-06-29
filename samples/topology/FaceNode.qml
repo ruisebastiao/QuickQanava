@@ -1,4 +1,4 @@
-/*
+ /*
  Copyright (c) 2008-2017, Benoit AUTHEMAN All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
@@ -51,11 +51,11 @@ Qan.NodeItem {
         id: backgroundShadow
         anchors.fill: parent
         source: image
-        horizontalOffset: faceNodeItem.style.shadowRadius
-        verticalOffset: faceNodeItem.style.shadowRadius
+        horizontalOffset: faceNodeItem.style.effectRadius
+        verticalOffset: faceNodeItem.style.effectRadius
         radius: 4; samples: 8
-        color: faceNodeItem.style.shadowColor
-        visible: faceNodeItem.style.hasShadow
+        color: faceNodeItem.style.effectColor
+        visible: faceNodeItem.style.effectEnabled
         transparentBorder: true
     }
     Pane {
@@ -86,5 +86,13 @@ Qan.NodeItem {
         anchors.fill: parent
         smooth: true
         source: faceNodeItem.node.image
+        onSourceSizeChanged: {
+            if ( sourceSize.width > 0 &&
+                 sourceSize.height > 0 ) {
+                faceNodeItem.ratio = sourceSize.width / sourceSize.height;
+                // FIXME: generate a clean initial size here
+            } else
+                faceNodeItem.ratio = -1.;
+        }
     }
 }

@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2008-2017, Benoit AUTHEMAN All rights reserved.
+ Copyright (c) 2008-2018, Benoit AUTHEMAN All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
@@ -809,63 +809,61 @@ void    Graph::removeGroup( qan::Group* group )
 {
     if ( group == nullptr )
         return;
+
     // Reparent all group childrens (ie node) to graph before destructing the group
     // otherwise all child iems get destructed too
-
-    // FIXME QAN3       (use std::copy() here...)
-    /*auto groupNodes{group->getNodes()};
-    for ( auto& node : groupNodes ) {
-        auto nodePtr{ node.lock() };
-        if ( nodePtr != nullptr ) {
-            // FIXME QAN3
-            //nodePtr->ungroup();
-            //nodePtr->setParentItem( this );
-        }
+    for ( auto& node : group->getNodes() ) {
+        const auto qanNode = qobject_cast<qan::Node*>(node.lock().get());
+        if (qanNode != nullptr)
+            group->getItem()->ungroupNodeItem(qanNode->getItem());
     }
-    WeakGroup weakGroup = group->shared_from_this();
-    if ( !weakGroup.expired() )
-        gtpo::GenGraph< qan::GraphConfig >::removeGroup( weakGroup );
-    */
+    // FIXME: don't like that dynamic cast, probably not necessary
+    GTpoGraph::removeGroup( WeakGroup{std::dynamic_pointer_cast<Group>(group->shared_from_this())} );
 }
 
 bool    Graph::hasGroup( qan::Group* group ) const
 {
     if ( group == nullptr )
         return false;
+    // FIXME: don't like that dynamic cast, probably not necessary
     return GTpoGraph::hasGroup( WeakGroup{std::dynamic_pointer_cast<Group>(group->shared_from_this())} );
 }
 
-auto    qan::Graph::groupNode( qan::Group* group, qan::Node* node, bool transformPosition ) noexcept(false) -> void
+void    qan::Graph::groupNode( qan::Group* group, qan::Node* node, bool transformPosition ) noexcept(false)
 {
-    if ( group != nullptr &&
-         node != nullptr ) {
-        try {
-            GTpoGraph::groupNode( std::dynamic_pointer_cast<Group>(group->shared_from_this()),
-                                  node->shared_from_this() );
-        } catch ( ... ) { qWarning() << "qan::Graph::groupNode(): Topology error."; }
+    // PRECONDITIONS:
+        // group and node can't be nullptr
+    if ( group == nullptr ||
+         node == nullptr )
+        return;
+
+    try {
+        GTpoGraph::groupNode( std::dynamic_pointer_cast<Group>(group->shared_from_this()),
+                              node->shared_from_this() );
         if ( node->getGroup().lock().get() == group &&  // Check that group insertion succeed
              group->getItem() != nullptr &&
              node->getItem() != nullptr ) {
             group->getItem()->groupNodeItem(node->getItem(), transformPosition);
         }
-    }
+    } catch ( ... ) { qWarning() << "qan::Graph::groupNode(): Topology error."; }
 }
 
-auto    qan::Graph::groupNode( Group* group, qan::Group* node ) noexcept(false) -> void
+void    qan::Graph::ungroupNode( qan::Node* node, Group* group ) noexcept(false)
 {
+    // PRECONDITIONS:
+        // node can't be nullptr
+        // group can be nullptr
+        // if group is nullptr node->getGroup() can't be nullptr
+        // if group is not nullptr group should not be different from node->getGroup()
+    if ( node == nullptr )
+        return;
+    if ( group == nullptr &&
+         !node->getGroup().lock() )
+        return;
     if ( group != nullptr &&
-         node != nullptr ) {
-        qDebug() << "qan::Graph::groupNode(qan::Group*, qan::Group*)";
-        try {
-            /*if ( group->getItem() )
-                group->getItem()->ungroupNodeItem(node->getItem());
-            GTpoGraph::ungroupNode( group->shared_from_this(), node->shared_from_this() );*/
-        } catch ( ... ) { qWarning() << "qan::Graph::ungroupNode(): Topology error."; }
-    }
-}
-
-auto    qan::Graph::ungroupNode( Group* group, qan::Node* node ) noexcept(false) -> void
-{
+         group != node->getGroup().lock().get() )
+        return;
+    group = node->getGroup().lock().get();
     if ( group != nullptr &&
          node != nullptr ) {
         try {
@@ -873,18 +871,6 @@ auto    qan::Graph::ungroupNode( Group* group, qan::Node* node ) noexcept(false)
                 group->getItem()->ungroupNodeItem(node->getItem());
             GTpoGraph::ungroupNode( std::dynamic_pointer_cast<Group>(group->shared_from_this()),
                                     node->shared_from_this() );
-        } catch ( ... ) { qWarning() << "qan::Graph::ungroupNode(): Topology error."; }
-    }
-}
-
-auto    qan::Graph::ungroupNode( Group* group, qan::Group* node ) noexcept(false) -> void
-{
-    if ( group != nullptr &&
-         node != nullptr ) {
-        try {
-            /*if ( group->getItem() )
-                group->getItem()->ungroupNodeItem(node->getItem());
-            GTpoGraph::ungroupNode( group->shared_from_this(), node->shared_from_this() );*/
         } catch ( ... ) { qWarning() << "qan::Graph::ungroupNode(): Topology error."; }
     }
 }
@@ -1010,8 +996,11 @@ void    removeFromSelectionImpl( Primitive_t& primitive,
 {
     if ( selectedPrimitives.contains( &primitive ) )
         selectedPrimitives.removeAll( &primitive );
+<<<<<<< HEAD
     //    if ( primitive.getItem() != nullptr )
     //        primitive.getItem()->setSelected(false);
+=======
+>>>>>>> 06345fde5d6e980797de7117fa6597af61e4489f
 }
 
 void    Graph::removeFromSelection( qan::Node& node ) {
@@ -1025,7 +1014,10 @@ void    Graph::removeFromSelection( QQuickItem* item ) {
     if ( nodeItem != nullptr &&
          nodeItem->getNode() != nullptr ) {
         _selectedNodes.removeAll(nodeItem->getNode());
+<<<<<<< HEAD
         //        nodeItem->setSelected(false);
+=======
+>>>>>>> 06345fde5d6e980797de7117fa6597af61e4489f
     } else {
         const auto groupItem = qobject_cast<qan::GroupItem*>(item);
         if ( groupItem != nullptr &&
