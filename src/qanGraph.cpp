@@ -996,11 +996,6 @@ void    removeFromSelectionImpl( Primitive_t& primitive,
 {
     if ( selectedPrimitives.contains( &primitive ) )
         selectedPrimitives.removeAll( &primitive );
-<<<<<<< HEAD
-    //    if ( primitive.getItem() != nullptr )
-    //        primitive.getItem()->setSelected(false);
-=======
->>>>>>> 06345fde5d6e980797de7117fa6597af61e4489f
 }
 
 void    Graph::removeFromSelection( qan::Node& node ) {
@@ -1014,10 +1009,6 @@ void    Graph::removeFromSelection( QQuickItem* item ) {
     if ( nodeItem != nullptr &&
          nodeItem->getNode() != nullptr ) {
         _selectedNodes.removeAll(nodeItem->getNode());
-<<<<<<< HEAD
-        //        nodeItem->setSelected(false);
-=======
->>>>>>> 06345fde5d6e980797de7117fa6597af61e4489f
     } else {
         const auto groupItem = qobject_cast<qan::GroupItem*>(item);
         if ( groupItem != nullptr &&
