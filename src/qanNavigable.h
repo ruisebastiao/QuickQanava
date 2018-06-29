@@ -94,7 +94,7 @@ class Navigable : public QQuickItem
 {
     /*! \name Navigable Object Management *///---------------------------------
     //@{
-Q_OBJECT
+    Q_OBJECT
 public:
     explicit Navigable( QQuickItem* parent = nullptr );
     virtual ~Navigable() { }
@@ -160,6 +160,9 @@ public:
      * \sa autoFitMode
      */
     Q_INVOKABLE void    fitInView( );
+
+    Q_INVOKABLE void    fitInItem(QQuickItem* item);
+
 
 public:
     //! \brief Auto fitting mode.
@@ -231,7 +234,7 @@ public:
      */
     void        setZoom( qreal zoom );
     //! Set area current zoom centered on a given \c center point.
-    void        zoomOn( QPointF center, qreal zoom );
+    void        zoomOn(QPointF center, qreal zoom );
     //! Return true if zoom is valid (ie it is different from the actual zoom and in the (minZoom, maxZoom) range.
     bool        isValidZoom( qreal zoom ) const;
 private:
@@ -346,9 +349,10 @@ public:
     //! \copydoc grid
     inline qan::Grid*   getGrid() noexcept { return _grid.data(); }
     void                setGrid(qan::Grid* grid) noexcept;
-private:
     //! Force update of grid.
     void                updateGrid() noexcept;
+private:
+
     //! \copydoc grid
     QPointer<qan::Grid> _grid;
 signals:

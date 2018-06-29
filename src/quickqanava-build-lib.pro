@@ -2,11 +2,11 @@
 TEMPLATE	= lib
 DEFINES		+= QANAVA
 TARGET		= quickqanava
-DESTDIR		= ../build
-CONFIG		+= warn_on qt thread staticlib c++14
+DESTDIR		= ../build/lib
+CONFIG		+= warn_on qt thread c++14
 QT		+= core widgets gui qml quick
 
-include(../quickqanava-common.pri)
+#include(quickqanava.pri)
 contains(DEFINES, QUICKQANAVA_HAS_PROTOBUF) {
     include(./quickqanava-pb-conf.pri)
 
@@ -21,7 +21,6 @@ contains(DEFINES, QUICKQANAVA_HAS_PROTOBUF) {
 }
 include(../GTpo/src/gtpo.pri)
 include(../QuickContainers/src/quickcontainers.pri)
-include(../QuickGeoGL/src/quickgeogl.pri)
 
 HEADERS +=  ./QuickQanava.h             \
             ./qanConfig.h               \
@@ -31,14 +30,14 @@ HEADERS +=  ./QuickQanava.h             \
             ./qanBehaviour.h            \
             ./qanGroup.h                \
             ./qanGraph.h                \
-            ./qanLayout.h               \
-            ./qanLinear.h               \
-            ./qanProgressNotifier.h     \
+#            ./qanLayout.h               \
+#            ./qanLinear.h               \
+#            ./qanProgressNotifier.h     \
             ./qanStyle.h                \
             ./qanStyleManager.h         \
             ./qanNavigable.h            \
-            ./qanPointGrid.h            \
-            ./fqlBottomRightResizer.h
+#            ./qanPointGrid.h            \
+#            ./fqlBottomRightResizer.h
 
 SOURCES +=  ./qanEdge.cpp               \
             ./qanGraphView.cpp          \
@@ -46,14 +45,14 @@ SOURCES +=  ./qanEdge.cpp               \
             ./qanBehaviour.cpp          \
             ./qanGroup.cpp              \
             ./qanGraph.cpp              \
-            ./qanLayout.cpp             \
-            ./qanLinear.cpp             \
-            ./qanProgressNotifier.cpp   \
+#            ./qanLayout.cpp             \
+#            ./qanLinear.cpp             \
+#            ./qanProgressNotifier.cpp   \
             ./qanStyle.cpp              \
             ./qanStyleManager.cpp       \
             ./qanNavigable.cpp          \
-            ./qanPointGrid.cpp          \
-            ./fqlBottomRightResizer.cpp
+#            ./qanPointGrid.cpp          \
+#            ./fqlBottomRightResizer.cpp
 
 OTHER_FILES +=  ./quickqanava.proto         \
                 ./QuickQanava               \
