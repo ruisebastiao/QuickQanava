@@ -155,6 +155,7 @@ public:
      */
     Q_PROPERTY(bool fixContainerBounds READ fixContainerBounds WRITE setFixContainerBounds NOTIFY fixContainerBoundsChanged)
     Q_PROPERTY(bool isDraggable READ isDraggable WRITE setIsDraggable NOTIFY isDraggableChanged)
+    Q_PROPERTY(bool containerSizeLocked READ containerSizeLocked WRITE setContainerSizeLocked NOTIFY containerSizeLockedChanged)
 
 
 
@@ -386,6 +387,11 @@ public:
         return m_viewPosition;
     }
 
+    bool containerSizeLocked() const
+    {
+        return m_containerSizeLocked;
+    }
+
 public slots:
     void setFixContainerBounds(bool fixContainerBounds)
     {
@@ -414,6 +420,15 @@ public slots:
         emit viewPositionChanged(m_viewPosition);
     }
 
+    void setContainerSizeLocked(bool containerSizeLocked)
+    {
+        if (m_containerSizeLocked == containerSizeLocked)
+            return;
+
+        m_containerSizeLocked = containerSizeLocked;
+        emit containerSizeLockedChanged(m_containerSizeLocked);
+    }
+
 private:
 
     //! \copydoc grid
@@ -423,6 +438,8 @@ private:
     bool m_isDraggable=true;
 
     QPointF m_viewPosition{};
+
+    bool m_containerSizeLocked=false;
 
 signals:
     //! \copydoc grid
@@ -434,6 +451,8 @@ signals:
 
     // QQuickItem interface
     void viewPositionChanged(QPointF viewPosition);
+
+    void containerSizeLockedChanged(bool containerSizeLocked);
 
 protected:
     void touchEvent(QTouchEvent *event);
