@@ -114,24 +114,32 @@ void    Navigable::fitInView( )
             fitZoom = fitHeightZoom;
         qDebug( ) << "\tfitZoom=" << fitZoom;
 
-        QPointF contentPos{0., 0.};
-        if ( content.width() * fitZoom < viewWidth ) {  // Center zoomed content horizontally
-            contentPos.rx() = ( viewWidth - ( content.width() * fitZoom ) ) / 2.;
-        }
-        if ( content.height() * fitZoom < viewHeight ) {   // Center zoomed content horizontally
-            contentPos.ry() = ( viewHeight - ( content.height() * fitZoom ) ) / 2.;
-        }
-        //        _containerItem->setPosition( contentPos );
-        _containerItem->setProperty("x",QVariant::fromValue(contentPos.x()));
-        _containerItem->setProperty("y",QVariant::fromValue(contentPos.y()));
 
-        _panModified = false;
-        _zoomModified = false;
-
+        if ( fixContainerBounds() ) {
+            if(fitZoom<_zoomMin){
+                fitZoom=_zoomMin;
+            }
+        }
         // Don't use setZoom() because we force a TopLeft scale
         if ( isValidZoom(fitZoom) ) {
+
             _zoom = fitZoom;
-            //            _containerItem->setScale(_zoom);
+
+            QPointF contentPos{0., 0.};
+            if ( content.width() * fitZoom < viewWidth ) {  // Center zoomed content horizontally
+                contentPos.rx() = ( viewWidth - ( content.width() * fitZoom ) ) / 2.;
+            }
+            if ( content.height() * fitZoom < viewHeight ) {   // Center zoomed content horizontally
+                contentPos.ry() = ( viewHeight - ( content.height() * fitZoom ) ) / 2.;
+            }
+            //        _containerItem->setPosition( contentPos );
+            _containerItem->setProperty("x",QVariant::fromValue(contentPos.x()));
+            _containerItem->setProperty("y",QVariant::fromValue(contentPos.y()));
+
+            _panModified = false;
+            _zoomModified = false;
+
+
             _containerItem->setProperty("scale",QVariant::fromValue(_zoom));
             emit zoomChanged();
             emit containerItemModified();
@@ -192,6 +200,9 @@ void    Navigable::setAutoFitMode( AutoFitMode autoFitMode )
 
 void    Navigable::setZoom( qreal zoom )
 {
+    if(qFuzzyCompare(zoom,_zoom)){
+        return;
+    }
     if ( isValidZoom( zoom ) ) {
         switch ( _zoomOrigin ) {
         case QQuickItem::Center: {
@@ -442,12 +453,12 @@ void Navigable::panOffset(QPointF delta){
 }
 
 void Navigable::panTo(QPointF target){
-    QPointF delta = _lastPan - target;
+    QPointF delta = viewPosition() - target;
 
     panOffset(delta);
 
     _panModified = true;
-    _lastPan =target;
+    setViewPosition(target);
     setDragActive(true);
 
     updateGrid();
@@ -455,7 +466,7 @@ void Navigable::panTo(QPointF target){
 void    Navigable::mouseMoveEvent( QMouseEvent* event )
 {
     if ( getNavigable() && isDraggable() ) {
-        if ( _leftButtonPressed && !_lastPan.isNull() ) {
+        if ( _leftButtonPressed && !viewPosition().isNull() ) {
             panTo(event->localPos());
         }
     }
@@ -467,7 +478,7 @@ void    Navigable::mousePressEvent( QMouseEvent* event )
     if ( getNavigable() ) {
         if ( event->button() == Qt::LeftButton ) {
             _leftButtonPressed = true;
-            _lastPan = event->localPos();
+            setViewPosition(event->localPos());
             event->accept();
             return;
         }

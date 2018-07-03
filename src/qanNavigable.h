@@ -323,6 +323,10 @@ protected:
 public:
     //! True when the navigable conctent area is actually dragged.
     Q_PROPERTY( bool dragActive READ getDragActive WRITE setDragActive NOTIFY dragActiveChanged FINAL )
+
+    Q_PROPERTY(QPointF viewPosition READ viewPosition WRITE setViewPosition NOTIFY viewPositionChanged)
+
+
     //! \copydoc dragActive
     inline bool getDragActive() const noexcept { return _dragActive; }
     //! \copydoc dragActive
@@ -346,7 +350,7 @@ protected:
 
 protected:
     bool        _leftButtonPressed{ false };
-    QPointF     _lastPan{};
+  //  QPointF     _lastPan{};
     //@}
     //-------------------------------------------------------------------------
 
@@ -377,6 +381,11 @@ public:
 
 
 
+    QPointF viewPosition() const
+    {
+        return m_viewPosition;
+    }
+
 public slots:
     void setFixContainerBounds(bool fixContainerBounds)
     {
@@ -396,6 +405,15 @@ public slots:
         emit isDraggableChanged(m_isDraggable);
     }
 
+    void setViewPosition(QPointF viewPosition)
+    {
+        if (m_viewPosition == viewPosition)
+            return;
+
+        m_viewPosition = viewPosition;
+        emit viewPositionChanged(m_viewPosition);
+    }
+
 private:
 
     //! \copydoc grid
@@ -403,6 +421,8 @@ private:
     bool m_fixContainerBounds=false;
 
     bool m_isDraggable=true;
+
+    QPointF m_viewPosition{};
 
 signals:
     //! \copydoc grid
@@ -413,6 +433,8 @@ signals:
     void isDraggableChanged(bool isDraggable);
 
     // QQuickItem interface
+    void viewPositionChanged(QPointF viewPosition);
+
 protected:
     void touchEvent(QTouchEvent *event);
 };
