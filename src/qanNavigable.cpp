@@ -112,7 +112,7 @@ void    Navigable::fitInView( )
         qreal fitZoom = fitWidthZoom;
         if ( content.height() * fitWidthZoom > viewHeight )
             fitZoom = fitHeightZoom;
-        //qDebug( ) << "\tfitZoom=" << fitZoom;
+        qDebug( ) << "\tfitZoom=" << fitZoom;
 
         QPointF contentPos{0., 0.};
         if ( content.width() * fitZoom < viewWidth ) {  // Center zoomed content horizontally
@@ -217,6 +217,9 @@ void    Navigable::zoomOn( QPointF center, qreal zoom )
     // zoom application point
     qreal containerCenterX = center.x() - _containerItem->x();
     qreal containerCenterY = center.y() - _containerItem->y();
+
+
+
     qreal lastZoom = _zoom;
 
     // Don't apply modification if new zoom is not valid (probably because it is not in zoomMin, zoomMax range)
@@ -230,16 +233,40 @@ void    Navigable::zoomOn( QPointF center, qreal zoom )
         qreal zoomCorrectionX = containerCenterX - oldZoomX;
         qreal zoomCorrectionY = containerCenterY - oldZoomY;
 
+        qreal newX=_containerItem->x() + zoomCorrectionX;
+        qreal newY=_containerItem->y() + zoomCorrectionY;
+
+        qreal itemwidth=_containerItem->width()*_zoom;
+        qreal itemheight=_containerItem->height()*_zoom;
+
+
+        qreal itemright=newX+itemwidth;
+        qreal itembottom=newY+itemheight;
+
+
+
+        if(m_fixContainerBounds){
+            if(newX>0)
+                newX=0;
+
+            if(itemright<width())
+                newX=_containerItem->x();
+        }
+
+
+
+        if(m_fixContainerBounds){
+            if(newY>0)
+                newY=0;
+            if(itembottom<height())
+                newY=_containerItem->y();
+        }
+
+
         // Correct container position and set the appropriate scaling
-        _containerItem->setX( _containerItem->x() + zoomCorrectionX );
-        _containerItem->setY( _containerItem->y() + zoomCorrectionY );
+        _containerItem->setX( newX );
+        _containerItem->setY(newY);
         _containerItem->setScale( zoom );
-
-        //        _containerItem->setProperty("x", QVariant::fromValue(_containerItem->x() + zoomCorrectionX));
-        //        _containerItem->setProperty("y", QVariant::fromValue(_containerItem->y() + zoomCorrectionY));
-        //        _containerItem->setProperty("scale", QVariant::fromValue(zoom));
-
-
 
         _zoom = zoom;
         _zoomModified = true;
@@ -253,8 +280,13 @@ void    Navigable::zoomOn( QPointF center, qreal zoom )
 
 bool    Navigable::isValidZoom( qreal zoom ) const
 {
-    if ( qFuzzyCompare( 1. + zoom - _zoom, 1.0 ) )
-        return false;
+    if ( qFuzzyCompare( zoom , _zoomMin) )
+        return true;
+
+    if ( qFuzzyCompare( zoom , _zoomMax) )
+        return true;
+
+
     if ( ( zoom > _zoomMin ) &&    // Don't zoom less than zoomMin
          ( _zoomMax < 0. ||   // Don't zoom more than zoomMax except if zoomMax is infinite
            zoom < _zoomMax ) )
@@ -368,25 +400,57 @@ void    Navigable::geometryChanged( const QRectF& newGeometry, const QRectF& old
     QQuickItem::geometryChanged( newGeometry, oldGeometry );
 }
 
+void Navigable::panTo(QPointF target){
+    //            _containerItem->setX( p.x() );
+    qreal x=target.x();
+    qreal y=target.y();
+
+
+    qreal itemwidth=_containerItem->width()*_zoom;
+    qreal itemheight=_containerItem->height()*_zoom;
+
+
+    qreal itemright=x+itemwidth;
+    qreal itembottom=y+itemheight;
+
+
+    if(m_fixContainerBounds){
+        if(x>0)
+            x=0;
+
+        if(itemright<width())
+            x=_containerItem->x();
+    }
+
+
+    _containerItem->setProperty("x",QVariant::fromValue(x));
+    //            _containerItem->setY( p.y() );
+
+
+
+    if(m_fixContainerBounds){
+        if(y>0)
+            y=0;
+        if(itembottom<height())
+            y=_containerItem->y();
+    }
+
+    _containerItem->setProperty("y", QVariant::fromValue(y));
+    emit containerItemModified();
+    navigableContainerItemModified();
+    _panModified = true;
+    _lastPan = target;
+    setDragActive(true);
+
+    updateGrid();
+}
 void    Navigable::mouseMoveEvent( QMouseEvent* event )
 {
-    if ( getNavigable() ) {
+    if ( getNavigable() && isDraggable() ) {
         if ( _leftButtonPressed && !_lastPan.isNull() ) {
             QPointF delta = _lastPan - event->localPos();
             QPointF p{ QPointF{ _containerItem->x(), _containerItem->y() } - delta };
-            //            _containerItem->setX( p.x() );
-            qreal x=p.x();
-            _containerItem->setProperty("x",QVariant::fromValue(x));
-            //            _containerItem->setY( p.y() );
-            qreal y=p.y();
-            _containerItem->setProperty("y", QVariant::fromValue(y));
-            emit containerItemModified();
-            navigableContainerItemModified();
-            _panModified = true;
-            _lastPan = event->localPos();
-            setDragActive(true);
-
-            updateGrid();
+            panTo(p);
         }
     }
     QQuickItem::mouseMoveEvent( event );
@@ -472,6 +536,12 @@ void    Navigable::updateGrid() noexcept
                     _containerItem->mapFromItem(this, {width(), height()}) };
         _grid->updateGrid(viewRect, *_containerItem, *this );
     }
+}
+
+void Navigable::touchEvent(QTouchEvent *event)
+{
+
+    QQuickItem::touchEvent(event);
 }
 //-----------------------------------------------------------------------------
 
