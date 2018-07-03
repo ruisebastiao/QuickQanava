@@ -327,7 +327,9 @@ public:
     inline bool getDragActive() const noexcept { return _dragActive; }
     //! \copydoc dragActive
     void        setDragActive( bool dragActive ) noexcept;
-   Q_INVOKABLE void panTo(QPointF target);
+    Q_INVOKABLE void panTo(QPointF target);
+
+    Q_INVOKABLE void panOffset(QPointF delta);
 private:
     //! \copydoc dragActive
     bool        _dragActive{ false };
@@ -372,6 +374,7 @@ public:
     {
         return m_isDraggable;
     }
+
 
 
 public slots:

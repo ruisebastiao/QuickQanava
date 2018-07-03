@@ -400,10 +400,11 @@ void    Navigable::geometryChanged( const QRectF& newGeometry, const QRectF& old
     QQuickItem::geometryChanged( newGeometry, oldGeometry );
 }
 
-void Navigable::panTo(QPointF target){
-    //            _containerItem->setX( p.x() );
-    qreal x=target.x();
-    qreal y=target.y();
+void Navigable::panOffset(QPointF delta){
+    QPointF p{ QPointF{ _containerItem->x(), _containerItem->y() } - delta };
+
+    qreal x=p.x();
+    qreal y=p.y();
 
 
     qreal itemwidth=_containerItem->width()*_zoom;
@@ -438,8 +439,15 @@ void Navigable::panTo(QPointF target){
     _containerItem->setProperty("y", QVariant::fromValue(y));
     emit containerItemModified();
     navigableContainerItemModified();
+}
+
+void Navigable::panTo(QPointF target){
+    QPointF delta = _lastPan - target;
+
+    panOffset(delta);
+
     _panModified = true;
-    _lastPan = target;
+    _lastPan =target;
     setDragActive(true);
 
     updateGrid();
@@ -448,9 +456,7 @@ void    Navigable::mouseMoveEvent( QMouseEvent* event )
 {
     if ( getNavigable() && isDraggable() ) {
         if ( _leftButtonPressed && !_lastPan.isNull() ) {
-            QPointF delta = _lastPan - event->localPos();
-            QPointF p{ QPointF{ _containerItem->x(), _containerItem->y() } - delta };
-            panTo(p);
+            panTo(event->localPos());
         }
     }
     QQuickItem::mouseMoveEvent( event );
