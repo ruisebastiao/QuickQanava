@@ -233,6 +233,11 @@ void    Navigable::zoomOn( QPointF center, qreal zoom )
 
     qreal lastZoom = _zoom;
 
+    if ( fixContainerBounds() ) {
+        if(lastZoom<_zoomMin){
+            lastZoom=_zoomMin;
+        }
+    }
     // Don't apply modification if new zoom is not valid (probably because it is not in zoomMin, zoomMax range)
     if ( isValidZoom( zoom ) ) {
         // Get center coordinate in container CS with the new zoom
@@ -412,6 +417,9 @@ void    Navigable::geometryChanged( const QRectF& newGeometry, const QRectF& old
 }
 
 void Navigable::panOffset(QPointF delta){
+
+    QPointF originalPoint{ _containerItem->x(), _containerItem->y() };
+
     QPointF p{ QPointF{ _containerItem->x(), _containerItem->y() } - delta };
 
     qreal x=p.x();
@@ -422,16 +430,22 @@ void Navigable::panOffset(QPointF delta){
     qreal itemheight=_containerItem->height()*_zoom;
 
 
+
     qreal itemright=x+itemwidth;
     qreal itembottom=y+itemheight;
 
+    qDebug()<<"_zoom:"<<_zoom;
+
+    qDebug()<<"itemright:"<<itemright;
+
+    qDebug()<<"width:"<<width();
 
     if(m_fixContainerBounds){
-        if(x>0)
+        if(x>=0)
             x=0;
 
-        if(itemright<width())
-            x=_containerItem->x();
+        if(itemright<=width())
+            x=originalPoint.x();
     }
 
 
@@ -444,7 +458,7 @@ void Navigable::panOffset(QPointF delta){
         if(y>0)
             y=0;
         if(itembottom<height())
-            y=_containerItem->y();
+            y=originalPoint.y();
     }
 
     _containerItem->setProperty("y", QVariant::fromValue(y));
