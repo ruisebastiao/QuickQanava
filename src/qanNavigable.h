@@ -153,7 +153,6 @@ public:
      * Items added as child of the area must manually update their parents property to \c containerItem
      *
      */
-    Q_PROPERTY(bool fixContainerBounds READ fixContainerBounds WRITE setFixContainerBounds NOTIFY fixContainerBoundsChanged)
     Q_PROPERTY(bool isDraggable READ isDraggable WRITE setIsDraggable NOTIFY isDraggableChanged)
     Q_PROPERTY(bool containerSizeLocked READ containerSizeLocked WRITE setContainerSizeLocked NOTIFY containerSizeLockedChanged)
 
@@ -173,7 +172,7 @@ public:
      */
     Q_INVOKABLE void    fitInView( );
 
-    Q_INVOKABLE void    fitInItem(QQuickItem* item);
+    Q_INVOKABLE void    fitInItem(QQuickItem* item, int margin=0);
 
 
 public:
@@ -370,10 +369,6 @@ public:
     void                setGrid(qan::Grid* grid) noexcept;
     //! Force update of grid.
     void                updateGrid() noexcept;
-    bool fixContainerBounds() const
-    {
-        return m_fixContainerBounds;
-    }
 
     bool isDraggable() const
     {
@@ -393,14 +388,6 @@ public:
     }
 
 public slots:
-    void setFixContainerBounds(bool fixContainerBounds)
-    {
-        if (m_fixContainerBounds == fixContainerBounds)
-            return;
-
-        m_fixContainerBounds = fixContainerBounds;
-        emit fixContainerBoundsChanged(m_fixContainerBounds);
-    }
 
     void setIsDraggable(bool isDraggable)
     {
@@ -433,7 +420,6 @@ private:
 
     //! \copydoc grid
     QPointer<qan::Grid> _grid;
-    bool m_fixContainerBounds=false;
 
     bool m_isDraggable=true;
 
@@ -446,7 +432,6 @@ signals:
     void                gridChanged( );
     //@}
     //-------------------------------------------------------------------------
-    void fixContainerBoundsChanged(bool fixContainerBounds);
     void isDraggableChanged(bool isDraggable);
 
     // QQuickItem interface
