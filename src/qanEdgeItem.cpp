@@ -55,6 +55,8 @@ EdgeItem::EdgeItem( QQuickItem* parent ) :
     setAcceptDrops( true );
     setVisible(false);  // Invisible until there is a valid src/dst
 
+    setAcceptHoverEvents(true);
+
     setStyle( qan::Edge::style() );
     setObjectName( QStringLiteral("qan::EdgeItem") );
 }
@@ -977,6 +979,33 @@ void    EdgeItem::dropEvent( QDropEvent* event )
     }
     QQuickItem::dropEvent( event );
 }
+void EdgeItem::hoverMoveEvent(QHoverEvent *event)
+{
+
+    const qreal d = distanceFromLine( event->pos(), QLineF{_p1, _p2} );
+
+    if ( d >=0 && d < 10.) {
+        emit edgeHoverMove(this, event->pos() );
+        event->accept();
+    }
+    else{
+
+        emit edgeHoverLeave(this);
+
+        event->ignore();
+    }
+    QQuickItem::hoverMoveEvent(event );
+
+}
+
+void EdgeItem::hoverLeaveEvent(QHoverEvent *event)
+{
+    emit edgeHoverLeave(this);
+
+    QQuickItem::hoverLeaveEvent(event );
+
+}
+
 //-----------------------------------------------------------------------------
 
 } // ::qan

@@ -153,7 +153,7 @@ public:
     virtual void        updateItem() noexcept;
 protected:
 
-     /*! FIXME document that
+    /*! FIXME document that
       *
       * \note Edge geometry cache is expressed in _graph global coordinate system_. Projection into
       * a local CS occurs only in projectGeometry(), until this method is called all internal qan::EdgeItem
@@ -344,6 +344,10 @@ signals:
     void            edgeClicked( qan::EdgeItem* edge, QPointF pos );
     void            edgeRightClicked( qan::EdgeItem* edge, QPointF pos );
     void            edgeDoubleClicked( qan::EdgeItem* edge, QPointF pos );
+
+    void    edgeHoverMove( qan::EdgeItem* edge, QPointF pos );
+    void    edgeHoverLeave( qan::EdgeItem* edge);
+
 private:
     //! Return orthogonal distance between point \c p and \c line, or -1 on error.
     inline qreal    distanceFromLine( const QPointF& p, const QLineF& line ) const noexcept;
@@ -419,6 +423,11 @@ protected:
     virtual void    dropEvent( QDropEvent* event ) override;
     //@}
     //-------------------------------------------------------------------------
+
+    // QQuickItem interface
+protected:
+    virtual void hoverMoveEvent(QHoverEvent *event) override;
+    virtual void hoverLeaveEvent(QHoverEvent *event) override;
 };
 
 } // ::qan

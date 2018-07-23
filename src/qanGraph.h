@@ -149,6 +149,9 @@ signals:
     //! \copydoc hlg::Connector::edgeInserted
     void                connectorEdgeInserted( qan::Edge* edge );
 
+    void                connectorRequestPortEdgeCreation(qan::PortItem* src, qan::PortItem* dst);
+
+
 public:
     //! Alias to VisualConnector::edgeColor property (default to Black).
     Q_PROPERTY( QColor connectorEdgeColor READ getConnectorEdgeColor WRITE setConnectorEdgeColor NOTIFY connectorEdgeColorChanged FINAL )

@@ -132,7 +132,7 @@ void    Connector::connectorReleased(QQuickItem* target) noexcept
         if ( srcPortItem &&
              dstPortItem != nullptr )
             create = _graph->isEdgeSourceBindable(*srcPortItem ) &&
-                     _graph->isEdgeDestinationBindable(*dstPortItem);
+                    _graph->isEdgeDestinationBindable(*dstPortItem);
         else if ( !srcPortItem &&
                   dstPortItem != nullptr )
             create = _graph->isEdgeDestinationBindable(*dstPortItem);
@@ -144,10 +144,14 @@ void    Connector::connectorReleased(QQuickItem* target) noexcept
             if ( create )
                 createdEdge = _graph->insertEdge( srcNode, dstNode );
             if ( createdEdge != nullptr ) {     // Special handling for src or dst port item binding
-                    _graph->bindEdge(createdEdge,srcPortItem.data(),(qan::PortItem*)dstPortItem);
+                _graph->bindEdge(createdEdge,srcPortItem.data(),(qan::PortItem*)dstPortItem);
             }
-        } else
+        } else{
             emit requestEdgeCreation(srcNode, dstNode);
+            if(srcPortItem!=nullptr && dstPortItem!=nullptr){
+                emit requestPortEdgeCreation(srcPortItem, dstPortItem);
+            }
+        }
     } else if ( srcNode != nullptr &&   //// Hyper edge node to edge connection ///////////
                 dstEdge != nullptr &&
                 getHEdgeEnabled() ) {

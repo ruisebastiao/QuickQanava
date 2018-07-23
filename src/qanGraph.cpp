@@ -106,6 +106,9 @@ void    Graph::componentComplete()
                         _connector->setConnectorItem( getConnectorItem() );
                     connect( _connector.data(), &qan::Connector::requestEdgeCreation,
                              this,              &qan::Graph::connectorRequestEdgeCreation);
+
+                    connect( _connector.data(), &qan::Connector::requestPortEdgeCreation,
+                             this,              &qan::Graph::connectorRequestPortEdgeCreation);
                     connect( _connector.data(), &qan::Connector::edgeInserted,
                              this,              &qan::Graph::connectorEdgeInserted);
                 }
