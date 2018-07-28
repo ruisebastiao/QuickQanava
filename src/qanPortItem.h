@@ -159,6 +159,12 @@ public:
     EdgeItems&          getOutEdgeItems() noexcept { return _outEdgeItems; }
     const EdgeItems&    getOutEdgeItems() const noexcept { return _outEdgeItems; }
 
+signals:
+
+    void outEdgeAdded(qan::EdgeItem& outEdgeItem);
+
+    void inEdgeAdded(qan::EdgeItem& inEdgeItem);
+
 protected:
     EdgeItems           _inEdgeItems;
     EdgeItems           _outEdgeItems;
