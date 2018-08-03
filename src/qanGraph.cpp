@@ -646,12 +646,14 @@ bool    Graph::isEdgeDestinationBindable( const qan::PortItem& inPort ) const no
 
 void    Graph::bindEdgeSource( qan::Edge& edge, qan::PortItem& outPort ) noexcept
 {
-    emit outPort.outNonVisualEdgeAdded(edge);
+
     // PRECONDITION:
     // edge must have an associed item
     auto edgeItem = edge.getItem();
-    if ( edgeItem == nullptr )
+    if ( edgeItem == nullptr ){
+         emit outPort.outNonVisualEdgeAdded(edge);
         return;
+    }
 
     if ( isEdgeSourceBindable(outPort) ) {
         edgeItem->setSourceItem(&outPort);
@@ -689,13 +691,15 @@ void    Graph::bindEdgeSource( qan::Edge& edge, qan::PortItem& outPort ) noexcep
 void    Graph::bindEdgeDestination( qan::Edge& edge, qan::PortItem& inPort ) noexcept
 {
 
-    emit inPort.inNonVisualEdgeAdded(edge);
+
 
     // PRECONDITION:
     // edge must have an associed item
     auto edgeItem = edge.getItem();
-    if ( edgeItem == nullptr )
+    if ( edgeItem == nullptr ){
+         emit inPort.inNonVisualEdgeAdded(edge);
         return;
+    }
 
     if ( isEdgeDestinationBindable(inPort) ) {
         edgeItem->setDestinationItem(&inPort);
