@@ -165,6 +165,10 @@ signals:
 
     void inEdgeAdded(qan::EdgeItem& inEdgeItem);
 
+    void inNonVisualEdgeAdded(qan::Edge& inEdge);
+
+    void outNonVisualEdgeAdded(qan::Edge& inEdge);
+
 protected:
     EdgeItems           _inEdgeItems;
     EdgeItems           _outEdgeItems;
