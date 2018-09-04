@@ -6,31 +6,33 @@ matrix:
   include:
     - os: linux
       compiler: gcc
+      env: 
+        - MATRIX_EVAL="CC=gcc-6 && CXX=g++-6"
+      addons:
+        apt: 
+            sources: 
+                - ubuntu-toolchain-r-test
+                - sourceline: "ppa:beineri/opt-qt-5.10.1-trusty"
+            packages: 
+                - cmake
+                - g++-6
+                - qt510base
+                - qt510declarative
+                - qt510graphicaleffects
+                - qt510quickcontrols2
     - os: osx
       compiler: clang
 
-addons:
-  apt:
-    packages:
-      - cmake
-      - g++-5
-      - qt58base
-      - qt58declarative
-      - qt58graphicaleffects
-      - qt58quickcontrols2
-    sources:
-      - ubuntu-toolchain-r-test
-      - sourceline: "ppa:beineri/opt-qt58-trusty"
-
 before_install:
+  - eval "${MATRIX_EVAL}"
   - if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then
       export QMAKE=/usr/lib/x86_64-linux-gnu/qt5/bin/qmake;
     fi
 
 install:
   - if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then
-      sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-5 90;
-      source /opt/qt58/bin/qt58-env.sh;
+      sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-6 90;
+      source /opt/qt510/bin/qt510-env.sh;
     fi
   - if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then
       brew update;
@@ -38,9 +40,6 @@ install:
     fi
   - if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then
       brew link qt5 --force;
-    fi
-  - if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then
-      brew linkapps qt5;
     fi
 
 before_script:
@@ -54,8 +53,11 @@ before_script:
 script:
   - which qmake
   - qmake --version
-  - qmake quickqanava.pro -r
-  - make -j 2
+  - g++ --version
+  - cmake --version
+  - mkdir build
+  - cd build
+  - cmake .. && make -j
 
 notifications:
   email: false

@@ -2,12 +2,14 @@
 CONFIG      += warn_on qt thread c++14
 QT          += core widgets gui qml quick
 
-include(../GTpo/src/gtpo.pri)
-include(../QuickContainers/src/quickcontainers.pri)
+include(../GTpo/gtpo.pri)
+include(../QuickContainers/quickcontainers.pri)
 
+# With .pri inclusion, try to statically link all QML files in Qt ressource, do not
+DEFINES         += QUICKQANAVA_STATIC   # use QML module (calling QuickQanava::initialize() is mandatory...
 DEPENDPATH      += $$PWD
 INCLUDEPATH     += $$PWD
-RESOURCES       += $$PWD/QuickQanava.qrc
+RESOURCES       += $$PWD/QuickQanava_static.qrc
 
 HEADERS +=  $$PWD/QuickQanava.h             \
             $$PWD/qanUtils.h                \
@@ -58,29 +60,36 @@ SOURCES +=  $$PWD/qanGraphView.cpp          \
             $$PWD/qanGrid.cpp               \
             $$PWD/qanBottomRightResizer.cpp
 
-OTHER_FILES +=  $$PWD/QuickQanava               \
-                $$PWD/PointGrid.qml             \
-                $$PWD/LineGrid.qml              \
-                $$PWD/GraphView.qml             \
-                $$PWD/Graph.qml                 \
-                $$PWD/RectNodeTemplate.qml      \
-                $$PWD/RectNodeBackground.qml    \
-                $$PWD/CanvasNodeTemplate.qml    \
-                $$PWD/Group.qml                 \
-                $$PWD/RectGroupTemplate.qml     \
-                $$PWD/BottomRightResizer.qml    \
-                $$PWD/Node.qml                  \
-                $$PWD/Port.qml                  \
-                $$PWD/HorizontalDock.qml        \
-                $$PWD/VerticalDock.qml          \
-                $$PWD/Edge.qml                  \
-                $$PWD/EdgeTemplate.qml          \
-                $$PWD/SelectionItem.qml         \
-                $$PWD/StyleListView.qml         \
-                $$PWD/StyleEditor.qml           \
-                $$PWD/VisualConnector.qml       \
-                $$PWD/LabelEditor.qml
-CONFIG      += use_graphviz
+OTHER_FILES +=  $$PWD/QuickQanava                   \
+                $$PWD/PointGrid.qml                 \
+                $$PWD/LineGrid.qml                  \
+                $$PWD/GraphView.qml                 \
+                $$PWD/Graph.qml                     \
+                $$PWD/RectNodeTemplate.qml          \
+                $$PWD/RectSolidBackground.qml       \
+                $$PWD/RectSolidShadowBackground.qml \
+                $$PWD/RectSolidGlowBackground.qml   \
+                $$PWD/RectGradientBackground.qml        \
+                $$PWD/RectGradientShadowBackground.qml  \
+                $$PWD/RectGradientGlowBackground.qml    \
+                $$PWD/CanvasNodeTemplate.qml        \
+                $$PWD/Group.qml                     \
+                $$PWD/RectGroupTemplate.qml         \
+                $$PWD/BottomRightResizer.qml        \
+                $$PWD/Node.qml                      \
+                $$PWD/Port.qml                      \
+                $$PWD/HorizontalDock.qml            \
+                $$PWD/VerticalDock.qml              \
+                $$PWD/Edge.qml                      \
+                $$PWD/EdgeTemplate.qml              \
+                $$PWD/SelectionItem.qml             \
+                $$PWD/StyleListView.qml             \
+                $$PWD/StyleEditor.qml               \
+                $$PWD/VisualConnector.qml           \
+                $$PWD/LabelEditor.qml               \
+                $$PWD/qmldir_static
+
+#CONFIG      += use_graphviz
 use_graphviz {
     DEFINES     += USE_GRAPHVIZ
     unix: CONFIG += link_pkgconfig
