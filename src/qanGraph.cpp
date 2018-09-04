@@ -106,6 +106,9 @@ void    Graph::componentComplete()
                         _connector->setConnectorItem( getConnectorItem() );
                     connect( _connector.data(), &qan::Connector::requestEdgeCreation,
                              this,              &qan::Graph::connectorRequestEdgeCreation);
+
+                    connect( _connector.data(), &qan::Connector::requestPortEdgeCreation,
+                             this,              &qan::Graph::connectorRequestPortEdgeCreation);
                     connect( _connector.data(), &qan::Connector::edgeInserted,
                              this,              &qan::Graph::connectorEdgeInserted);
                 }
@@ -171,9 +174,9 @@ qan::Group* Graph::groupAt( const QPointF& p, const QSizeF& s ) const
         if ( group &&
              group->getItem() != nullptr ) {
             const auto groupItem = group->getItem();
-             if ( QRectF{ groupItem->position(),
-                  QSizeF{ groupItem->width(), groupItem->height() } }.contains( QRectF{ p, s } ) )
-                 return group.get();
+            if ( QRectF{ groupItem->position(),
+                 QSizeF{ groupItem->width(), groupItem->height() } }.contains( QRectF{ p, s } ) )
+                return group.get();
         }
     return nullptr;
 }
@@ -389,7 +392,7 @@ QQuickItem* Graph::createFromComponent( QQmlComponent* component,
 QQuickItem* Graph::createFromComponent( QQmlComponent* component, qan::Style* style )
 {
     return ( component != nullptr &&
-             style != nullptr ) ? createFromComponent( component, *style, nullptr, nullptr, nullptr ) : nullptr;
+            style != nullptr ) ? createFromComponent( component, *style, nullptr, nullptr, nullptr ) : nullptr;
 }
 
 void Graph::setSelectionDelegate(QQmlComponent* selectionDelegate) noexcept
@@ -418,14 +421,14 @@ void Graph::setSelectionDelegate(std::unique_ptr<QQmlComponent> selectionDelegat
             if ( finalPrimitive != nullptr &&
                  finalPrimitive->getItem() &&
                  finalPrimitive->getItem()->getSelectionItem() != nullptr )   // Replace only existing selection items
-                    finalPrimitive->getItem()->setSelectionItem(this->createSelectionItem(finalPrimitive->getItem()));
+                finalPrimitive->getItem()->setSelectionItem(this->createSelectionItem(finalPrimitive->getItem()));
         };
         auto updateGroupSelectionItem = [this]( auto& primitive ) -> void {
             auto finalPrimitive = qobject_cast<qan::Group*>(primitive.get());
             if ( finalPrimitive != nullptr &&
                  finalPrimitive->getItem() &&
                  finalPrimitive->getItem()->getSelectionItem() != nullptr )   // Replace only existing selection items
-                    finalPrimitive->getItem()->setSelectionItem(this->createSelectionItem(finalPrimitive->getItem()));
+                finalPrimitive->getItem()->setSelectionItem(this->createSelectionItem(finalPrimitive->getItem()));
         };
         std::for_each(getGroups().begin(), getGroups().end(), updateGroupSelectionItem);
         std::for_each(getNodes().begin(), getNodes().end(), updateNodeSelectionItem);
@@ -453,7 +456,7 @@ QPointer<QQuickItem> Graph::createSelectionItem( QQuickItem* parent ) noexcept
 std::unique_ptr<QQmlComponent>  Graph::createComponent(const QString& url) noexcept
 {
     // PRECONDITIONS
-        // url could not be empty
+    // url could not be empty
     if ( url.isEmpty() ) {
         qWarning() << "qan::Graph::createComponent(): Error: Empty url.";
         return std::unique_ptr<QQmlComponent>();
@@ -483,7 +486,7 @@ std::unique_ptr<QQmlComponent>  Graph::createComponent(const QString& url) noexc
 QPointer<QQuickItem> Graph::createItemFromComponent(QQmlComponent* component) noexcept
 {
     // PRECONDITIONS:
-        // component should not be nullptr, warning issued
+    // component should not be nullptr, warning issued
     if ( component == nullptr ) {
         qWarning() << "qan::Graph::createItemFromComponent(): Error called with a nullptr delegate component.";
         return nullptr;
@@ -546,12 +549,12 @@ qan::Edge*  Graph::insertEdge( QObject* source, QObject* destination, QQmlCompon
 {
     auto sourceNode = qobject_cast<qan::Node*>(source);
     if ( sourceNode != nullptr ) {
-            if ( qobject_cast<qan::Node*>(destination) != nullptr )
-                return insertEdge( sourceNode, qobject_cast<qan::Node*>( destination ), edgeComponent );
-            else if ( qobject_cast<qan::Group*>(destination) != nullptr )
-                return insertEdge( sourceNode, qobject_cast<qan::Group*>( destination ), edgeComponent );
-            else if ( qobject_cast<qan::Edge*>(destination) != nullptr )
-                return insertEdge( sourceNode, qobject_cast<qan::Edge*>( destination ), edgeComponent );
+        if ( qobject_cast<qan::Node*>(destination) != nullptr )
+            return insertEdge( sourceNode, qobject_cast<qan::Node*>( destination ), edgeComponent );
+        else if ( qobject_cast<qan::Group*>(destination) != nullptr )
+            return insertEdge( sourceNode, qobject_cast<qan::Group*>( destination ), edgeComponent );
+        else if ( qobject_cast<qan::Edge*>(destination) != nullptr )
+            return insertEdge( sourceNode, qobject_cast<qan::Edge*>( destination ), edgeComponent );
     }
     qWarning() << "qan::Graph::insertEdge(): Error: Unable to find a valid insertEdge() method for arguments " << source << " and " << destination;
     return nullptr;
@@ -560,7 +563,7 @@ qan::Edge*  Graph::insertEdge( QObject* source, QObject* destination, QQmlCompon
 qan::Edge*  Graph::insertEdge( qan::Node* source, qan::Node* destination, QQmlComponent* edgeComponent )
 {
     // PRECONDITION;
-        // source and destination can't be nullptr
+    // source and destination can't be nullptr
     if ( source == nullptr ||
          destination == nullptr )
         return nullptr;
@@ -570,7 +573,7 @@ qan::Edge*  Graph::insertEdge( qan::Node* source, qan::Node* destination, QQmlCo
 qan::Edge*  Graph::insertEdge( qan::Node* source, qan::Edge* destination, QQmlComponent* edgeComponent )
 {
     // PRECONDITIONS:
-        // source and destination can't be nullptr
+    // source and destination can't be nullptr
     if ( source == nullptr ||
          destination == nullptr )
         return nullptr;
@@ -580,7 +583,7 @@ qan::Edge*  Graph::insertEdge( qan::Node* source, qan::Edge* destination, QQmlCo
 void    Graph::bindEdgeSource( qan::Edge* edge, qan::PortItem* outPort) noexcept
 {
     // PRECONDITIONS:
-        // edge and outport must be non nullptr
+    // edge and outport must be non nullptr
     if ( edge == nullptr ||
          outPort == nullptr )
         return;
@@ -590,7 +593,7 @@ void    Graph::bindEdgeSource( qan::Edge* edge, qan::PortItem* outPort) noexcept
 void    Graph::bindEdgeDestination( qan::Edge* edge, qan::PortItem* inPort ) noexcept
 {
     // PRECONDITIONS:
-        // edge and outport must be non nullptr
+    // edge and outport must be non nullptr
     if ( edge == nullptr ||
          inPort == nullptr )
         return;
@@ -643,15 +646,18 @@ bool    Graph::isEdgeDestinationBindable( const qan::PortItem& inPort ) const no
 
 void    Graph::bindEdgeSource( qan::Edge& edge, qan::PortItem& outPort ) noexcept
 {
+
     // PRECONDITION:
-        // edge must have an associed item
+    // edge must have an associed item
     auto edgeItem = edge.getItem();
-    if ( edgeItem == nullptr )
+    if ( edgeItem == nullptr ){
+         emit outPort.outNonVisualEdgeAdded(edge);
         return;
+    }
 
     if ( isEdgeSourceBindable(outPort) ) {
         edgeItem->setSourceItem(&outPort);
-        outPort.getOutEdgeItems().append(edgeItem);
+        outPort.addOutEdgeItem(*edgeItem);
     }
 
     /*
@@ -684,15 +690,20 @@ void    Graph::bindEdgeSource( qan::Edge& edge, qan::PortItem& outPort ) noexcep
 
 void    Graph::bindEdgeDestination( qan::Edge& edge, qan::PortItem& inPort ) noexcept
 {
+
+
+
     // PRECONDITION:
-        // edge must have an associed item
+    // edge must have an associed item
     auto edgeItem = edge.getItem();
-    if ( edgeItem == nullptr )
+    if ( edgeItem == nullptr ){
+         emit inPort.inNonVisualEdgeAdded(edge);
         return;
+    }
 
     if ( isEdgeDestinationBindable(inPort) ) {
         edgeItem->setDestinationItem(&inPort);
-        inPort.getInEdgeItems().append(edgeItem);
+        inPort.addInEdgeItem(*edgeItem);
     }
 
     /*
@@ -930,8 +941,8 @@ void    Graph::configureSelectionItems() noexcept
 
 template < class Primitive_t >
 bool    selectPrimitiveImpl( Primitive_t& primitive,
-                         Qt::KeyboardModifiers modifiers,
-                         qan::Graph& graph )
+                             Qt::KeyboardModifiers modifiers,
+                             qan::Graph& graph )
 {
     if ( graph.getSelectionPolicy() == qan::Graph::SelectionPolicy::NoSelection )
         return false;
@@ -984,20 +995,27 @@ void    addToSelectionImpl( Primitive_t& primitive,
     }
 }
 
-void    Graph::addToSelection( qan::Node& node ) { addToSelectionImpl<qan::Node>(node, _selectedNodes, *this); }
+void    Graph::addToSelection( qan::Node& node ) {
+    setSelectedNode(&node);
+    addToSelectionImpl<qan::Node>(node, _selectedNodes, *this);
+}
 void    Graph::addToSelection( qan::Group& group ) { addToSelectionImpl<qan::Group>(group, _selectedGroups, *this); }
 
 template < class Primitive_t >
 void    removeFromSelectionImpl( Primitive_t& primitive,
-                             qcm::Container< QVector, Primitive_t* >& selectedPrimitives )
+                                 qcm::Container< QVector, Primitive_t* >& selectedPrimitives )
 {
     if ( selectedPrimitives.contains( &primitive ) )
         selectedPrimitives.removeAll( &primitive );
 }
 
-void    Graph::removeFromSelection( qan::Node& node ) { removeFromSelectionImpl<qan::Node>(node, _selectedNodes); }
+void    Graph::removeFromSelection( qan::Node& node ) {
+    setSelectedNode(nullptr);
+    removeFromSelectionImpl<qan::Node>(node, _selectedNodes);
+}
 void    Graph::removeFromSelection( qan::Group& group ) { removeFromSelectionImpl<qan::Group>(group, _selectedGroups); }
 void    Graph::removeFromSelection( QQuickItem* item ) {
+    setSelectedNode(nullptr);
     const auto nodeItem = qobject_cast<qan::NodeItem*>(item);
     if ( nodeItem != nullptr &&
          nodeItem->getNode() != nullptr ) {
@@ -1019,8 +1037,8 @@ void    Graph::clearSelection()
     // has changed while iterator has been modified.
     SelectedNodes selectedNodesCopy;
     std::copy( _selectedNodes.cbegin(),
-                _selectedNodes.cend(),
-                std::back_inserter(selectedNodesCopy) );
+               _selectedNodes.cend(),
+               std::back_inserter(selectedNodesCopy) );
     for ( auto node : selectedNodesCopy )
         if ( node != nullptr &&
              node->getItem() != nullptr )
@@ -1029,8 +1047,8 @@ void    Graph::clearSelection()
 
     SelectedGroups selectedGroupsCopy;
     std::copy( _selectedGroups.cbegin(),
-                _selectedGroups.cend(),
-                std::back_inserter(selectedGroupsCopy) );
+               _selectedGroups.cend(),
+               std::back_inserter(selectedGroupsCopy) );
     for ( auto group : selectedGroupsCopy )
         if ( group != nullptr &&
              group->getItem() != nullptr )
@@ -1062,9 +1080,9 @@ qan::PortItem*  Graph::insertPort(qan::Node* node,
                                   QString id ) noexcept
 {
     // PRECONDITIONS:
-        // node can't be nullptr
-        // node must have an item (to access node style)
-        // default _portDelegate must be valid
+    // node can't be nullptr
+    // node must have an item (to access node style)
+    // default _portDelegate must be valid
     if ( node == nullptr ||
          node->getItem() == nullptr )
         return nullptr;
@@ -1134,9 +1152,9 @@ void    Graph::removePort(qan::Node* node, qan::PortItem* port) noexcept
     auto removeConnectEdge = [this, port](auto& edge) {
         auto edgePtr = edge.lock();
         if (edgePtr &&
-            edgePtr->getItem() != nullptr &&
-            ( edgePtr->getItem()->getSourceItem() == port ||
-             edgePtr->getItem()->getDestinationItem() == port ))
+                edgePtr->getItem() != nullptr &&
+                ( edgePtr->getItem()->getSourceItem() == port ||
+                  edgePtr->getItem()->getDestinationItem() == port ))
             this->removeEdge(edgePtr.get());
     };
     std::for_each(node->getInEdges().begin(), node->getInEdges().end(), removeConnectEdge);

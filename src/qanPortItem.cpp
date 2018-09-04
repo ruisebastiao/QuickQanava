@@ -100,11 +100,13 @@ void    PortItem::setLabel( const QString& label ) noexcept
 void    PortItem::addInEdgeItem(qan::EdgeItem& inEdgeItem) noexcept
 {
     _inEdgeItems.append(&inEdgeItem);
+    emit inEdgeAdded(inEdgeItem);
 }
 
 void    PortItem::addOutEdgeItem(qan::EdgeItem& outEdgeItem) noexcept
 {
     _outEdgeItems.append(&outEdgeItem);
+    emit outEdgeAdded(outEdgeItem);
 }
 //-----------------------------------------------------------------------------
 

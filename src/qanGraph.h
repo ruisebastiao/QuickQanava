@@ -149,6 +149,9 @@ signals:
     //! \copydoc hlg::Connector::edgeInserted
     void                connectorEdgeInserted( qan::Edge* edge );
 
+    void                connectorRequestPortEdgeCreation(qan::PortItem* src, qan::PortItem* dst);
+
+
 public:
     //! Alias to VisualConnector::edgeColor property (default to Black).
     Q_PROPERTY( QColor connectorEdgeColor READ getConnectorEdgeColor WRITE setConnectorEdgeColor NOTIFY connectorEdgeColorChanged FINAL )
@@ -598,6 +601,9 @@ public:
 
     //! Read-only list model of currently selected nodes.
     Q_PROPERTY( QAbstractListModel* selectedNodes READ getSelectedNodesModel NOTIFY selectedNodesChanged FINAL )
+
+    Q_PROPERTY(qan::Node* selectedNode READ selectedNode WRITE setSelectedNode NOTIFY selectedNodeChanged)
+
     QAbstractListModel* getSelectedNodesModel() { return qobject_cast<QAbstractListModel*>( &_selectedNodes ); }
 
     inline auto         getSelectedNodes() noexcept -> SelectedNodes& { return _selectedNodes; }
@@ -787,9 +793,13 @@ protected:
 signals:
     //! \copydoc horizontalDockDelegate
     void                    verticalDockDelegateChanged();
+    void selectedNodeChanged(qan::Node* selectedNode);
+
 private:
     //! \copydoc verticalDockDelegate
     std::unique_ptr<QQmlComponent> _verticalDockDelegate;
+
+    qan::Node* m_selectedNode=0;
 
 protected:
     //! Create a dock item from an existing dock item delegate.
@@ -804,6 +814,19 @@ public:
     Q_INVOKABLE void autoPositionNodes() noexcept;
     //@}
     //-------------------------------------------------------------------------
+    qan::Node* selectedNode() const
+    {
+        return m_selectedNode;
+    }
+public slots:
+    void setSelectedNode(qan::Node* selectedNode)
+    {
+        if (m_selectedNode == selectedNode)
+            return;
+
+        m_selectedNode = selectedNode;
+        emit selectedNodeChanged(m_selectedNode);
+    }
 };
 
 } // ::qan

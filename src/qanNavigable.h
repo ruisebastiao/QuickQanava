@@ -94,7 +94,7 @@ class Navigable : public QQuickItem
 {
     /*! \name Navigable Object Management *///---------------------------------
     //@{
-Q_OBJECT
+    Q_OBJECT
 public:
     explicit Navigable( QQuickItem* parent = nullptr );
     virtual ~Navigable() { }
@@ -147,6 +147,17 @@ public:
     Q_PROPERTY( QQuickItem* containerItem READ getContainerItem CONSTANT FINAL )
     //! \sa containerItem
     inline QQuickItem*  getContainerItem() noexcept { return _containerItem; }
+
+    /*! \brief Parent container for area child items.
+     *
+     * Items added as child of the area must manually update their parents property to \c containerItem
+     *
+     */
+    Q_PROPERTY(bool isDraggable READ isDraggable WRITE setIsDraggable NOTIFY isDraggableChanged)
+    Q_PROPERTY(bool containerSizeLocked READ containerSizeLocked WRITE setContainerSizeLocked NOTIFY containerSizeLockedChanged)
+
+
+
 private:
     QQuickItem*         _containerItem{nullptr};
 
@@ -160,6 +171,9 @@ public:
      * \sa autoFitMode
      */
     Q_INVOKABLE void    fitInView( );
+
+    Q_INVOKABLE void    fitInItem(QQuickItem* item, int margin=0);
+
 
 public:
     //! \brief Auto fitting mode.
@@ -231,7 +245,7 @@ public:
      */
     void        setZoom( qreal zoom );
     //! Set area current zoom centered on a given \c center point.
-    void        zoomOn( QPointF center, qreal zoom );
+    Q_INVOKABLE void        zoomOn(QPointF center, qreal zoom );
     //! Return true if zoom is valid (ie it is different from the actual zoom and in the (minZoom, maxZoom) range.
     bool        isValidZoom( qreal zoom ) const;
 private:
@@ -311,12 +325,17 @@ public:
 
     //! True when the navigable conctent area is actually dragged.
     Q_PROPERTY( bool dragActive READ getDragActive WRITE setDragActive NOTIFY dragActiveChanged FINAL )
+
+    Q_PROPERTY(QPointF viewPosition READ viewPosition WRITE setViewPosition NOTIFY viewPositionChanged)
+
+
     //! \copydoc dragActive
     inline bool getDragActive() const noexcept { return _dragActive; }
     //! \copydoc dragActive
     void        setDragActive( bool dragActive ) noexcept;
+    Q_INVOKABLE void panTo(QPointF target);
 
-    Q_INVOKABLE void dragTo(QPointF pos);
+    Q_INVOKABLE void panOffset(QPointF delta);
 private:
     //! \copydoc dragActive
     bool        _dragActive{ false };
@@ -333,7 +352,7 @@ protected:
 
 protected:
     bool        _leftButtonPressed{ false };
-    QPointF     _lastPan{};
+  //  QPointF     _lastPan{};
     //@}
     //-------------------------------------------------------------------------
 
@@ -350,16 +369,80 @@ public:
     //! \copydoc grid
     inline qan::Grid*   getGrid() noexcept { return _grid.data(); }
     void                setGrid(qan::Grid* grid) noexcept;
-private:
     //! Force update of grid.
     void                updateGrid() noexcept;
+
+    bool isDraggable() const
+    {
+        return m_isDraggable;
+    }
+
+
+
+    QPointF viewPosition() const
+    {
+        return m_viewPosition;
+    }
+
+    bool containerSizeLocked() const
+    {
+        return m_containerSizeLocked;
+    }
+
+public slots:
+
+    void setIsDraggable(bool isDraggable)
+    {
+        if (m_isDraggable == isDraggable)
+            return;
+
+        m_isDraggable = isDraggable;
+        emit isDraggableChanged(m_isDraggable);
+    }
+
+    void setViewPosition(QPointF viewPosition)
+    {
+        if (m_viewPosition == viewPosition)
+            return;
+
+        m_viewPosition = viewPosition;
+        emit viewPositionChanged(m_viewPosition);
+    }
+
+    void setContainerSizeLocked(bool containerSizeLocked)
+    {
+        if (m_containerSizeLocked == containerSizeLocked)
+            return;
+
+        m_containerSizeLocked = containerSizeLocked;
+        emit containerSizeLockedChanged(m_containerSizeLocked);
+    }
+
+private:
+
     //! \copydoc grid
     QPointer<qan::Grid> _grid;
+
+    bool m_isDraggable=true;
+
+    QPointF m_viewPosition{};
+
+    bool m_containerSizeLocked=false;
+
 signals:
     //! \copydoc grid
     void                gridChanged( );
     //@}
     //-------------------------------------------------------------------------
+    void isDraggableChanged(bool isDraggable);
+
+    // QQuickItem interface
+    void viewPositionChanged(QPointF viewPosition);
+
+    void containerSizeLockedChanged(bool containerSizeLocked);
+
+protected:
+    void touchEvent(QTouchEvent *event);
 };
 
 } // ::qan

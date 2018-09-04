@@ -99,6 +99,9 @@ signals:
     //! Emmited after an edge has been created to allow user configuration (not emmited when \c createDefaultEdge is set to false).
     void    edgeInserted(qan::Edge* edge);
 
+    void    requestPortEdgeCreation(qan::PortItem* src, qan::PortItem* dst);
+
+
 protected:
     //! Should be called from QML when connector draggable item is released other a target.
     Q_INVOKABLE void    connectorReleased(QQuickItem* target) noexcept;
