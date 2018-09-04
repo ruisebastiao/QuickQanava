@@ -241,6 +241,18 @@ void    Navigable::setDragActive( bool dragActive ) noexcept
     }
 }
 
+void Navigable::dragTo(QPointF pos)
+{
+    QPointF delta = _lastPan - pos;
+    QPointF p{ QPointF{ _containerItem->x(), _containerItem->y() } - delta };
+    _containerItem->setX( p.x() );
+    _containerItem->setY( p.y() );
+    emit containerItemModified();
+    navigableContainerItemModified();
+    _panModified = true;
+    _lastPan = pos;
+}
+
 void    Navigable::geometryChanged( const QRectF& newGeometry, const QRectF& oldGeometry )
 {
     //qDebug() << "qan::Navigable::geometryChanged(): newGeometry=" << newGeometry << "\toldGeometry=" << oldGeometry;
@@ -313,14 +325,7 @@ void    Navigable::mouseMoveEvent( QMouseEvent* event )
 {
     if ( getNavigable() ) {
         if ( _leftButtonPressed && !_lastPan.isNull() ) {
-            QPointF delta = _lastPan - event->localPos();
-            QPointF p{ QPointF{ _containerItem->x(), _containerItem->y() } - delta };
-            _containerItem->setX( p.x() );
-            _containerItem->setY( p.y() );
-            emit containerItemModified();
-            navigableContainerItemModified();
-            _panModified = true;
-            _lastPan = event->localPos();
+           dragTo(event->localPos());
             setDragActive(true);
 
             updateGrid();

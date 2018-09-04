@@ -307,12 +307,16 @@ protected:
     virtual void    navigableContainerItemModified() { }
 
 public:
+
+
     //! True when the navigable conctent area is actually dragged.
     Q_PROPERTY( bool dragActive READ getDragActive WRITE setDragActive NOTIFY dragActiveChanged FINAL )
     //! \copydoc dragActive
     inline bool getDragActive() const noexcept { return _dragActive; }
     //! \copydoc dragActive
     void        setDragActive( bool dragActive ) noexcept;
+
+    Q_INVOKABLE void dragTo(QPointF pos);
 private:
     //! \copydoc dragActive
     bool        _dragActive{ false };
