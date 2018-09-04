@@ -7,3 +7,4 @@ Makefile
 quickgeogl.pro.user
 Makefile
 .qmake.stash
+build*
