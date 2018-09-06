@@ -1,30 +1,23 @@
-TEMPLATE    =   subdirs
-CONFIG      +=  ordered
+PLUGIN_NAME = QuickQanava
+PLUGIN_PATH = QuickQanava
+PLUGIN_QML_DIR=$$PWD/src/qml/
 
-test-resizer.subdir     = samples/resizer
-test-navigable.subdir   = samples/navigable
-test-nodes.subdir       = samples/nodes
-test-edges.subdir       = samples/edges
-test-connector.subdir   = samples/connector
-test-groups.subdir      = samples/groups
-test-selection.subdir   = samples/selection
-test-style.subdir       = samples/style
-test-dataflow.subdir    = samples/dataflow
-test-topology.subdir    = samples/topology
-test-cpp.subdir         = samples/cpp
-#test-40k.subdir     = samples/40k
-#test-40k.depends    = quickqanava
+# PLUGIN_NAME and PLUGIN_PATH must be set up prior to including this config file
+include($$getGlobalFile(plugin.pri))
 
-SUBDIRS +=  test-resizer
-SUBDIRS +=  test-navigable
-SUBDIRS +=  test-nodes
-SUBDIRS +=  test-edges
-SUBDIRS +=  test-connector
-SUBDIRS +=  test-groups
-SUBDIRS +=  test-selection
-SUBDIRS +=  test-style
-SUBDIRS +=  test-topology
-SUBDIRS +=  test-dataflow
-SUBDIRS +=  test-cpp
+DEFINES += QUICKQANAVA_LIB
 
-#SUBDIRS +=  test-40k
+uri = QuickQanava
+
+
+QML_IMPORT_PATH += \
+                $${PLUGIN_DEPLOY_PATH}
+
+message(path:  $${QML_IMPORT_PATH})
+
+linkLocalLibrary(automationstudiocore,   automationstudiocore)
+
+# Source
+
+include($$PWD/src/quickqanava.pri)
+
