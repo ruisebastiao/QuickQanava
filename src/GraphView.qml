@@ -48,6 +48,7 @@ import "qrc:/QuickQanava"   as Qan
  *   \li When an edge is created with the visual node connector, the signal \c edgeInsertedVisually with the newly inserted \c edge as an argument.
  *
  */
+
 Qan.AbstractGraphView {
     id: graphView
     Qan.LineGrid { id: lineGrid }

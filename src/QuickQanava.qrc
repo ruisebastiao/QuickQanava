@@ -25,6 +25,5 @@
         <file alias="QuickQanava/StyleEditor.qml">StyleEditor.qml</file>
         <file alias="QuickQanava/VisualConnector.qml">VisualConnector.qml</file>
         <file alias="QuickQanava/LabelEditor.qml">LabelEditor.qml</file>
-        <file alias="QuickQanava/qmldir">qmldir</file>
     </qresource>
 </RCC>

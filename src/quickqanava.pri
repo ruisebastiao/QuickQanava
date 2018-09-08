@@ -9,6 +9,9 @@ DEPENDPATH      += $$PWD
 INCLUDEPATH     += $$PWD
 RESOURCES       += $$PWD/QuickQanava.qrc
 
+QML_IMPORT_PATH += \
+                $$PWD
+
 HEADERS +=  $$PWD/QuickQanava.h             \
             $$PWD/qanUtils.h                \
             $$PWD/qanGraphConfig.h          \
@@ -35,7 +38,9 @@ HEADERS +=  $$PWD/QuickQanava.h             \
             $$PWD/qanNavigablePreview.h     \
             $$PWD/qanGrid.h                 \
             $$PWD/qanContainerAdapter.h     \
-            $$PWD/qanBottomRightResizer.h
+            $$PWD/qanBottomRightResizer.h   \
+            $$PWD/quickqanavaplugin_plugin.h\
+
 
 SOURCES +=  $$PWD/qanGraphView.cpp          \
             $$PWD/qanUtils.cpp              \
@@ -56,35 +61,15 @@ SOURCES +=  $$PWD/qanGraphView.cpp          \
             $$PWD/qanNavigable.cpp          \
             $$PWD/qanNavigablePreview.cpp   \
             $$PWD/qanGrid.cpp               \
-            $$PWD/qanBottomRightResizer.cpp
+            $$PWD/qanBottomRightResizer.cpp \
+            $$PWD/quickqanavaplugin_plugin.cpp \
 
-OTHER_FILES +=  $$PWD/QuickQanava                   \
-                $$PWD/PointGrid.qml                 \
-                $$PWD/LineGrid.qml                  \
-                $$PWD/GraphView.qml                 \
-                $$PWD/Graph.qml                     \
-                $$PWD/RectNodeTemplate.qml          \
-                $$PWD/RectSolidBackground.qml       \
-                $$PWD/RectSolidShadowBackground.qml \
-                $$PWD/RectSolidGlowBackground.qml   \
-                $$PWD/RectGradientBackground.qml        \
-                $$PWD/RectGradientShadowBackground.qml  \
-                $$PWD/RectGradientGlowBackground.qml    \
-                $$PWD/CanvasNodeTemplate.qml        \
-                $$PWD/Group.qml                     \
-                $$PWD/RectGroupTemplate.qml         \
-                $$PWD/BottomRightResizer.qml        \
-                $$PWD/Node.qml                      \
-                $$PWD/Port.qml                      \
-                $$PWD/HorizontalDock.qml            \
-                $$PWD/VerticalDock.qml              \
-                $$PWD/Edge.qml                      \
-                $$PWD/EdgeTemplate.qml              \
-                $$PWD/SelectionItem.qml             \
-                $$PWD/StyleListView.qml             \
-                $$PWD/StyleEditor.qml               \
-                $$PWD/VisualConnector.qml           \
-                $$PWD/LabelEditor.qml
+
+RESOURCES       += $$PWD/QuickQanava.qrc
+
+OTHER_FILES +=  $$PWD/QuickQanava \
+    $$PWD/qml/*.qml \
+    $$PWD/qml/qmldir
 
 #CONFIG      += use_graphviz
 use_graphviz {

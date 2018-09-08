@@ -62,7 +62,7 @@ class PortItem;
  *
  * \nosubgrouping
 */
-class Node : public gtpo::GenNode< qan::GraphConfig >
+class  Node : public gtpo::GenNode< qan::GraphConfig >
 {
     /*! \name Node Object Management *///--------------------------------------
     //@{

@@ -63,7 +63,7 @@
 #include "./qanBottomRightResizer.h"
 #include "./qanNavigablePreview.h"
 
-struct QuickQanava {
+struct QUICKQANAVASHARED_EXPORT QuickQanava {
     static void initialize(QQmlEngine* engine) {
         Q_INIT_RESOURCE(QuickQanava);
 #if QT_VERSION < QT_VERSION_CHECK(5, 10, 0)

@@ -37,7 +37,6 @@
 
 // Qt headers
 #include <QQuickItem>
-
 // QuickQanava headers
 #include "./qanGrid.h"
 
