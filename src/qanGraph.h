@@ -48,6 +48,7 @@
 #include "./qanNavigable.h"
 #include "./qanSelectable.h"
 #include "./qanConnector.h"
+#include "quickqanavaglobal.h"
 
 // Qt headers
 #include <QQuickItem>
@@ -65,7 +66,7 @@ class PortItem;
  *
  * \nosubgrouping
  */
-class Graph : public gtpo::GenGraph< qan::GraphConfig >
+class QUICKQANAVA_EXPORT Graph : public gtpo::GenGraph< qan::GraphConfig >
 {
     Q_OBJECT
     Q_INTERFACES(QQmlParserStatus)

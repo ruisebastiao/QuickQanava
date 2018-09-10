@@ -6,6 +6,8 @@ CONFIG += plugin c++14
 TARGET = $$qtLibraryTarget($$TARGET)
 uri = QuickQanava
 
+DEFINES+=QUICKQANAVA_LIB
+
 PLUGIN_NAME = QuickQanava
 PLUGIN_PATH = QuickQanava
 

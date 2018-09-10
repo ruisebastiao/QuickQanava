@@ -54,7 +54,7 @@ namespace qan { // ::qan
  *
  * \nosubgrouping
 */
-class GraphView : public qan::Navigable
+class QUICKQANAVA_EXPORT GraphView : public qan::Navigable
 {
     Q_OBJECT
     /*! \name GraphView Object Management *///---------------------------------

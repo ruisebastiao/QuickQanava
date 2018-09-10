@@ -42,6 +42,8 @@
 #include <QVector>
 #include <QQmlEngine>
 
+#include "quickqanavaglobal.h"
+
 namespace qan { // ::qan
 
 /*! Models a set of properties affecting a graph primitive visual appearance.
@@ -307,7 +309,7 @@ signals:
     //-------------------------------------------------------------------------
 };
 
-class EdgeStyle : public qan::Style
+class QUICKQANAVA_EXPORT EdgeStyle : public qan::Style
 {
     Q_OBJECT
     /*! \name EdgeStyle Object Management *///---------------------------------

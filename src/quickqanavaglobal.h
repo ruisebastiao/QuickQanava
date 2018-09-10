@@ -1,0 +1,17 @@
+
+#ifndef QUICKQANAVAGLOBAL_H
+#define QUICKQANAVAGLOBAL_H
+
+#include <qglobal.h>
+
+#ifndef QUICKQANAVA_STATIC
+#  ifdef QUICKQANAVA_LIB
+#    define QUICKQANAVA_EXPORT Q_DECL_EXPORT
+#  else
+#    define QUICKQANAVA_EXPORT Q_DECL_IMPORT
+#  endif
+#else
+#  define QUICKQANAVA_EXPORT
+#endif
+
+#endif //AUTOMATIONSTUDIOCOREGLOBAL

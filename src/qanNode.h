@@ -35,6 +35,8 @@
 #ifndef qanNode_h
 #define qanNode_h
 
+#include "quickqanavaglobal.h"
+
 // Qt headers
 #include <QQuickItem>
 #include <QPointF>
@@ -45,7 +47,7 @@
 #include "./qanEdge.h"
 #include "./qanStyle.h"
 #include "./qanBehaviour.h"
-//#include "./qanNodeItem.h"
+#include "./qanGroup.h"
 
 namespace qan { // ::qan
 
@@ -62,7 +64,7 @@ class PortItem;
  *
  * \nosubgrouping
 */
-class  Node : public gtpo::GenNode< qan::GraphConfig >
+class QUICKQANAVA_EXPORT  Node : public gtpo::GenNode< qan::GraphConfig >
 {
     /*! \name Node Object Management *///--------------------------------------
     //@{

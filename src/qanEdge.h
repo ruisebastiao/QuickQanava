@@ -41,6 +41,7 @@
 #include "./qanGraphConfig.h"
 #include "./qanStyle.h"
 #include "./qanNode.h"
+#include "quickqanavaglobal.h"
 
 namespace qan { // ::qan
 
@@ -51,7 +52,7 @@ class EdgeItem;
 /*!
     \nosubgrouping
  */
-class Edge : public gtpo::GenEdge< qan::GraphConfig >
+class QUICKQANAVA_EXPORT Edge : public gtpo::GenEdge< qan::GraphConfig >
 {
     /*! \name Edge Object Management *///--------------------------------------
     //@{

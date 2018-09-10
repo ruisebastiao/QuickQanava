@@ -39,6 +39,7 @@
 #include <QQuickItem>
 // QuickQanava headers
 #include "./qanGrid.h"
+#include "quickqanavaglobal.h"
 
 namespace qan { // ::qan
 
@@ -89,7 +90,7 @@ namespace qan { // ::qan
  * and
  * http://stackoverflow.com/questions/16657397/scale-qgraphicsitem-about-an-arbitrary-point
  */
-class Navigable : public QQuickItem
+class QUICKQANAVA_EXPORT Navigable : public QQuickItem
 {
     /*! \name Navigable Object Management *///---------------------------------
     //@{
