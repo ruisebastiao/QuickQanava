@@ -15,6 +15,7 @@ PLUGIN_PATH = QuickQanava
 include($$getGlobalFile(plugin.pri))
 
 
+
 include(src/quickqanava.pri)
 DISTFILES = src/qmldir
 
@@ -30,6 +31,6 @@ qmldir.files = src/qmldir
 unix {
     installPath = $$[QT_INSTALL_QML]/$$replace(uri, \\., /)
     qmldir.path = $$installPath
-    target.path = $$installPath
+    target.path += /usr/lib
     INSTALLS += target qmldir
 }
