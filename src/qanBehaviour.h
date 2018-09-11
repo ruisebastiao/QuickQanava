@@ -60,7 +60,7 @@ namespace qan { // ::qan
  *
  *  \nosubgrouping
  */
-class NodeBehaviour : public QObject,
+class QUICKQANAVA_EXPORT NodeBehaviour : public QObject,
                       public gtpo::NodeBehaviour< qan::GraphConfig >
 {
     Q_OBJECT

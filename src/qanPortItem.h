@@ -55,7 +55,7 @@ namespace qan { // ::qan
  *
  * \nosubgrouping
  */
-class PortItem : public qan::NodeItem
+class QUICKQANAVA_EXPORT PortItem : public qan::NodeItem
 {
     /*! \name Dock Object Management *///--------------------------------------
     //@{

@@ -55,6 +55,8 @@
 #include "./qanDraggable.h"
 #include "./qanAbstractDraggableCtrl.h"
 
+#include "quickqanavaglobal.h"
+
 namespace qan { // ::qan
 
 class Node;
@@ -79,7 +81,7 @@ class Graph;
  *
  * \nosubgrouping
  */
-class NodeItem : public QQuickItem,
+class QUICKQANAVA_EXPORT NodeItem : public QQuickItem,
                  public qan::Selectable,
                  public qan::Draggable
 {

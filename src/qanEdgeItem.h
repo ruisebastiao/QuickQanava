@@ -57,7 +57,7 @@ class NodeItem;
  *
  * \nosubgrouping
  */
-class EdgeItem : public QQuickItem
+class QUICKQANAVA_EXPORT EdgeItem : public QQuickItem
 {
     /*! \name Edge Object Management *///--------------------------------------
     //@{

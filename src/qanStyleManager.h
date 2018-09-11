@@ -53,7 +53,7 @@ class Graph;
  *
  * \nosubgrouping
  */
-class StyleManager : public QObject
+class QUICKQANAVA_EXPORT StyleManager : public QObject
 {
     Q_OBJECT
     /*! \name Style Object Management *///-------------------------------------
