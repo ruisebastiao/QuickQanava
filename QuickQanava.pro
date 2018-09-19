@@ -3,7 +3,7 @@ TARGET = QuickQanava
 QT += qml quick
 CONFIG += plugin c++14
 
-TARGET = $$qtLibraryTarget($$TARGET)
+TARGET = automationmodule
 uri = QuickQanava
 
 DEFINES+=QUICKQANAVA_LIB
@@ -15,9 +15,12 @@ PLUGIN_PATH = QuickQanava
 include($$getGlobalFile(plugin.pri))
 
 
+OTHER_FILES += \
+    qml/*.qml \
+    qml/qmldir
 
 include(src/quickqanava.pri)
-DISTFILES = src/qmldir
+DISTFILES = +=qml/qmldir
 
 !equals(_PRO_FILE_PWD_, $$OUT_PWD) {
     copy_qmldir.target = $$OUT_PWD/qmldir
@@ -27,10 +30,4 @@ DISTFILES = src/qmldir
     PRE_TARGETDEPS += $$copy_qmldir.target
 }
 
-qmldir.files = src/qmldir
-unix {
-    installPath = $$[QT_INSTALL_QML]/$$replace(uri, \\., /)
-    qmldir.path = $$installPath
-    target.path += /usr/lib
-    INSTALLS += target qmldir
-}
+
