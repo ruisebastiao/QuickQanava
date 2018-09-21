@@ -7,7 +7,7 @@ include(../QuickContainers/src/quickcontainers.pri)
 
 DEPENDPATH      += $$PWD
 INCLUDEPATH     += $$PWD
-RESOURCES       += $$PWD/QuickQanava.qrc
+
 
 QML_IMPORT_PATH += \
                 $$PWD
@@ -66,7 +66,6 @@ SOURCES +=  $$PWD/qanGraphView.cpp          \
             $$PWD/quickqanavaplugin_plugin.cpp \
 
 
-RESOURCES       += $$PWD/QuickQanava.qrc
 
 OTHER_FILES +=  $$PWD/QuickQanava \
     $$PWD/qml/*.qml \

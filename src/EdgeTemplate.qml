@@ -44,6 +44,9 @@ Item {
     property var edgeItem: undefined
     property color color: edgeItem &&
                           edgeItem.style ? edgeItem.style.lineColor : Qt.rgba(0.,0.,0.,1.)
+
+
+
     Shape {
         id: edgeCap
         transformOrigin: Item.TopLeft
@@ -107,7 +110,7 @@ Item {
         id: edgeShape
         anchors.fill: parent
         visible: edgeItem.visible && !edgeItem.hidden
-        //asynchronous: true    // FIXME: Benchmark that
+//        asynchronous: true    // FIXME: Benchmark that
         smooth: true
         property var lineType : edgeItem.style.lineType
         property var curvedLine : undefined
@@ -125,6 +128,8 @@ Item {
                 edgeShape.data = curvedLine
             }
         }
+
+
     }
     // Debug control points display code. FIXME: remove that for final release
     /*Rectangle {
