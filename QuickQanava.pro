@@ -7,13 +7,6 @@ uri = QuickQanava
 
 DEFINES+=QUICKQANAVA_LIB
 
-PLUGIN_NAME = QuickQanava
-PLUGIN_PATH = QuickQanava
-
-# PLUGIN_NAME and PLUGIN_PATH must be set up prior to including this config file
-include($$getGlobalFile(plugin.pri))
-
-
 RESOURCES       += src/QuickQanava.qrc
 
 OTHER_FILES += \
@@ -21,7 +14,9 @@ OTHER_FILES += \
     qml/qmldir
 
 include(src/quickqanava.pri)
-DISTFILES = +=qml/qmldir
+
+
+DISTFILES = qml/qmldir
 
 !equals(_PRO_FILE_PWD_, $$OUT_PWD) {
     copy_qmldir.target = $$OUT_PWD/qmldir
@@ -31,7 +26,7 @@ DISTFILES = +=qml/qmldir
     PRE_TARGETDEPS += $$copy_qmldir.target
 }
 
-
+include(../../plugin.pri)
 
 #qmldir.files = qmldir
 #unix {
@@ -39,4 +34,8 @@ DISTFILES = +=qml/qmldir
 #    qmldir.path = $$installPath
 #    target.path = $$installPath
 #    INSTALLS += target qmldir
+
+
 #}
+
+
