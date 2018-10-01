@@ -19,5 +19,5 @@ HorizontalDock	2.0	qrc:///QuickQanava/HorizontalDock.qml
 VerticalDock	2.0	qrc:///QuickQanava/VerticalDock.qml
 Port			2.0	qrc:///QuickQanava/Port.qml
 
-plugin QuickQanava
+plugin QuickQanava ../
 typeinfo plugins.qmltypes
