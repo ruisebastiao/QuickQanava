@@ -75,9 +75,9 @@ auto    Connector::getGraph() const noexcept -> qan::Graph* { return _graph.data
 /* Node Static Factories *///--------------------------------------------------
 QQmlComponent*  Connector::delegate(QQmlEngine& engine) noexcept
 {
-    static std::unique_ptr<QQmlComponent>   delegate;
+    static UniqueQQmlComponentPtr   delegate;
     if ( !delegate )
-        delegate = std::make_unique<QQmlComponent>(&engine, "qrc:/QuickQanava/VisualConnector.qml");
+        delegate = UniqueQQmlComponentPtr(new QQmlComponent(&engine, "qrc:/QuickQanava/VisualConnector.qml"));
     return delegate.get();
 }
 

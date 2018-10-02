@@ -85,10 +85,14 @@ void    Graph::classBegin()
 
 void    Graph::componentComplete()
 {
+
     const auto engine = qmlEngine(this);
     if ( engine ) {
         // Visual connector initialization
-        auto connectorComponent = std::make_unique<QQmlComponent>(engine, QStringLiteral("qrc:/QuickQanava/VisualConnector.qml"));
+//        auto connectorComponent = std::make_unique<QQmlComponent>(engine, QStringLiteral("qrc:/QuickQanava/VisualConnector.qml"));
+         UniqueQQmlComponentPtr connectorComponent=UniqueQQmlComponentPtr(new QQmlComponent(engine, QStringLiteral("qrc:/QuickQanava/VisualConnector.qml")));
+
+
         if ( connectorComponent ) {
             qan::Style* style = qan::Connector::style();
             if ( style != nullptr ) {
@@ -280,7 +284,7 @@ void    Graph::setNodeDelegate(QQmlComponent* nodeDelegate) noexcept
     }
 }
 
-void    Graph::setNodeDelegate(std::unique_ptr<QQmlComponent> nodeDelegate) noexcept
+void    Graph::setNodeDelegate(UniqueQQmlComponentPtr nodeDelegate) noexcept
 {
     setNodeDelegate(nodeDelegate.release());
 }
@@ -288,10 +292,10 @@ void    Graph::setNodeDelegate(std::unique_ptr<QQmlComponent> nodeDelegate) noex
 void    Graph::setEdgeDelegate(QQmlComponent* edgeDelegate) noexcept
 {
     QQmlEngine::setObjectOwnership( edgeDelegate, QQmlEngine::CppOwnership );
-    setEdgeDelegate(std::unique_ptr<QQmlComponent>(edgeDelegate));
+    setEdgeDelegate(UniqueQQmlComponentPtr(edgeDelegate));
 }
 
-void    Graph::setEdgeDelegate(std::unique_ptr<QQmlComponent> edgeDelegate) noexcept
+void    Graph::setEdgeDelegate(UniqueQQmlComponentPtr edgeDelegate) noexcept
 {
     if ( edgeDelegate &&
          edgeDelegate != _edgeDelegate ) {
@@ -311,7 +315,7 @@ void    Graph::setGroupDelegate(QQmlComponent* groupDelegate) noexcept
     }
 }
 
-void    Graph::setGroupDelegate(std::unique_ptr<QQmlComponent> groupDelegate) noexcept
+void    Graph::setGroupDelegate(UniqueQQmlComponentPtr groupDelegate) noexcept
 {
     setGroupDelegate(groupDelegate.release());
 }
@@ -399,10 +403,10 @@ void Graph::setSelectionDelegate(QQmlComponent* selectionDelegate) noexcept
 {
     // Note: Cpp ownership is voluntarily not set to avoid destruction of
     // objects owned from QML
-    setSelectionDelegate(std::unique_ptr<QQmlComponent>(selectionDelegate));
+    setSelectionDelegate(UniqueQQmlComponentPtr(selectionDelegate));
 }
 
-void Graph::setSelectionDelegate(std::unique_ptr<QQmlComponent> selectionDelegate) noexcept
+void Graph::setSelectionDelegate(UniqueQQmlComponentPtr selectionDelegate) noexcept
 {
     bool delegateChanged{false};
     if ( selectionDelegate ) {
@@ -453,20 +457,20 @@ QPointer<QQuickItem> Graph::createSelectionItem( QQuickItem* parent ) noexcept
     return QPointer<QQuickItem>{nullptr};
 }
 
-std::unique_ptr<QQmlComponent>  Graph::createComponent(const QString& url) noexcept
+UniqueQQmlComponentPtr  Graph::createComponent(const QString& url) noexcept
 {
     // PRECONDITIONS
     // url could not be empty
     if ( url.isEmpty() ) {
         qWarning() << "qan::Graph::createComponent(): Error: Empty url.";
-        return std::unique_ptr<QQmlComponent>();
+        return UniqueQQmlComponentPtr();
     }
 
     QQmlEngine* engine = qmlEngine( this );
-    std::unique_ptr<QQmlComponent> component;
+    UniqueQQmlComponentPtr component;
     if ( engine != nullptr ) {
         try {
-            component = std::make_unique<QQmlComponent>(engine, url);
+            component = UniqueQQmlComponentPtr(new QQmlComponent(engine, url));
             if ( !component->isReady() ||
                  component->isError() ||
                  component->isNull()  ) {
@@ -1175,7 +1179,7 @@ void    Graph::qmlSetPortDelegate(QQmlComponent* portDelegate) noexcept
         emit portDelegateChanged();
     }
 }
-void    Graph::setPortDelegate(std::unique_ptr<QQmlComponent> portDelegate) noexcept { qmlSetPortDelegate(portDelegate.release()); }
+void    Graph::setPortDelegate(UniqueQQmlComponentPtr portDelegate) noexcept { qmlSetPortDelegate(portDelegate.release()); }
 
 void    Graph::setHorizontalDockDelegate(QQmlComponent* horizontalDockDelegate) noexcept
 {
@@ -1187,7 +1191,7 @@ void    Graph::setHorizontalDockDelegate(QQmlComponent* horizontalDockDelegate) 
         }
     }
 }
-void    Graph::setHorizontalDockDelegate(std::unique_ptr<QQmlComponent> horizontalDockDelegate) noexcept { setHorizontalDockDelegate(horizontalDockDelegate.release()); }
+void    Graph::setHorizontalDockDelegate(UniqueQQmlComponentPtr horizontalDockDelegate) noexcept { setHorizontalDockDelegate(horizontalDockDelegate.release()); }
 
 void    Graph::setVerticalDockDelegate(QQmlComponent* verticalDockDelegate) noexcept
 {
@@ -1199,7 +1203,7 @@ void    Graph::setVerticalDockDelegate(QQmlComponent* verticalDockDelegate) noex
         }
     }
 }
-void    Graph::setVerticalDockDelegate(std::unique_ptr<QQmlComponent> verticalDockDelegate) noexcept { setVerticalDockDelegate(verticalDockDelegate.release()); }
+void    Graph::setVerticalDockDelegate(UniqueQQmlComponentPtr verticalDockDelegate) noexcept { setVerticalDockDelegate(verticalDockDelegate.release()); }
 
 QPointer<QQuickItem> Graph::createDockFromDelegate(qan::NodeItem::Dock dock, qan::Node& node) noexcept
 {

@@ -232,11 +232,11 @@ public:
     inline QQmlComponent*   getNodeDelegate() noexcept { return _nodeDelegate.get(); }
 protected:
     void                    setNodeDelegate(QQmlComponent* nodeDelegate) noexcept;
-    void                    setNodeDelegate(std::unique_ptr<QQmlComponent> nodeDelegate) noexcept;
+    void                    setNodeDelegate(UniqueQQmlComponentPtr nodeDelegate) noexcept;
 signals:
     void                    nodeDelegateChanged();
 private:
-    std::unique_ptr<QQmlComponent> _nodeDelegate;
+    UniqueQQmlComponentPtr _nodeDelegate;
 
 public:
     //! Default delegate for qan::Edge and Qan.Edge edges.
@@ -244,11 +244,11 @@ public:
     inline QQmlComponent*   getEdgeDelegate() noexcept { return _edgeDelegate.get(); }
 protected:
     void                    setEdgeDelegate(QQmlComponent* edgeDelegate) noexcept;
-    void                    setEdgeDelegate(std::unique_ptr<QQmlComponent> edgeDelegate) noexcept;
+    void                    setEdgeDelegate(UniqueQQmlComponentPtr edgeDelegate) noexcept;
 signals:
     void                    edgeDelegateChanged();
 private:
-    std::unique_ptr<QQmlComponent> _edgeDelegate;
+    UniqueQQmlComponentPtr _edgeDelegate;
 
 public:
     //! Default delegate for qan::Group and Qan.Group groups.
@@ -256,11 +256,11 @@ public:
     inline QQmlComponent*   getGroupDelegate() noexcept { return _groupDelegate.get(); }
 protected:
     void                    setGroupDelegate(QQmlComponent* groupDelegate) noexcept;
-    void                    setGroupDelegate(std::unique_ptr<QQmlComponent> groupDelegate) noexcept;
+    void                    setGroupDelegate(UniqueQQmlComponentPtr groupDelegate) noexcept;
 signals:
     void                    groupDelegateChanged();
 private:
-    std::unique_ptr<QQmlComponent> _groupDelegate;
+    UniqueQQmlComponentPtr _groupDelegate;
 
 protected:
     //! Create a _styleable_ graph primitive using the given delegate \c component with either a source \c node or \c edge.
@@ -286,7 +286,7 @@ protected:
     //! \copydoc selectionDelegate
     void                    setSelectionDelegate(QQmlComponent* selectionDelegate) noexcept;
     //! \copydoc selectionDelegate
-    void                    setSelectionDelegate(std::unique_ptr<QQmlComponent> selectionDelegate) noexcept;
+    void                    setSelectionDelegate(UniqueQQmlComponentPtr selectionDelegate) noexcept;
 signals:
     //! \copydoc selectionDelegate
     void                    selectionDelegateChanged();
@@ -307,10 +307,10 @@ protected:
     template<typename T>
     using unique_qptr = std::unique_ptr<T, QObjectDeleteLater>;
 
-    std::unique_ptr<QQmlComponent>  _selectionDelegate{nullptr};
+    UniqueQQmlComponentPtr  _selectionDelegate{nullptr};
 private:
     //! Secure factory for QML components, errors are reported on stderr.
-    std::unique_ptr<QQmlComponent>  createComponent(const QString& url) noexcept;
+    UniqueQQmlComponentPtr  createComponent(const QString& url) noexcept;
     //! Secure utility to create a QQuickItem from a given QML component \c component (might issue warning if component is nullptr or not successfully loaded).
     QPointer<QQuickItem>            createItemFromComponent(QQmlComponent* component) noexcept;
     //@}
@@ -748,13 +748,13 @@ protected:
     //! \copydoc portDelegate
     void                    qmlSetPortDelegate(QQmlComponent* portDelegate) noexcept;
     //! \copydoc portDelegate
-    void                    setPortDelegate(std::unique_ptr<QQmlComponent> portDelegate) noexcept;
+    void                    setPortDelegate(UniqueQQmlComponentPtr portDelegate) noexcept;
 signals:
     //! \copydoc portDelegate
     void                    portDelegateChanged();
 private:
     //! \copydoc portDelegate
-    std::unique_ptr<QQmlComponent> _portDelegate;
+    UniqueQQmlComponentPtr _portDelegate;
 
 signals:
     /*! \brief Emitted whenever a port node registered in this graph is clicked.
@@ -773,13 +773,13 @@ protected:
     //! \copydoc horizontalDockDelegate
     void                    setHorizontalDockDelegate(QQmlComponent* horizontalDockDelegate) noexcept;
     //! \copydoc horizontalDockDelegate
-    void                    setHorizontalDockDelegate(std::unique_ptr<QQmlComponent> horizontalDockDelegate) noexcept;
+    void                    setHorizontalDockDelegate(UniqueQQmlComponentPtr horizontalDockDelegate) noexcept;
 signals:
     //! \copydoc horizontalDockDelegate
     void                    horizontalDockDelegateChanged();
 private:
     //! \copydoc horizontalDockDelegate
-    std::unique_ptr<QQmlComponent> _horizontalDockDelegate;
+    UniqueQQmlComponentPtr _horizontalDockDelegate;
 
 public:
     //! Default delegate for vertical (either NodeItem::Dock::Left or NodeItem::Dock::Right) docks.
@@ -790,7 +790,7 @@ protected:
     //! \copydoc horizontalDockDelegate
     void                    setVerticalDockDelegate(QQmlComponent* verticalDockDelegate) noexcept;
     //! \copydoc horizontalDockDelegate
-    void                    setVerticalDockDelegate(std::unique_ptr<QQmlComponent> verticalDockDelegate) noexcept;
+    void                    setVerticalDockDelegate(UniqueQQmlComponentPtr verticalDockDelegate) noexcept;
 signals:
     //! \copydoc horizontalDockDelegate
     void                    verticalDockDelegateChanged();
@@ -798,7 +798,7 @@ signals:
 
 private:
     //! \copydoc verticalDockDelegate
-    std::unique_ptr<QQmlComponent> _verticalDockDelegate;
+    UniqueQQmlComponentPtr _verticalDockDelegate;
 
     qan::Node* m_selectedNode=0;
 

@@ -62,6 +62,21 @@ struct default_delete<QQmlComponent> {
 };
 }
 
+class qmlcomponent_deleter {  // qmlcomponent deleter class
+
+public:
+  qmlcomponent_deleter ()  {}
+  template <class T>
+  void operator()(T* ptr) {
+      if ( ptr &&
+           QQmlEngine::objectOwnership(ptr) == QQmlEngine::CppOwnership )
+          ptr->deleteLater();
+  }
+};
+
+typedef std::unique_ptr<QQmlComponent, qmlcomponent_deleter> UniqueQQmlComponentPtr;
+
+
 //! Main QuickQanava namespace
 namespace qan { // ::qan
 

@@ -87,9 +87,9 @@ void    Node::setItem(qan::NodeItem* nodeItem) noexcept
 /* Node Static Factories *///--------------------------------------------------
 QQmlComponent*  Node::delegate(QQmlEngine& engine) noexcept
 {
-    static std::unique_ptr<QQmlComponent>   delegate;
+    static UniqueQQmlComponentPtr   delegate;
     if ( !delegate )
-        delegate = std::make_unique<QQmlComponent>(&engine, "qrc:/QuickQanava/Node.qml");
+        delegate = UniqueQQmlComponentPtr(new QQmlComponent(&engine, "qrc:/QuickQanava/Node.qml"));
     return delegate.get();
 }
 

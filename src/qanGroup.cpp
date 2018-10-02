@@ -93,9 +93,9 @@ void    Group::itemEndProposeNodeDrop()
 /* Group Static Factories *///-------------------------------------------------
 QQmlComponent*  Group::delegate(QQmlEngine& engine) noexcept
 {
-    static std::unique_ptr<QQmlComponent>   delegate;
+    static UniqueQQmlComponentPtr   delegate;
     if ( !delegate )
-        delegate = std::make_unique<QQmlComponent>(&engine, "qrc:/QuickQanava/Group.qml");
+        delegate = UniqueQQmlComponentPtr(new QQmlComponent(&engine, "qrc:/QuickQanava/Group.qml"));
     return delegate.get();
 }
 

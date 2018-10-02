@@ -79,9 +79,9 @@ void    Edge::setItem(qan::EdgeItem* edgeItem) noexcept
 /* Edge Static Factories *///--------------------------------------------------
 QQmlComponent*  Edge::delegate(QQmlEngine& engine) noexcept
 {
-    static std::unique_ptr<QQmlComponent>   delegate;
+    static UniqueQQmlComponentPtr   delegate;
     if ( !delegate )
-        delegate = std::make_unique<QQmlComponent>(&engine, "qrc:/QuickQanava/Edge.qml");
+        delegate = UniqueQQmlComponentPtr(new QQmlComponent(&engine, "qrc:/QuickQanava/Edge.qml"));
     return delegate.get();
 }
 
