@@ -1,11 +1,11 @@
-TEMPLATE = lib
+
 TARGET = QuickQanava
-QT += qml quick opengl
-CONFIG += plugin c++14
-
+QT += opengl
 uri = QuickQanava
-
 DEFINES+=QUICKQANAVA_LIB
+
+
+include(../../module.pri)
 
 RESOURCES       += src/QuickQanava.qrc
 
@@ -25,17 +25,5 @@ DISTFILES = qml/qmldir
     QMAKE_EXTRA_TARGETS += copy_qmldir
     PRE_TARGETDEPS += $$copy_qmldir.target
 }
-
-include(../../plugin.pri)
-
-#qmldir.files = qmldir
-#unix {
-#    installPath = $$[QT_INSTALL_QML]/$$replace(uri, \\., /)
-#    qmldir.path = $$installPath
-#    target.path = $$installPath
-#    INSTALLS += target qmldir
-
-
-#}
 
 

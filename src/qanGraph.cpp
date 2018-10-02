@@ -89,7 +89,7 @@ void    Graph::componentComplete()
     const auto engine = qmlEngine(this);
     if ( engine ) {
         // Visual connector initialization
-//        auto connectorComponent = std::make_unique<QQmlComponent>(engine, QStringLiteral("qrc:/QuickQanava/VisualConnector.qml"));
+//        auto connectorComponent = UniqueQQmlComponentPtr(new QQmlComponent(engine, QStringLiteral("qrc:/QuickQanava/VisualConnector.qml"));
          UniqueQQmlComponentPtr connectorComponent=UniqueQQmlComponentPtr(new QQmlComponent(engine, QStringLiteral("qrc:/QuickQanava/VisualConnector.qml")));
 
 
