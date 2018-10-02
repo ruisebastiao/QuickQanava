@@ -17,9 +17,9 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-import QtQuick 2.7
+import QtQuick 2.8
 
-import "qrc:/QuickQanava" as Qan
+
 import QuickQanava 2.0 as Qan
 
 /*! \brief Concrete component for qan::NavigablePreview interface.

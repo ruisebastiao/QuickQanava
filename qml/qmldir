@@ -18,6 +18,6 @@ StyleEditor 	2.0 qrc:///QuickQanava/StyleEditor.qml
 HorizontalDock	2.0	qrc:///QuickQanava/HorizontalDock.qml
 VerticalDock	2.0	qrc:///QuickQanava/VerticalDock.qml
 Port			2.0	qrc:///QuickQanava/Port.qml
-
+NavigablePreview	2.0	qrc:///QuickQanava/NavigablePreview.qml
 plugin QuickQanava ../
 typeinfo plugins.qmltypes
