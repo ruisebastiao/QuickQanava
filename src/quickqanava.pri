@@ -40,7 +40,7 @@ HEADERS +=  $$PWD/QuickQanava.h             \
             $$PWD/qanContainerAdapter.h     \
             $$PWD/qanBottomRightResizer.h   \
             $$PWD/quickqanavaplugin_plugin.h\
-    $$PWD/quickqanavaglobal.h
+            $$PWD/quickqanavaglobal.h
 
 
 SOURCES +=  $$PWD/qanGraphView.cpp          \

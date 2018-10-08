@@ -1,7 +1,7 @@
 
 HEADERS +=  \
-        $$PWD/qanNode.h \
-    $$PWD/qanGraphview.h \
+    $$PWD/qanNode.h \
+    $$PWD/qanGraphView.h \
     $$PWD/qanGraph.h \
     $$PWD/qanEdge.h \
     $$PWD/qanUtils.h
