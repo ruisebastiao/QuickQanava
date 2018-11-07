@@ -366,11 +366,14 @@ public:
      * \note may be nullptr (undefined in QML).
      */
     Q_PROPERTY( qan::Grid* grid READ getGrid WRITE setGrid NOTIFY gridChanged FINAL )
+    Q_PROPERTY(bool lockGridUpdate READ lockGridUpdate WRITE setLockGridUpdate NOTIFY lockGridUpdateChanged)
+
     //! \copydoc grid
     inline qan::Grid*   getGrid() noexcept { return _grid.data(); }
     void                setGrid(qan::Grid* grid) noexcept;
     //! Force update of grid.
     void                updateGrid() noexcept;
+
 
     bool isDraggable() const
     {
@@ -387,6 +390,11 @@ public:
     bool containerSizeLocked() const
     {
         return m_containerSizeLocked;
+    }
+
+    bool lockGridUpdate() const
+    {
+        return m_lockGridUpdate;
     }
 
 public slots:
@@ -418,6 +426,18 @@ public slots:
         emit containerSizeLockedChanged(m_containerSizeLocked);
     }
 
+    void setLockGridUpdate(bool lockGridUpdate)
+    {
+        if (m_lockGridUpdate == lockGridUpdate)
+            return;
+
+        m_lockGridUpdate = lockGridUpdate;
+        if(m_lockGridUpdate==false){
+            this->updateGrid();
+        }
+        emit lockGridUpdateChanged(m_lockGridUpdate);
+    }
+
 private:
 
     //! \copydoc grid
@@ -428,6 +448,8 @@ private:
     QPointF m_viewPosition{};
 
     bool m_containerSizeLocked=false;
+
+    bool m_lockGridUpdate=false;
 
 signals:
     //! \copydoc grid
@@ -440,6 +462,8 @@ signals:
     void viewPositionChanged(QPointF viewPosition);
 
     void containerSizeLockedChanged(bool containerSizeLocked);
+
+    void lockGridUpdateChanged(bool lockGridUpdate);
 
 protected:
     void touchEvent(QTouchEvent *event);

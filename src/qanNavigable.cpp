@@ -115,7 +115,7 @@ void    Navigable::fitInView( )
         qreal fitZoom = fitWidthZoom;
         if ( content.height() * fitWidthZoom > viewHeight )
             fitZoom = fitHeightZoom;
-//        qDebug( ) << "\tfitZoom=" << fitZoom;
+        //        qDebug( ) << "\tfitZoom=" << fitZoom;
 
 
         // Don't use setZoom() because we force a TopLeft scale
@@ -388,7 +388,7 @@ void    Navigable::geometryChanged( const QRectF& newGeometry, const QRectF& old
 
 void Navigable::panOffset(QPointF delta){
 
-   QPointF p{ QPointF{ _containerItem->x(), _containerItem->y() } - delta };
+    QPointF p{ QPointF{ _containerItem->x(), _containerItem->y() } - delta };
 
     qreal x=p.x();
     qreal y=p.y();
@@ -495,12 +495,14 @@ void    Navigable::setGrid( qan::Grid* grid ) noexcept
 
 void    Navigable::updateGrid() noexcept
 {
-    if ( _grid &&
-         _containerItem != nullptr ) {
-        // Generate a view rect to update grid
-        QRectF viewRect{ _containerItem->mapFromItem(this, {0.,0.}),
-                    _containerItem->mapFromItem(this, {width(), height()}) };
-        _grid->updateGrid(viewRect, *_containerItem, *this );
+    if(lockGridUpdate()==false){
+        if ( _grid &&
+             _containerItem != nullptr ) {
+            // Generate a view rect to update grid
+            QRectF viewRect{ _containerItem->mapFromItem(this, {0.,0.}),
+                        _containerItem->mapFromItem(this, {width(), height()}) };
+            _grid->updateGrid(viewRect, *_containerItem, *this );
+        }
     }
 }
 
