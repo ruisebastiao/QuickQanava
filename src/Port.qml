@@ -38,8 +38,8 @@ import "qrc:/QuickQanava" as Qan
 
 Qan.PortItem {
     id: portItem
-    width: 16
-    height: 16
+    width: 24
+    height: 24
     states: [
         State {
             name: "left"
@@ -108,6 +108,36 @@ Qan.PortItem {
             }
         }
     ]
+
+    onXChanged:{
+//        console.log("x:"+x)
+        x=0
+    }
+
+    onYPositionChanged:{
+        y=yPosition;
+    }
+
+    onYChanged:{
+
+        var nodeHeight=portItem.parent.parent.height;
+
+        var stepy=Math.round(y/portItem.height)*portItem.height
+
+        if(stepy>0 && stepy>=((nodeHeight-height)/2)){
+            stepy=((nodeHeight-height)/2)
+        }
+        else if(stepy< 0 && stepy<=-((nodeHeight-height)/2)){
+            stepy=-((nodeHeight-height)/2)
+        }
+
+        y=stepy
+
+    }
+
+    Component.onCompleted: {
+
+    }
 
     Rectangle {
         id: contentItem

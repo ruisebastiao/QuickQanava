@@ -60,6 +60,9 @@ class QUICKQANAVA_EXPORT PortItem : public qan::NodeItem
     /*! \name Dock Object Management *///--------------------------------------
     //@{
     Q_OBJECT
+
+    Q_PROPERTY(double yPosition READ yPosition WRITE setYPosition NOTIFY yPositionChanged)
+
 public:
     //! PortItem constructor.
     explicit PortItem( QQuickItem* parent = nullptr );
@@ -143,6 +146,8 @@ public:
 private:
     QString         _id{QStringLiteral("")};
 
+    double m_yPosition=0;
+
 public:
     /* Note: qcm::ContainerModel automatically monitor contained
      * object for destruction, just delete an item with deleteLater() to
@@ -159,6 +164,21 @@ public:
     EdgeItems&          getOutEdgeItems() noexcept { return _outEdgeItems; }
     const EdgeItems&    getOutEdgeItems() const noexcept { return _outEdgeItems; }
 
+    double yPosition() const
+    {
+        return m_yPosition;
+    }
+
+public slots:
+    void setYPosition(double yPosition)
+    {
+        if (qFuzzyCompare(m_yPosition, yPosition))
+            return;
+
+        m_yPosition = yPosition;
+        emit yPositionChanged(m_yPosition);
+    }
+
 signals:
 
     void outEdgeAdded(qan::EdgeItem& outEdgeItem);
@@ -168,6 +188,8 @@ signals:
     void inNonVisualEdgeAdded(qan::Edge& inEdge);
 
     void outNonVisualEdgeAdded(qan::Edge& inEdge);
+
+    void yPositionChanged(double yPosition);
 
 protected:
     EdgeItems           _inEdgeItems;
