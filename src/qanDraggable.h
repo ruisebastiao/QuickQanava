@@ -42,7 +42,7 @@
 #include <QObject>      // Q_DECLARE_INTERFACE
 #include <QPointer>
 #include <QQuickItem>
-
+#include "quickqanavaglobal.h"
 // QuickQanava headers
 /* Nil */
 
@@ -54,7 +54,7 @@ class Graph;
  *
  * \nosubgrouping
  */
-class Draggable
+class QUICKQANAVA_EXPORT Draggable
 {
     /*! \name Draggable Object Management *///---------------------------------
     //@{
