@@ -105,7 +105,7 @@ private:
     std::unique_ptr<qan::AbstractDraggableCtrl> _draggableCtrl;
 
 public:
-    Q_PROPERTY( qan::Node* node READ getNode CONSTANT FINAL )
+    Q_PROPERTY( qan::Node* node READ getNode  NOTIFY nodeChanged CONSTANT FINAL )
     auto        getNode() noexcept -> qan::Node*;
     auto        getNode() const noexcept -> const qan::Node*;
     auto        setNode(qan::Node* node) noexcept -> void;
@@ -446,6 +446,8 @@ signals:
     //! \copydoc bottomDock
     void                    bottomDockChanged();
 
+    void nodeChanged(qan::Node* node);
+
 public:
     //! Get \c dock dock item (warning: no bound checking, might return nullptr).
     QQuickItem*             getDock(Dock dock) noexcept { return _dockItems[static_cast<std::size_t>(dock)].data(); }
@@ -460,6 +462,7 @@ private:
     std::array<QPointer<QQuickItem>, dockCount> _dockItems;
     //@}
     //-------------------------------------------------------------------------
+    qan::Node* m_node;
 };
 
 } // ::qan

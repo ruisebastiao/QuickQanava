@@ -133,6 +133,8 @@ signals:
 
 public:
     Q_PROPERTY( QString label READ getLabel WRITE setLabel NOTIFY labelChanged FINAL )
+    Q_PROPERTY( QString id READ getId NOTIFY idChanged FINAL )
+
     void            setLabel( const QString& label ) noexcept;
     inline QString  getLabel() const noexcept { return _label; }
 private:
@@ -141,12 +143,17 @@ signals:
     void            labelChanged();
 
 public:
-    void            setId(const QString& id) noexcept { _id = id; }
-    const QString&  getId() const noexcept { return _id; }
+    void            setId(const QString& id) noexcept {
+        _id = id;
+        emit idChanged(id);
+    }
+
+    QString         getId() noexcept { return _id; }
 private:
     QString         _id{QStringLiteral("")};
 
     double m_yPosition=0;
+
 
 public:
     /* Note: qcm::ContainerModel automatically monitor contained
@@ -190,6 +197,8 @@ signals:
     void outNonVisualEdgeAdded(qan::Edge& inEdge);
 
     void yPositionChanged(double yPosition);
+
+    void idChanged(QString id);
 
 protected:
     EdgeItems           _inEdgeItems;
