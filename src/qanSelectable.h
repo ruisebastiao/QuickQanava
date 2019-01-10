@@ -42,6 +42,7 @@
 #include <QObject>      // Q_DECLARE_INTERFACE
 #include <QPointer>
 #include <QQuickItem>
+#include "quickqanavaglobal.h"
 
 // QuickQanava headers
 /* Nil */
@@ -54,7 +55,7 @@ class Graph;
  *
  * \nosubgrouping
  */
-class Selectable
+class QUICKQANAVA_EXPORT Selectable
 {
     /*! \name Selectable Object Management *///--------------------------------
     //@{
