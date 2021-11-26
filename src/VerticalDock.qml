@@ -36,7 +36,7 @@ ColumnLayout {
     states: [
         State {
             name: "left"
-            when: hostNodeItem && dockType === Qan.NodeItem.Left
+            when: hostNodeItem ? dockType === Qan.NodeItem.Left:false
 
             AnchorChanges {
                 target: root
@@ -53,7 +53,7 @@ ColumnLayout {
         },
         State {
             name: "right"
-            when: hostNodeItem && dockType === Qan.NodeItem.Right
+            when: hostNodeItem ? dockType === Qan.NodeItem.Right:false
 
             AnchorChanges {
                 target: root

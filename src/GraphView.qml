@@ -120,21 +120,21 @@ Qan.AbstractGraphView {
 
     // Node management ////////////////////////////////////////////////////////
     function    sendToTop(node) {
-        if (node) {
-            if (node.item) {
-                maxZ = Math.max( node.item.z + 1, maxZ + 1 )
-                node.item.z = maxZ + 1;
-            }
-            if ( node.group )
-                sendGroupToTop(node.group)
-        }
+//        if (node) {
+//            if (node.item) {
+//                maxZ = Math.max( node.item.z + 1, maxZ + 1 )
+//                node.item.z = maxZ + 1;
+//            }
+//            if ( node.group )
+//                sendGroupToTop(node.group)
+//        }
     }
 
     // Dynamically handle currently selected node item onRatioChanged() signal
     Connections { // and update nodeResizer ratio policy (selected node is nodeResizer target)
         id: nodeItemRatioWatcher
         target: null
-        onRatioChanged: {
+        function onRatioChanged() {
             if ( nodeResizer &&
                  target &&
                  nodeResizer.target === target ) {
