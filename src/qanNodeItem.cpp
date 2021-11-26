@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2008-2018, Benoit AUTHEMAN All rights reserved.
+ Copyright (c) 2008-2021, Benoit AUTHEMAN All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
@@ -48,22 +48,21 @@
 
 namespace qan { // ::qan
 
-using NodeDraggableCtrl = qan::DraggableCtrl<qan::Node, qan::NodeItem>;
-
 /* Node Object Management *///-------------------------------------------------
 NodeItem::NodeItem(QQuickItem* parent) :
     QQuickItem{parent}
 {
-    setStyle( qan::Node::style() );
+    setStyle(qan::Node::style());
     setObjectName( QStringLiteral("qan::NodeItem") );
 
     qan::Draggable::configure(this);
-    _draggableCtrl = std::unique_ptr<AbstractDraggableCtrl>{std::make_unique<NodeDraggableCtrl>()};
-    const auto nodeDraggableCtrl = static_cast<NodeDraggableCtrl*>(_draggableCtrl.get());
+    _draggableCtrl = std::unique_ptr<AbstractDraggableCtrl>{std::make_unique<qan::DraggableCtrl>()};
+    const auto nodeDraggableCtrl = static_cast<qan::DraggableCtrl*>(_draggableCtrl.get());
     nodeDraggableCtrl->setTargetItem(this);
 
     setFlag( QQuickItem::ItemAcceptsDrops, true );
     setAcceptedMouseButtons( Qt::LeftButton | Qt::RightButton );
+    setAcceptTouchEvents(true);
 
     connect( this, &qan::NodeItem::widthChanged,
              this, &qan::NodeItem::onWidthChanged );
@@ -78,25 +77,47 @@ NodeItem::~NodeItem()
         if ( dockItem )
             dockItem->deleteLater();
     }
+
+    // Delete all ports
+    for (auto& port : _ports) {
+        if ( port && port->parent() == nullptr)
+            port->deleteLater();
+    }
 }
 
 qan::AbstractDraggableCtrl& NodeItem::draggableCtrl() { Q_ASSERT(_draggableCtrl!=nullptr); return *_draggableCtrl; }
+//-----------------------------------------------------------------------------
 
+/* Topology Management *///----------------------------------------------------
 auto    NodeItem::getNode() noexcept -> qan::Node* { return _node.data(); }
 auto    NodeItem::getNode() const noexcept -> const qan::Node* { return _node.data(); }
 auto    NodeItem::setNode(qan::Node* node) noexcept -> void {
     _node = node;
+<<<<<<< HEAD
     emit nodeChanged(node);
     const auto nodeDraggableCtrl = static_cast<NodeDraggableCtrl*>(_draggableCtrl.get());
+=======
+    const auto nodeDraggableCtrl = static_cast<DraggableCtrl*>(_draggableCtrl.get());
+>>>>>>> ab88d77ec62175b9fd499a154ffaf92f7bf23989
     nodeDraggableCtrl->setTarget(node);
 }
 
 auto    NodeItem::setGraph(qan::Graph* graph) noexcept -> void {
     _graph = graph;
-    qan::Selectable::configure( this, graph );
+    qan::Selectable::configure(this, graph);
 }
 auto    NodeItem::getGraph() const noexcept -> const qan::Graph* { return _graph.data(); }
 auto    NodeItem::getGraph() noexcept -> qan::Graph* { return _graph.data(); }
+
+bool    NodeItem::setMinimumSize(QSizeF minimumSize) noexcept
+{
+    if (minimumSize != _minimumSize) {
+        _minimumSize = minimumSize;
+        emit minimumSizeChanged();
+        return true;
+    }
+    return false;
+}
 
 auto    NodeItem::setRect(const QRectF& r) noexcept -> void
 {
@@ -108,6 +129,64 @@ auto    NodeItem::setRect(const QRectF& r) noexcept -> void
     setY(r.top());
     setWidth(r.width());
     setHeight(r.height());
+}
+//-----------------------------------------------------------------------------
+
+/* Collapse Management *///----------------------------------------------------
+void    NodeItem::setCollapsed(bool collapsed) noexcept
+{
+    if (collapsed != _collapsed) {
+        _collapsed = collapsed;
+        if (qan::Selectable::getSelectionItem())              // Hide selection item when group is collapsed
+            qan::Selectable::getSelectionItem()->setVisible(!_collapsed && getSelected());
+        emit collapsedChanged();
+    }
+}
+
+void    NodeItem::collapseAncestors(bool collapsed)
+{
+    // Do not call base
+    // PRECONDITIONS:
+        // getNode() can't return nullptr
+        // getGraph() can't return nullptr
+    const auto graph = getGraph();
+    const auto node = getNode();
+    if (graph == nullptr)
+        return;
+    if (node == nullptr)
+        return;
+
+    // ALGORITHM:
+        // 1. Collect all ancestors of group
+        // 2. Filter from ancestors every nodes that are part of this group
+        // 3. Collect adjacent edges of selected nodes
+        // 4. Hide selected edges and nodes
+
+    // 1.
+    const auto allAncestors = graph->collectAncestorsDfs(*node, true);
+
+    // 2.
+    std::vector<qan::Node*> ancestors;
+    for (const auto ancestor : allAncestors) {
+        if (ancestor != node &&
+            ancestor != node->getGroup() &&                 // Do not collapse parent group for nodes
+            ancestor->getGroup() != node->getGroup() )
+            ancestors.push_back(const_cast<qan::Node*>(ancestor));
+    }
+
+    // 3.
+    std::unordered_set<qan::Edge*> ancestorsEdges;
+    for (const auto ancestor: ancestors) {
+        const auto edges = ancestor->collectAdjacentEdges0();
+        for (const auto edge : edges)
+            ancestorsEdges.insert(edge);
+    }
+
+    // 4.
+    for (const auto ancestorEdge: ancestorsEdges)
+        ancestorEdge->getItem()->setVisible(collapsed);
+    for (const auto ancestor: ancestors)
+        ancestor->getItem()->setVisible(collapsed);
 }
 //-----------------------------------------------------------------------------
 
@@ -144,9 +223,9 @@ void    NodeItem::setRatio(qreal ratio) noexcept
     emit ratioChanged();
 }
 
-void    NodeItem::setConnectable( Connectable connectable ) noexcept
+void    NodeItem::setConnectable(Connectable connectable) noexcept
 {
-    if ( _connectable != connectable ) {
+    if (_connectable != connectable) {
         _connectable = connectable;
         emit connectableChanged();
     }
@@ -156,93 +235,122 @@ void    NodeItem::setConnectable( Connectable connectable ) noexcept
 /* Draggable Management *///---------------------------------------------------
 void    NodeItem::dragEnterEvent( QDragEnterEvent* event )
 {
-    const auto nodeDraggableCtrl = static_cast<NodeDraggableCtrl*>(_draggableCtrl.get());
-    if ( !nodeDraggableCtrl->handleDragEnterEvent(event) )
+    if (getNode() != nullptr &&
+        getNode()->getLocked()) {
+        event->setAccepted(false);
+        QQuickItem::dragEnterEvent(event);
+        return;
+    }
+    const auto draggableCtrl = static_cast<DraggableCtrl*>(_draggableCtrl.get());
+    if ( !draggableCtrl->handleDragEnterEvent(event) )
         event->ignore();
-    QQuickItem::dragEnterEvent( event );
+    QQuickItem::dragEnterEvent(event);
 }
 
 void	NodeItem::dragMoveEvent( QDragMoveEvent* event )
 {
-    const auto nodeDraggableCtrl = static_cast<NodeDraggableCtrl*>(_draggableCtrl.get());
-    nodeDraggableCtrl->handleDragMoveEvent(event);
-    QQuickItem::dragMoveEvent( event );
+    if (getNode() != nullptr &&
+        getNode()->getLocked()) {
+        event->setAccepted(false);
+        QQuickItem::dragMoveEvent(event);
+        return;
+    }
+    const auto draggableCtrl = static_cast<DraggableCtrl*>(_draggableCtrl.get());
+    draggableCtrl->handleDragMoveEvent(event);
+    QQuickItem::dragMoveEvent(event);
 }
 
 void	NodeItem::dragLeaveEvent( QDragLeaveEvent* event )
 {
-    const auto nodeDraggableCtrl = static_cast<NodeDraggableCtrl*>(_draggableCtrl.get());
-    nodeDraggableCtrl->handleDragLeaveEvent(event);
-    QQuickItem::dragLeaveEvent( event );
+    if (getNode() != nullptr &&
+        getNode()->getLocked()) {
+        event->setAccepted(false);
+        QQuickItem::dragLeaveEvent(event);
+        return;
+    }
+    const auto draggableCtrl = static_cast<DraggableCtrl*>(_draggableCtrl.get());
+    draggableCtrl->handleDragLeaveEvent(event);
+    QQuickItem::dragLeaveEvent(event);
 }
 
 void    NodeItem::dropEvent( QDropEvent* event )
 {
-    const auto nodeDraggableCtrl = static_cast<NodeDraggableCtrl*>(_draggableCtrl.get());
-    nodeDraggableCtrl->handleDropEvent(event);
+    const auto draggableCtrl = static_cast<DraggableCtrl*>(_draggableCtrl.get());
+    draggableCtrl->handleDropEvent(event);
     QQuickItem::dropEvent( event );
 }
 
 void    NodeItem::mouseDoubleClickEvent(QMouseEvent* event )
 {
-    const auto nodeDraggableCtrl = static_cast<NodeDraggableCtrl*>(_draggableCtrl.get());
-    nodeDraggableCtrl->handleMouseDoubleClickEvent(event);
-    if ( event->button() == Qt::LeftButton )
-        emit nodeDoubleClicked( this, event->localPos() );
+    const auto draggableCtrl = static_cast<DraggableCtrl*>(_draggableCtrl.get());
+    draggableCtrl->handleMouseDoubleClickEvent(event);
+    if (event->button() == Qt::LeftButton)
+        emit nodeDoubleClicked( this, event->localPos());
 }
 
 void    NodeItem::mouseMoveEvent(QMouseEvent* event )
 {
-    const auto nodeDraggableCtrl = static_cast<NodeDraggableCtrl*>(_draggableCtrl.get());
-    if ( nodeDraggableCtrl->handleMouseMoveEvent(event) )
+    if (getNode() != nullptr &&
+        getNode()->getLocked()) {
+        QQuickItem::mouseMoveEvent(event);
+        return;
+    }
+    const auto draggableCtrl = static_cast<DraggableCtrl*>(_draggableCtrl.get());
+    if (draggableCtrl->handleMouseMoveEvent(event))
         event->accept();
     else
-        QQuickItem::mouseMoveEvent(event);
+        event->ignore();
+        // Note 20200531: Do not call base QQuickItem implementation, really.
 }
 
-void    NodeItem::mousePressEvent( QMouseEvent* event )
+void    NodeItem::mousePressEvent(QMouseEvent* event)
 {
-    bool accepted = isInsideBoundingShape( event->localPos() );
-    if ( accepted ) {
+    bool accepted = !getCollapsed() &&            // Fast exit
+                    isInsideBoundingShape(event->localPos());
+    if (accepted) {
         forceActiveFocus();
 
         // Selection management
-        if ( event->button() == Qt::LeftButton &&
+        if ((event->button() == Qt::LeftButton ||
+             event->button() == Qt::RightButton) &&
              getNode() &&
-             isSelectable() ) {
-            if ( _graph )
-                _graph->selectNode( *getNode(), event->modifiers() );
+             isSelectable() &&
+             !getNode()->getLocked()) {
+            if (_graph)
+                _graph->selectNode(*getNode(), event->modifiers());
         }
 
         // QML notifications
-        if ( event->button() == Qt::LeftButton )
-            emit nodeClicked( this, event->localPos() );
-        else if ( event->button() == Qt::RightButton )
-            emit nodeRightClicked( this, event->localPos() );
+        if (event->button() == Qt::LeftButton)
+            emit nodeClicked(this, event->localPos());
+        else if (event->button() == Qt::RightButton)
+            emit nodeRightClicked(this, event->localPos());
         event->accept();
     } else
         event->ignore();
     // Note 20160712: Do not call base QQuickItem implementation.
 }
 
-void    NodeItem::mouseReleaseEvent( QMouseEvent* event )
+void    NodeItem::mouseReleaseEvent(QMouseEvent* event)
 {
-    const auto nodeDraggableCtrl = static_cast<NodeDraggableCtrl*>(_draggableCtrl.get());
-    nodeDraggableCtrl->handleMouseReleaseEvent(event);
+    const auto draggableCtrl = static_cast<DraggableCtrl*>(_draggableCtrl.get());
+    draggableCtrl->handleMouseReleaseEvent(event);
 }
 //-----------------------------------------------------------------------------
 
+
 /* Style Management *///-------------------------------------------------------
-void    NodeItem::setStyle( qan::NodeStyle* style ) noexcept
+void    NodeItem::setStyle(qan::NodeStyle* style) noexcept
 {
-    if ( style != _style ) {
-        if ( _style )  // Every style that is non default is disconnect from this node
-            QObject::disconnect( _style, Q_NULLPTR, this, Q_NULLPTR );
+    if (style != _style) {
+        if (_style)  // Every style that is non default is disconnect from this node
+            QObject::disconnect(_style, nullptr,
+                                this,   nullptr);
         _style = style;
-        if ( _style )
-            connect( _style,    &QObject::destroyed,    // Monitor eventual style destruction
-                     this,      &NodeItem::styleDestroyed );
-        emit styleChanged( );
+        if (_style)
+            connect(_style,     &QObject::destroyed,    // Monitor eventual style destruction
+                    this,       &NodeItem::styleDestroyed);
+        emit styleChanged();
     }
 }
 
@@ -255,8 +363,8 @@ void    NodeItem::setItemStyle( qan::Style* style ) noexcept
 
 void    NodeItem::styleDestroyed( QObject* style )
 {
-    if ( style != nullptr )
-        setStyle( nullptr );   // Set default style when current style is destroyed
+    if (style != nullptr)
+        setStyle(nullptr);   // Set default style when current style is destroyed
 }
 //-----------------------------------------------------------------------------
 
@@ -281,35 +389,35 @@ QPolygonF   NodeItem::getBoundingShape() noexcept
     return _boundingShape;
 }
 
-QPolygonF    NodeItem::generateDefaultBoundingShape( ) const
+QPolygonF    NodeItem::generateDefaultBoundingShape() const
 {
     // Generate a rounded rectangular intersection shape for this node rect new geometry
     QPainterPath path;
-    qreal shapeRadius( 5. );
-    path.addRoundedRect( QRectF{ 0., 0., width(), height() }, shapeRadius, shapeRadius );
-    return path.toFillPolygon( QTransform{} );
+    qreal shapeRadius = 5.;
+    path.addRoundedRect(QRectF{ 0., 0., width(), height() }, shapeRadius, shapeRadius);
+    return path.toFillPolygon(QTransform{});
 }
 
-void    NodeItem::setDefaultBoundingShape( )
+void    NodeItem::setDefaultBoundingShape()
 {
-    setBoundingShape( generateDefaultBoundingShape() );
+    setBoundingShape(generateDefaultBoundingShape());
 }
 
-void    NodeItem::setBoundingShape( QVariantList boundingShape )
+void    NodeItem::setBoundingShape(QVariantList boundingShape)
 {
-    QPolygonF shape; shape.resize( boundingShape.size() );
+    QPolygonF shape; shape.resize(boundingShape.size());
     int p = 0;
-    for ( const auto& vp : boundingShape )
-        shape[p++] = vp.toPointF( );
-    _boundingShape = ( !shape.isEmpty( ) ? shape : generateDefaultBoundingShape() );
+    for (const auto& vp : boundingShape)
+        shape[p++] = vp.toPointF();
+    _boundingShape = (!shape.isEmpty( ) ? shape : generateDefaultBoundingShape());
     emit boundingShapeChanged();
 }
 
-bool    NodeItem::isInsideBoundingShape( QPointF p )
+bool    NodeItem::isInsideBoundingShape(QPointF p)
 {
     if ( _boundingShape.isEmpty() )
-        setBoundingShape( generateDefaultBoundingShape() );
-    return _boundingShape.containsPoint( p, Qt::OddEvenFill );
+        setBoundingShape(generateDefaultBoundingShape());
+    return _boundingShape.containsPoint(p, Qt::OddEvenFill);
 }
 //-----------------------------------------------------------------------------
 
@@ -382,7 +490,7 @@ void    NodeItem::setDock(Dock dock, QQuickItem* dockItem) noexcept
         case Dock::Top: setTopDock(dockItem); break;
         case Dock::Right: setRightDock(dockItem); break;
         case Dock::Bottom: setBottomDock(dockItem); break;
-    };
+    }
 }
 
 void    NodeItem::configureDock(QQuickItem& dockItem, const Dock dock) noexcept

@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2008-2017, Benoit AUTHEMAN All rights reserved.
+ Copyright (c) 2008-2021, Benoit AUTHEMAN All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
@@ -48,8 +48,9 @@ QQmlComponent*  CustomRectNode::delegate(QQmlEngine& engine) noexcept
     return customRectNode_delegate.get();
 }
 
-qan::NodeStyle* CustomRectNode::style() noexcept
+qan::NodeStyle* CustomRectNode::style(QObject* parent) noexcept
 {
+    Q_UNUSED(parent)
     static std::unique_ptr<qan::NodeStyle>  customRectNode_style;
     if ( !customRectNode_style ) {
         customRectNode_style = std::make_unique<qan::NodeStyle>();
@@ -67,8 +68,9 @@ QQmlComponent*  CustomRoundNode::delegate(QQmlEngine& engine) noexcept
     return customRoundNode_delegate.get();
 }
 
-qan::NodeStyle* CustomRoundNode::style() noexcept
+qan::NodeStyle* CustomRoundNode::style(QObject* parent) noexcept
 {
+    Q_UNUSED(parent)
     static std::unique_ptr<qan::NodeStyle>  customRoundNode_style;
     if ( !customRoundNode_style ) {
         customRoundNode_style = std::make_unique<qan::NodeStyle>();
@@ -78,16 +80,18 @@ qan::NodeStyle* CustomRoundNode::style() noexcept
 }
 
 
-QQmlComponent*  CustomEdge::delegate(QQmlEngine& engine) noexcept
+QQmlComponent*  CustomEdge::delegate(QQmlEngine& engine, QObject* parent) noexcept
 {
     static std::unique_ptr<QQmlComponent>   customEdge_delegate;
-    if ( !customEdge_delegate )
-        customEdge_delegate = std::make_unique<QQmlComponent>(&engine, "qrc:/CustomEdge.qml");
+    if (!customEdge_delegate)
+        customEdge_delegate = std::make_unique<QQmlComponent>(&engine, "qrc:/CustomEdge.qml",
+                                                              QQmlComponent::PreferSynchronous, parent);
     return customEdge_delegate.get();
 }
 
-qan::EdgeStyle* CustomEdge::style() noexcept
+qan::EdgeStyle* CustomEdge::style(QObject* parent) noexcept
 {
+    Q_UNUSED(parent)
     static std::unique_ptr<qan::EdgeStyle>  customEdge_style;
     if ( !customEdge_style )
         customEdge_style = std::make_unique<qan::EdgeStyle>();
@@ -108,6 +112,6 @@ qan::Edge*  CustomGraph::insertCustomEdge(qan::Node* source, qan::Node* destinat
 {
     const auto engine = qmlEngine(this);
     if ( source != nullptr && destination != nullptr && engine != nullptr )
-        return qan::Graph::insertEdge<CustomEdge>(*source, destination, nullptr, CustomEdge::delegate(*engine) );
+        return qan::Graph::insertEdge<CustomEdge>(*source, destination, CustomEdge::delegate(*engine) );
     return nullptr;
 }

@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2008-2018, Benoit AUTHEMAN All rights reserved.
+ Copyright (c) 2008-2021, Benoit AUTHEMAN All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
@@ -52,7 +52,8 @@ BottomRightResizer::BottomRightResizer( QQuickItem* parent ) :
 
 BottomRightResizer::~BottomRightResizer( )
 {
-    if ( _handler )
+    if (_handler &&
+        QQmlEngine::objectOwnership(_handler.data()) == QQmlEngine::CppOwnership)
         _handler->deleteLater();
 }
 //-----------------------------------------------------------------------------
@@ -60,23 +61,23 @@ BottomRightResizer::~BottomRightResizer( )
 /* Resizer Management *///-----------------------------------------------------
 void    BottomRightResizer::setHandler( QQuickItem* handler ) noexcept
 {
-    if ( handler != _handler.data() ) {
-        if ( _handler ) {
-            if ( QQmlEngine::objectOwnership(_handler.data()) == QQmlEngine::CppOwnership )
+    if (handler != _handler.data()) {
+        if (_handler) {     // Delete existing handler
+            if (QQmlEngine::objectOwnership(_handler.data()) == QQmlEngine::CppOwnership)
                 _handler.data()->deleteLater();
         }
         _handler = handler;
-        if ( _handler )
+        if (_handler)
             _handler->installEventFilter(this);
         emit handlerChanged();
     }
-    if ( _target )      // Force target reconfiguration for new handler
+    if (_target)      // Force target reconfiguration for new handler
         configureTarget(*_target);
 }
 
-QQuickItem* BottomRightResizer::getHandler( ) const noexcept
+QQuickItem* BottomRightResizer::getHandler() const noexcept
 {
-    return ( _handler ? _handler.data() : nullptr );
+    return (_handler ? _handler.data() : nullptr);
 }
 
 void    BottomRightResizer::setTarget( QQuickItem* target )
@@ -146,10 +147,10 @@ void    BottomRightResizer::configureHandler(QQuickItem& handler) noexcept
 void    BottomRightResizer::configureTarget(QQuickItem& target) noexcept
 {
     if ( !_minimumTargetSize.isEmpty() ) { // Check that target size is not bellow resizer target minimum size
-        if ( target.width() < _minimumTargetSize.width() )
-            target.setWidth( _minimumTargetSize.width() );
-        if ( target.height() < _minimumTargetSize.height() )
-            target.setHeight( _minimumTargetSize.height() );
+        if (target.width() < _minimumTargetSize.width())
+            target.setWidth(_minimumTargetSize.width());
+        if ( target.height() < _minimumTargetSize.height())
+            target.setHeight(_minimumTargetSize.height());
     }
 
     if ( &target != parentItem() ) { // Resizer is not in target sibling (ie is not a child of target)
@@ -277,18 +278,20 @@ void    BottomRightResizer::forceHandlerWidth( qreal handlerWidth )
     emit handlerWidthChanged();
 }
 
-void    BottomRightResizer::setMinimumTargetSize( QSizeF minimumTargetSize )
+void    BottomRightResizer::setMinimumTargetSize(QSizeF minimumTargetSize)
 {
-    if ( minimumTargetSize.isEmpty() )
+    if (minimumTargetSize.isEmpty())
         return;
-    if ( _target ) { // Eventually, resize target if its actual size is below minimum
-        if ( _target->width() < minimumTargetSize.width() )
-            _target->setWidth( minimumTargetSize.width() );
-        if ( _target->height() < minimumTargetSize.height() )
-            _target->setHeight( minimumTargetSize.height() );
+    if (minimumTargetSize != _minimumTargetSize) {
+        _minimumTargetSize = minimumTargetSize;
+        if (_target) { // Eventually, resize target if its actual size is below minimum
+            if (_target->width() < minimumTargetSize.width())
+                _target->setWidth(minimumTargetSize.width());
+            if (_target->height() < minimumTargetSize.height())
+                _target->setHeight(minimumTargetSize.height());
+        }
+        emit minimumTargetSizeChanged();
     }
-    _minimumTargetSize = minimumTargetSize;
-    emit minimumTargetSizeChanged();
 }
 
 void    BottomRightResizer::setAutoHideHandler( bool autoHideHandler )
@@ -365,22 +368,22 @@ bool   BottomRightResizer::eventFilter(QObject *item, QEvent *event)
                     startLocalPos = _dragInitialPos;
                     curLocalPos = me->windowPos();
                 }
-                const QPointF delta{ curLocalPos - startLocalPos };
-                if ( _target ) {
+                const QPointF delta{curLocalPos - startLocalPos};
+                if (_target) {
                     // Do not resize below minimumSize
                     const qreal targetWidth = _targetInitialSize.width() + delta.x();
-                    if ( targetWidth > _minimumTargetSize.width() )        // Note: do not use (?:)
-                            _target->setWidth( targetWidth );
-                    if ( _preserveRatio ) {
+                    if (targetWidth > _minimumTargetSize.width())
+                            _target->setWidth(targetWidth);
+                    if (_preserveRatio) {
                         const qreal finalTargetWidth = targetWidth > _minimumTargetSize.width() ? targetWidth :
-                                                                                            _minimumTargetSize.width();
+                                                                                                  _minimumTargetSize.width();
                         const qreal targetHeight = finalTargetWidth * getRatio();
-                        if ( targetHeight >= _minimumTargetSize.height() )  // Note: do not use (?:)
-                            _target->setHeight( targetHeight );
+                        if (targetHeight > _minimumTargetSize.height())
+                            _target->setHeight(targetHeight);
                     } else {
                         const qreal targetHeight = _targetInitialSize.height() + delta.y();
-                        if ( targetHeight >= _minimumTargetSize.height() )  // Note: do not use (?:)
-                            _target->setHeight( targetHeight );
+                        if (targetHeight > _minimumTargetSize.height())
+                            _target->setHeight(targetHeight);
                     }
                     me->setAccepted(true);
                     accepted = true;

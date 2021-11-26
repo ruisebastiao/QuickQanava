@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2008-2018, Benoit AUTHEMAN All rights reserved.
+ Copyright (c) 2008-2021, Benoit AUTHEMAN All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
@@ -42,19 +42,17 @@
 namespace qan { // ::qan
 
 /* Style Object Management *///------------------------------------------------
-Style::Style( QString name, QObject* parent ) :
-    QObject{ parent },
-    _name{ name }
-{
+Style::Style(QObject* parent) :
+    QObject{parent} { /* Nil */ }
 
-}
+Style::Style(QString name, QObject* parent) :
+    QObject{parent},
+    _name{name} { /* Nil */ }
 //-----------------------------------------------------------------------------
 
 /* Node Style Object Management *///-------------------------------------------
-NodeStyle::NodeStyle( QString name, QObject* parent ) :
-    qan::Style( name, parent )
-{
-}
+NodeStyle::NodeStyle(QString name, QObject* parent) : qan::Style(name, parent) { /* Nil */ }
+NodeStyle::NodeStyle(QObject* parent) : qan::Style(parent) { /* Nil */ }
 //-----------------------------------------------------------------------------
 
 /* Node Style Properties *///--------------------------------------------------
@@ -178,14 +176,21 @@ void    NodeStyle::setFontBold( bool fontBold ) noexcept
         emit fontBoldChanged();
     }
 }
+
+void    NodeStyle::setLabelColor( QColor labelColor ) noexcept
+{
+    if ( _labelColor != labelColor ) {
+        _labelColor = labelColor;
+        emit labelColorChanged();
+    }
+}
 //-----------------------------------------------------------------------------
 
 
 /* Edge Style Object Management *///-------------------------------------------
-EdgeStyle::EdgeStyle( QString name, QObject* parent ) :
-    qan::Style( name, parent )
-{
-}
+EdgeStyle::EdgeStyle(QString name, QObject* parent) : qan::Style(name, parent) { /* Nil */ }
+
+EdgeStyle::EdgeStyle(QObject* parent) : qan::Style(parent) { /* Nil */ }
 
 void    EdgeStyle::setLineType( LineType lineType ) noexcept
 {
@@ -219,6 +224,24 @@ void    EdgeStyle::setArrowSize( qreal arrowSize ) noexcept
     if ( !qFuzzyCompare(1. + arrowSize, 1. + _arrowSize ) ) {
         _arrowSize = arrowSize;
         emit arrowSizeChanged();
+        emit styleModified();
+    }
+}
+
+auto    EdgeStyle::setSrcShape(ArrowShape srcShape) noexcept -> void
+{
+    if ( _srcShape != srcShape ) {
+        _srcShape = srcShape;
+        emit srcShapeChanged();
+        emit styleModified();
+    }
+}
+
+auto    EdgeStyle::setDstShape(ArrowShape dstShape) noexcept -> void
+{
+    if ( _dstShape != dstShape ) {
+        _dstShape = dstShape;
+        emit dstShapeChanged();
         emit styleModified();
     }
 }

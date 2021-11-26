@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2008-2018, Benoit AUTHEMAN All rights reserved.
+ Copyright (c) 2008-2021, Benoit AUTHEMAN All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
@@ -47,23 +47,33 @@ namespace qan { // ::qan
 
 /* Node Object Management *///-------------------------------------------------
 Node::Node(QObject* parent) :
-    gtpo::GenNode< qan::GraphConfig >{}
+    gtpo::node<qan::Config>{parent}
 {
     Q_UNUSED(parent)
+
+    // Bind in/out nodes model lengthChanged() signal to in/ou degree modified signal.
+    const auto inNodesModel = get_in_nodes().model();
+    if (inNodesModel != nullptr)
+        connect( inNodesModel, &qcm::ContainerModel::lengthChanged,
+                 this,         &qan::Node::inDegreeChanged);
+    const auto outNodesModel = get_out_nodes().model();
+    if (outNodesModel != nullptr)
+        connect( outNodesModel, &qcm::ContainerModel::lengthChanged,
+                 this,          &qan::Node::outDegreeChanged);
 }
 
 Node::~Node()
 {
-    if ( _item )
+    if (_item)
         _item->deleteLater();
 }
 
 qan::Graph* Node::getGraph() noexcept {
-    return qobject_cast< qan::Graph* >( gtpo::GenNode< qan::GraphConfig >::getGraph() );
+    return qobject_cast< qan::Graph* >( gtpo::node< qan::Config >::get_graph() );
 }
 
 const qan::Graph* Node::getGraph() const noexcept {
-    return qobject_cast< const qan::Graph* >( gtpo::GenNode< qan::GraphConfig >::getGraph() );
+    return qobject_cast< const qan::Graph* >( gtpo::node< qan::Config >::get_graph() );
 }
 
 bool    Node::operator==( const qan::Node& right ) const
@@ -76,55 +86,119 @@ const qan::NodeItem*    Node::getItem() const noexcept { return _item.data(); }
 
 void    Node::setItem(qan::NodeItem* nodeItem) noexcept
 {
-    if ( nodeItem != nullptr ) {
+    if (nodeItem != nullptr) {
         _item = nodeItem;
-        if ( nodeItem->getNode() != this )
+        if (nodeItem->getNode() != this)
             nodeItem->setNode(this);
     }
 }
 //-----------------------------------------------------------------------------
 
 /* Node Static Factories *///--------------------------------------------------
-QQmlComponent*  Node::delegate(QQmlEngine& engine) noexcept
+QQmlComponent*  Node::delegate(QQmlEngine& engine, QObject* parent) noexcept
 {
+<<<<<<< HEAD
     static UniqueQQmlComponentPtr   delegate;
     if ( !delegate )
         delegate = UniqueQQmlComponentPtr(new QQmlComponent(&engine, "qrc:/QuickQanava/Node.qml"));
+=======
+    Q_UNUSED(parent)
+    static std::unique_ptr<QQmlComponent>   delegate;
+    if (!delegate)
+        delegate = std::make_unique<QQmlComponent>(&engine, "qrc:/QuickQanava/Node.qml",
+                                                   QQmlComponent::PreferSynchronous);
+>>>>>>> ab88d77ec62175b9fd499a154ffaf92f7bf23989
     return delegate.get();
 }
 
-qan::NodeStyle* Node::style() noexcept
+qan::NodeStyle* Node::style(QObject* parent) noexcept
 {
-    static std::unique_ptr<qan::NodeStyle>  qan_Node_style;
-    if ( !qan_Node_style )
-        qan_Node_style = std::make_unique<qan::NodeStyle>();
-    return qan_Node_style.get();
+    static QScopedPointer<qan::NodeStyle>  qan_Node_style;
+    if (!qan_Node_style)
+        qan_Node_style.reset(new qan::NodeStyle(parent));
+    return qan_Node_style.data();
+}
+//-----------------------------------------------------------------------------
+
+/* Topology Interface *///-----------------------------------------------------
+QAbstractItemModel* Node::qmlGetInNodes( ) const
+{
+    return const_cast<QAbstractItemModel*>( static_cast< const QAbstractItemModel* >( get_in_nodes().model() ) );
+}
+
+int     Node::getInDegree() const
+{
+    const auto model = get_in_nodes().model();
+    return model != nullptr ? model->getLength() : -1;
+}
+
+QAbstractItemModel* Node::qmlGetOutNodes() const
+{
+    return const_cast< QAbstractItemModel* >( qobject_cast< const QAbstractItemModel* >( get_out_nodes().model() ) );
+}
+
+int     Node::getOutDegree() const
+{
+    const auto model = get_out_nodes().model();
+    return model != nullptr ? model->getLength() : -1;
+}
+
+QAbstractItemModel* Node::qmlGetOutEdges() const
+{
+    return const_cast< QAbstractItemModel* >( qobject_cast< const QAbstractItemModel* >( gtpo::node<qan::Config>::get_out_edges().model() ) );
+}
+
+std::unordered_set<qan::Edge*>  Node::collectAdjacentEdges0() const
+{
+    std::unordered_set<qan::Edge*> edges;
+    for (const auto& in_edge_ptr: qAsConst(get_in_edges())) {
+        const auto in_edge = in_edge_ptr.lock();
+        if (in_edge)
+            edges.insert(in_edge.get());
+    }
+    for (const auto& out_edge_ptr: qAsConst(get_out_edges())) {
+        const auto out_edge = out_edge_ptr.lock();
+        if (out_edge)
+            edges.insert(out_edge.get());
+    }
+    return edges;
 }
 //-----------------------------------------------------------------------------
 
 /* Behaviours Management *///--------------------------------------------------
-void    Node::installBehaviour( std::unique_ptr<qan::NodeBehaviour> behaviour )
+void    Node::installBehaviour(std::unique_ptr<qan::NodeBehaviour> behaviour)
 {
     // PRECONDITIONS:
         // behaviour can't be nullptr
     if ( !behaviour )
         return;
     behaviour->setHost(this);
-    addBehaviour( std::move( behaviour ) );
+    add_dynamic_node_behaviour(std::move(behaviour));
 }
 //-----------------------------------------------------------------------------
 
 /* Appearance Management *///--------------------------------------------------
-void    Node::setLabel( const QString& label ) noexcept
+bool    Node::setLabel(const QString& label) noexcept
 {
-    if ( label != _label ) {
+    if (label != _label) {
         _label = label;
         emit labelChanged();
+        if (auto graph = getGraph())
+            emit graph->nodeLabelChanged(this);
+        return true;
     }
+    return false;
 }
-//-----------------------------------------------------------------------------
 
-/* Dock Management *///--------------------------------------------------------
+bool    Node::setLocked(bool locked) noexcept
+{
+    if (locked != _locked) {
+        _locked = locked;
+        emit lockedChanged();
+        return true;
+    }
+    return false;
+}
 //-----------------------------------------------------------------------------
 
 } // ::qan

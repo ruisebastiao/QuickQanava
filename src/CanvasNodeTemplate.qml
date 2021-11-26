@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2008-2018, Benoit AUTHEMAN All rights reserved.
+ Copyright (c) 2008-2021, Benoit AUTHEMAN All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
@@ -25,7 +25,7 @@
 */
 
 //-----------------------------------------------------------------------------
-// This file is a part of the QuickQanva software. Copyright 2014 Benoit AUTHEMAN.
+// This file is a part of the QuickQanava software library.
 //
 // \file	NodeCanvasTemplate.qml
 // \author	benoit@destrat.io
@@ -35,9 +35,9 @@
 import QtQuick              2.7
 import QtQuick.Controls     2.1
 import QtQuick.Layouts      1.3
-import QtGraphicalEffects   1.0
 
 import QuickQanava          2.0 as Qan
+import "qrc:/QuickQanava" as Qan
 
 
 /*! \brief Default component template for building a custom qan::Node Item with an arbitrary geometry drawn into a JS Canvas2D.
@@ -62,7 +62,7 @@ Item {
                 backgroundShadow.source = item
         }
     }
-    DropShadow {    // Effect source property set in nodeSymbol Loader onItemChanged()
+    Qan.DropShadow {    // Effect source property set in nodeSymbol Loader onItemChanged()
         id: backgroundShadow
         anchors.fill: parent
         horizontalOffset: nodeItem.style.effectRadius
@@ -99,7 +99,7 @@ Item {
     }
     Connections {
         target: nodeItem
-        onNodeDoubleClicked: labelEditor.visible = true
+        function onNodeDoubleClicked() { labelEditor.visible = true }
     }
     LabelEditor {
         id: labelEditor

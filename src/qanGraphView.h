@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2008-2018, Benoit AUTHEMAN All rights reserved.
+ Copyright (c) 2008-2021, Benoit AUTHEMAN All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
@@ -32,11 +32,10 @@
 // \date	2016 08 15
 //-----------------------------------------------------------------------------
 
-#ifndef qanGraphView_h
-#define qanGraphView_h
+#pragma once
 
 // GTpo headers
-#include <GTpo>
+#include <gtpo/GTpo>
 
 // QuickQanava headers
 #include "./qanGraph.h"
@@ -61,24 +60,27 @@ class QUICKQANAVA_EXPORT GraphView : public qan::Navigable
     //@{
 public:
     //! GraphView default constructor.
-    explicit GraphView( QQuickItem* parent = nullptr );
-    virtual ~GraphView( ) { }
-    GraphView( const GraphView& ) = delete;
+    explicit GraphView(QQuickItem* parent = nullptr);
+    virtual ~GraphView() override = default;
+    GraphView(const GraphView&) = delete;
 
 public:
     //! Graph that should be displayed in this graph view.
-    Q_PROPERTY( qan::Graph* graph READ getGraph WRITE setGraph NOTIFY graphChanged FINAL )
-    void                    setGraph( qan::Graph* graph );
-    inline qan::Graph*      getGraph( ) const noexcept { return _graph.data(); }
+    Q_PROPERTY(qan::Graph*  graph READ getGraph WRITE setGraph NOTIFY graphChanged FINAL)
+    void                    setGraph(qan::Graph* graph);
+    inline qan::Graph*      getGraph() const noexcept { return _graph.data(); }
 private:
-    QPointer<qan::Graph>    _graph{ nullptr };
+    QPointer<qan::Graph>    _graph = nullptr;
 signals:
-    void                    graphChanged( );
+    void                    graphChanged();
 
 protected:
     //! Called when the mouse is clicked in the container (base implementation empty).
     virtual void    navigableClicked(QPointF pos) override;
     virtual void    navigableRightClicked(QPointF pos) override;
+
+    //! Utilisty method to convert a given \c url to a local file path (if possible, otherwise return an empty string).
+    Q_INVOKABLE QString urlToLocalFile(QUrl url) const noexcept;
 
 signals:
     void            connectorChanged();
@@ -101,11 +103,24 @@ signals:
     void            groupDoubleClicked( qan::Group* group, QPointF pos );
     //@}
     //-------------------------------------------------------------------------
+
+
+    /*! \name Selection Rectangle Management *///------------------------------
+    //@{
+protected:
+    //! \copydoc qan::Navigable::selectionRectActivated()
+    virtual void    selectionRectActivated(const QRectF& rect) override;
+
+    //! \copydoc qan::Navigable::selectionRectEnd()
+    virtual void    selectionRectEnd() override;
+private:
+    QSet<QQuickItem*>   _selectedItems;
+    //@}
+    //-------------------------------------------------------------------------
 };
 
 } // ::qan
 
 QML_DECLARE_TYPE( qan::GraphView )
 
-#endif // qanGraphView_h
 

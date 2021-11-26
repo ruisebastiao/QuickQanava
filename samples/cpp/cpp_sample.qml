@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2008-2018, Benoit AUTHEMAN All rights reserved.
+ Copyright (c) 2008-2020, Benoit AUTHEMAN All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
@@ -36,7 +36,7 @@ import MyModule             1.0        // Our custom topology is defined in MyMo
 ApplicationWindow {
     id: window
     visible: true
-    width: 1280; height: 720    // MPEG - 2 HD 720p - 1280 x 720 16:9
+    width: 1280; height: 720
 
     title: "QuickQanava cpp API"
 
@@ -49,9 +49,7 @@ ApplicationWindow {
             objectName: "graph"
             anchors.fill: parent
             clip: true
-            //enableConnectorDropNode: true
-            Component.onCompleted: {
-            }
+            Component.onCompleted: { }
             onNodeRightClicked: { }
             onEdgeRightClicked: { }
         } // Qan.Graph: graph

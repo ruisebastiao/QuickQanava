@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2008-2017, Benoit AUTHEMAN All rights reserved.
+ Copyright (c) 2008-2021, Benoit AUTHEMAN All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
@@ -136,11 +136,6 @@ Qan.GraphView {
                 text: qsTr("Enabled Visual Connector")
                 checked: graph.connectorEnabled
                 onClicked: graph.connectorEnabled = checked
-            }
-            CheckBox {
-                text: qsTr("hEdge Enabled")
-                checked: graph.connectorHEdgeEnabled
-                onClicked: graph.connectorHEdgeEnabled = checked
             }
         }
     }

@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2008-2018, Benoit AUTHEMAN All rights reserved.
+ Copyright (c) 2008-2021, Benoit AUTHEMAN All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
@@ -25,12 +25,12 @@
 */
 
 //-----------------------------------------------------------------------------
-// This file is a part of the QuickQanava software library. Copyright 2015 Benoit AUTHEMAN.
+// This file is a part of the QuickQanava software library.
 //
 // \file	SelectionItem.qml
 // \author	benoit@destrat.io
 // \date	2015 06 16
-// Contributed by Márk BARTOS 20170930
+// Contributed by @Jackneill 20170930
 //-----------------------------------------------------------------------------
 
 import QtQuick  2.7

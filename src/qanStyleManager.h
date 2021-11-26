@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2008-2018, Benoit AUTHEMAN All rights reserved.
+ Copyright (c) 2008-2021, Benoit AUTHEMAN All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
@@ -40,7 +40,7 @@
 #include <QQuickImageProvider>
 
 // QuickContainers headers
-#include "../QuickContainers/src/qcmContainer.h"
+#include "../QuickContainers/include/qcmContainer.h"
 
 // QuickQanava headers
 #include "./qanStyle.h"

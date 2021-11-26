@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2008-2017, Benoit AUTHEMAN All rights reserved.
+ Copyright (c) 2008-2021, Benoit AUTHEMAN All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
@@ -51,8 +51,6 @@ Qan.NodeItem {
     Qan.RectNodeTemplate {
         anchors.fill: parent
         nodeItem : parent
-        ColumnLayout {
-            anchors.fill: parent
             Image {
                 anchors.fill: parent; anchors.margins: 2
                 source: node.source
@@ -61,6 +59,5 @@ Qan.NodeItem {
                     color: node.tintColor
                 }
             }
-        }
     }
 }

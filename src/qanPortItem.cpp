@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2008-2018, Benoit AUTHEMAN All rights reserved.
+ Copyright (c) 2008-2021, Benoit AUTHEMAN All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
@@ -48,12 +48,10 @@ PortItem::PortItem(QQuickItem* parent) :
     setResizable(false);
     setDraggable(false);
     setSelectable(false);
-    setObjectName( QStringLiteral("qan::PortItem") );
+    setObjectName(QStringLiteral("qan::PortItem"));
 
     setType(Type::InOut);
 }
-
-PortItem::~PortItem() { /* Nil */ }
 //-----------------------------------------------------------------------------
 
 /* Port Properties Management *///---------------------------------------------
@@ -99,14 +97,28 @@ void    PortItem::setLabel( const QString& label ) noexcept
 
 void    PortItem::addInEdgeItem(qan::EdgeItem& inEdgeItem) noexcept
 {
+    QObject::connect(&inEdgeItem,   &QObject::destroyed,
+                     this,          &qan::PortItem::onEdgeItemDestroyed);
     _inEdgeItems.append(&inEdgeItem);
     emit inEdgeAdded(inEdgeItem);
 }
 
 void    PortItem::addOutEdgeItem(qan::EdgeItem& outEdgeItem) noexcept
 {
+    QObject::connect(&outEdgeItem,  &QObject::destroyed,
+                     this,          &qan::PortItem::onEdgeItemDestroyed);
     _outEdgeItems.append(&outEdgeItem);
     emit outEdgeAdded(outEdgeItem);
+}
+
+void    PortItem::onEdgeItemDestroyed(QObject* obj)
+{
+    // Connection to destroyed signal in addInEdgeItem() and addOutEdgeItem()
+    const auto edgeItem = qobject_cast<qan::EdgeItem*>(obj);
+    if (edgeItem != nullptr) {
+        _inEdgeItems.removeAll(edgeItem);
+        _outEdgeItems.removeAll(edgeItem);
+    }
 }
 //-----------------------------------------------------------------------------
 

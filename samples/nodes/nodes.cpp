@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2008-2017, Benoit AUTHEMAN All rights reserved.
+ Copyright (c) 2008-2021, Benoit AUTHEMAN All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
@@ -40,17 +40,20 @@
 // QuickQanava headers
 #include <QuickQanava.h>
 
-using namespace qan;
+//using namespace qan;
 
 //-----------------------------------------------------------------------------
 int	main( int argc, char** argv )
 {
     QGuiApplication app(argc, argv);
     QQuickStyle::setStyle("Material");
-    QQmlApplicationEngine engine;
-    QuickQanava::initialize(&engine);
-    engine.load(QUrl("qrc:/nodes.qml"));
-    return app.exec();
+    QQmlApplicationEngine* engine = new QQmlApplicationEngine();
+    engine->addPluginPath(QStringLiteral("../../src")); // Necessary only for development when plugin is not installed to QTDIR/qml
+    QuickQanava::initialize(engine);
+    engine->load(QUrl("qrc:/nodes.qml"));
+    const auto status = app.exec();
+    delete engine;
+    return status;
 }
 //-----------------------------------------------------------------------------
 

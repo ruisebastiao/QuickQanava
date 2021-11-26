@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2008-2018, Benoit AUTHEMAN All rights reserved.
+ Copyright (c) 2008-2021, Benoit AUTHEMAN All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
@@ -45,51 +45,52 @@
 namespace qan { // ::qan
 
 /* Edge Object Management *///-------------------------------------------------
-Edge::Edge() :
-    gtpo::GenEdge< qan::GraphConfig >{}
+Edge::Edge(QObject* parent) :
+    gtpo::edge<qan::Config>{parent}
 {
 }
 
 Edge::~Edge()
 {
-    if ( _item )
+    if (_item)
         _item->deleteLater();
 }
 
 qan::Graph* Edge::getGraph() noexcept {
-    return qobject_cast< qan::Graph* >( gtpo::GenEdge< qan::GraphConfig >::getGraph() );
+    return qobject_cast< qan::Graph* >( gtpo::edge< qan::Config >::get_graph() );
 }
 
 const qan::Graph* Edge::getGraph() const noexcept {
-    return qobject_cast< const qan::Graph* >( gtpo::GenEdge< qan::GraphConfig >::getGraph() );
+    return qobject_cast< const qan::Graph* >( gtpo::edge< qan::Config >::get_graph() );
 }
 
 qan::EdgeItem*   Edge::getItem() noexcept { return _item.data(); }
 
 void    Edge::setItem(qan::EdgeItem* edgeItem) noexcept
 {
-    if ( edgeItem != nullptr ) {
+    if (edgeItem != nullptr) {
         _item = edgeItem;
-        if ( edgeItem->getEdge() != this )
+        if (edgeItem->getEdge() != this)
             edgeItem->setEdge(this);
     }
 }
 //-----------------------------------------------------------------------------
 
 /* Edge Static Factories *///--------------------------------------------------
-QQmlComponent*  Edge::delegate(QQmlEngine& engine) noexcept
+QQmlComponent*  Edge::delegate(QQmlEngine& engine, QObject* parent) noexcept
 {
-    static UniqueQQmlComponentPtr   delegate;
-    if ( !delegate )
-        delegate = UniqueQQmlComponentPtr(new QQmlComponent(&engine, "qrc:/QuickQanava/Edge.qml"));
+    static std::unique_ptr<QQmlComponent>   delegate;
+    if (!delegate)
+        delegate = std::make_unique<QQmlComponent>(&engine, "qrc:/QuickQanava/Edge.qml",
+                                                   QQmlComponent::PreferSynchronous, parent);
     return delegate.get();
 }
 
-qan::EdgeStyle* Edge::style() noexcept
+qan::EdgeStyle* Edge::style(QObject* parent) noexcept
 {
     static std::unique_ptr<qan::EdgeStyle>  qan_Edge_style;
-    if ( !qan_Edge_style )
-        qan_Edge_style = std::make_unique<qan::EdgeStyle>();
+    if (!qan_Edge_style)
+        qan_Edge_style = std::make_unique<qan::EdgeStyle>(parent);
     return qan_Edge_style.get();
 }
 //-----------------------------------------------------------------------------
@@ -97,37 +98,34 @@ qan::EdgeStyle* Edge::style() noexcept
 /*! \name Edge Topology Management *///------------------------------------
 qan::Node*  Edge::getSource() noexcept
 {
-    return qobject_cast<qan::Node*>(getSrc().lock().get());
+    return qobject_cast<qan::Node*>(get_src().lock().get());
 }
 
 qan::Node*  Edge::getDestination() noexcept
 {
-    return qobject_cast<qan::Node*>(getDst().lock().get());
+    return qobject_cast<qan::Node*>(get_dst().lock().get());
 }
-
-qan::Edge*  Edge::getHDestination() noexcept
-{
-    return qobject_cast<qan::Edge*>(getHDst().lock().get());
-}
-
-QAbstractItemModel* Edge::getInHNodesModel() const { return getInHNodes().model(); }
 //-----------------------------------------------------------------------------
 
 /* Edge Properties Management *///---------------------------------------------
-void    Edge::setLabel( const QString& label )
+bool    Edge::setLabel(const QString& label)
 {
-    if ( label != _label ) {
+    if (label != _label) {
         _label = label;
-        emit labelChanged( );
+        emit labelChanged();
+        return true;
     }
+    return false;
 }
 
-void     Edge::setWeight( qreal weight )
+bool    Edge::setWeight(qreal weight)
 {
-    if ( !qFuzzyCompare( 1.0 + weight, 1.0 + _weight ) ) {
+    if (!qFuzzyCompare(1.5 + weight, 1.5 + _weight)) {
         _weight = weight;
         emit weightChanged();
+        return true;
     }
+    return false;
 }
 //-----------------------------------------------------------------------------
 

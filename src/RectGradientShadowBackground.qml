@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2008-2018, Benoit AUTHEMAN All rights reserved.
+ Copyright (c) 2008-2021, Benoit AUTHEMAN All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
@@ -25,7 +25,7 @@
 */
 
 //-----------------------------------------------------------------------------
-// This file is a part of the QuickQanava software. Copyright 2017 Benoit AUTHEMAN.
+// This file is a part of the QuickQanava software library.
 //
 // \file	RectGradientShadowBackground.qml
 // \author	benoit@destrat.io
@@ -33,7 +33,6 @@
 //-----------------------------------------------------------------------------
 
 import QtQuick              2.7
-import QtGraphicalEffects   1.0
 
 import QuickQanava          2.0 as Qan
 
@@ -43,66 +42,16 @@ import QuickQanava          2.0 as Qan
 Item {
     id: background
 
-    // Public:
-    property var    nodeItem: undefined
+    // PUBLIC /////////////////////////////////////////////////////////////////
+    property var    style: undefined
 
-    //! Back color property, default to style.backColor, but available for user overidde.
-    property color  backColor: nodeItem.style.backColor
-
-    // private:
-    // Default settings for rect radius, shadow margin is the _maximum_ shadow radius (+vertical or horizontal offset).
-    property real   shadowOffset : nodeItem && nodeItem.style ? nodeItem.style.effectOffset : 4
-    property real   shadowRadius : nodeItem && nodeItem.style ? nodeItem.style.effectRadius : 4
-    property color  shadowColor  : nodeItem && nodeItem.style ? nodeItem.style.effectColor : Qt.rgba(0.1, 0.1, 0.1)
-    property real   shadowMargin : (shadowRadius + shadowOffset) * 2
-
-    Item {
-        z: -1   // Effect should be behind edges , docks and connectors...
-        id: effectBackground
-        anchors.centerIn: parent
-        width: nodeItem.width + shadowMargin; height: nodeItem.height + shadowMargin
-        visible: false
-        Rectangle {
-            anchors.centerIn: parent
-            width: nodeItem.width - 1.0;  height: nodeItem.height - 2.0 // Reduce rectangle used to generate shadow/glow to
-            radius: nodeItem.style.backRadius                           // avoid aliasing artifacts at high scales.
-            color: Qt.rgba(0, 0, 0, 1)
-            antialiasing: true
-            visible: false
-            layer.enabled: true
-            layer.effect: DropShadow {
-                horizontalOffset: shadowOffset; verticalOffset: shadowOffset
-                radius: shadowRadius; samples: 8
-                color: shadowColor
-                visible: nodeItem.style.effectEnabled
-                transparentBorder: true
-                cached: false
-            }
-        }
+    // PRIVATE ////////////////////////////////////////////////////////////////
+    RectShadowEffect {
+        anchors.fill: parent
+        style: background.style
     }
-    Item {
-        id: backgroundMask
-        anchors.centerIn: parent
-        width: parent.width + shadowMargin; height: parent.height + shadowMargin
-        visible: false
-        Rectangle {
-            anchors.centerIn: parent
-            width: nodeItem.width - 0.5;  height: nodeItem.height - 0.5
-            radius: nodeItem.style.backRadius
-            color: Qt.rgba(0, 0, 0, 1)
-            antialiasing: true
-        }
-    }
-    OpacityMask {
-        anchors.centerIn: parent
-        width: parent.width + shadowMargin; height: parent.height + shadowMargin
-        source: ShaderEffectSource { sourceItem: effectBackground; hideSource: false }
-        maskSource: ShaderEffectSource { format: ShaderEffectSource.Alpha; sourceItem: backgroundMask; hideSource: false }
-        invert: true
-    }
-
     RectGradientBackground {
         anchors.fill: parent
-        nodeItem: background.nodeItem
+        style: background.style
     }
 }

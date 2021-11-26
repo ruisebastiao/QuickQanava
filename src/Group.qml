@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2008-2018, Benoit AUTHEMAN All rights reserved.
+ Copyright (c) 2008-2021, Benoit AUTHEMAN All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
@@ -25,7 +25,7 @@
 */
 
 //-----------------------------------------------------------------------------
-// This file is a part of the QuickQanava software library. Copyright 2015 Benoit AUTHEMAN.
+// This file is a part of the QuickQanava software library.
 //
 // \file	Group.qml
 // \author	benoit@destrat.io
@@ -34,7 +34,6 @@
 
 import QtQuick              2.7
 import QtQuick.Layouts      1.3
-import QtGraphicalEffects   1.0
 
 import QuickQanava          2.0 as Qan
 import "qrc:/QuickQanava"   as Qan
@@ -42,8 +41,19 @@ import "qrc:/QuickQanava"   as Qan
 Qan.GroupItem {
     id: groupItem
 
+    minimumSize: Qt.size(150., 100.)
     default property alias children : template
     container: template.content   // See qan::GroupItem::container property documentation
+    onContainerChanged: {
+        if (container) {
+            groupItem.width = Qt.binding(function() {
+                return Math.max(groupItem.minimumGroupWidth, template.content.width)
+            })
+            groupItem.height = Qt.binding(function() {
+                return Math.max(groupItem.minimumGroupHeight, template.content.height)
+            })
+        }
+    }
 
     //! Show or hide group top left label editor (default to visible).
     property alias labelEditorVisible : template.labelEditorVisible
@@ -55,6 +65,10 @@ Qan.GroupItem {
         id: template
         anchors.fill: parent
         groupItem: parent
+        z: 1
+
+        preferredGroupWidth: parent.preferredGroupWidth
+        preferredGroupHeight: parent.preferredGroupHeight
     }
 
     // Emitted by qan::GroupItem when node dragging start

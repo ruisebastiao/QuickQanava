@@ -2,15 +2,24 @@
 CONFIG      += warn_on qt thread c++14
 QT          += core widgets gui qml quick
 
-include(../GTpo/src/gtpo.pri)
-include(../QuickContainers/src/quickcontainers.pri)
+include(../GTpo/gtpo.pri)
+include(../QuickContainers/quickcontainers.pri)
 
+# Note: Qmake and pri inclusion is reserved to Qt5.
+
+# With .pri inclusion, try to statically link all QML files in Qt ressource, do not
+DEFINES         += QUICKQANAVA_STATIC   # use QML module (calling QuickQanava::initialize() is mandatory...
 DEPENDPATH      += $$PWD
 INCLUDEPATH     += $$PWD
+<<<<<<< HEAD
 
 
 QML_IMPORT_PATH += \
                 $$PWD
+=======
+RESOURCES       += $$PWD/QuickQanava_static.qrc
+RESOURCES       += $$PWD/GraphicalEffects5/QuickQanavaGraphicalEffects.qrc
+>>>>>>> ab88d77ec62175b9fd499a154ffaf92f7bf23989
 
 HEADERS +=  $$PWD/QuickQanava.h             \
             $$PWD/qanUtils.h                \
@@ -25,7 +34,6 @@ HEADERS +=  $$PWD/QuickQanava.h             \
             $$PWD/qanDraggable.h            \
             $$PWD/qanAbstractDraggableCtrl.h\
             $$PWD/qanDraggableCtrl.h        \
-            $$PWD/qanDraggableCtrl.hpp      \
             $$PWD/qanConnector.h            \
             $$PWD/qanBehaviour.h            \
             $$PWD/qanGroup.h                \
@@ -37,6 +45,7 @@ HEADERS +=  $$PWD/QuickQanava.h             \
             $$PWD/qanNavigable.h            \
             $$PWD/qanNavigablePreview.h     \
             $$PWD/qanGrid.h                 \
+            $$PWD/qanLineGrid.h             \
             $$PWD/qanContainerAdapter.h     \
             $$PWD/qanBottomRightResizer.h   \
             $$PWD/quickqanavaplugin_plugin.h\
@@ -52,6 +61,7 @@ SOURCES +=  $$PWD/qanGraphView.cpp          \
             $$PWD/qanPortItem.cpp           \
             $$PWD/qanSelectable.cpp         \
             $$PWD/qanDraggable.cpp          \
+            $$PWD/qanDraggableCtrl.cpp      \
             $$PWD/qanConnector.cpp          \
             $$PWD/qanBehaviour.cpp          \
             $$PWD/qanGraph.cpp              \
@@ -62,6 +72,7 @@ SOURCES +=  $$PWD/qanGraphView.cpp          \
             $$PWD/qanNavigable.cpp          \
             $$PWD/qanNavigablePreview.cpp   \
             $$PWD/qanGrid.cpp               \
+<<<<<<< HEAD
             $$PWD/qanBottomRightResizer.cpp \
             $$PWD/quickqanavaplugin_plugin.cpp \
 
@@ -90,3 +101,38 @@ use_graphviz {
     win32: PRE_TARGETDEPS += $$GRAPHVIZ_DIR/lib/cdt.lib
     win32: PRE_TARGETDEPS += $$GRAPHVIZ_DIR/lib/cgraph.lib
 }
+=======
+            $$PWD/qanLineGrid.cpp           \
+            $$PWD/qanBottomRightResizer.cpp
+
+OTHER_FILES +=  $$PWD/QuickQanava                   \
+                $$PWD/NavigablePreview.qml          \
+                $$PWD/GraphPreview.qml              \
+                $$PWD/LineGrid.qml                  \
+                $$PWD/GraphView.qml                 \
+                $$PWD/Graph.qml                     \
+                $$PWD/RectNodeTemplate.qml          \
+                $$PWD/RectSolidBackground.qml       \
+                $$PWD/RectSolidShadowBackground.qml \
+                $$PWD/RectShadowEffect.qml          \
+                $$PWD/RectSolidGlowBackground.qml   \
+                $$PWD/RectGlowEffect.qml            \
+                $$PWD/RectGradientBackground.qml        \
+                $$PWD/RectGradientShadowBackground.qml  \
+                $$PWD/RectGradientGlowBackground.qml    \
+                $$PWD/CanvasNodeTemplate.qml        \
+                $$PWD/Group.qml                     \
+                $$PWD/RectGroupTemplate.qml         \
+                $$PWD/BottomRightResizer.qml        \
+                $$PWD/Node.qml                      \
+                $$PWD/Port.qml                      \
+                $$PWD/HorizontalDock.qml            \
+                $$PWD/VerticalDock.qml              \
+                $$PWD/Edge.qml                      \
+                $$PWD/EdgeTemplate.qml              \
+                $$PWD/SelectionItem.qml             \
+                $$PWD/StyleListView.qml             \
+                $$PWD/VisualConnector.qml           \
+                $$PWD/LabelEditor.qml               \
+                $$PWD/qmldir_static
+>>>>>>> ab88d77ec62175b9fd499a154ffaf92f7bf23989

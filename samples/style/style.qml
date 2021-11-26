@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2008-2017, Benoit AUTHEMAN All rights reserved.
+ Copyright (c) 2008-2021, Benoit AUTHEMAN All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
@@ -30,6 +30,7 @@ import QtQuick.Controls.Material 2.1
 import QtQuick.Layouts           1.3
 
 import QuickQanava          2.0 as Qan
+import StyleSample          1.0 as Qan
 import "qrc:/QuickQanava"   as Qan
 import "qrc:/."             as Sample
 

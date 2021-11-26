@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2008-2018, Benoit AUTHEMAN All rights reserved.
+ Copyright (c) 2008-2021, Benoit AUTHEMAN All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
@@ -37,6 +37,9 @@
 #include <QPainter>
 #include <QPainterPath>
 
+// GTpo headers
+#include "gtpo/algorithm.h"
+
 // QuickQanava headers
 #include "./qanNode.h"
 #include "./qanGroup.h"
@@ -46,84 +49,132 @@
 namespace qan { // ::qan
 
 /* Group Object Management *///------------------------------------------------
-Group::Group( QObject* parent ) :
-    gtpo::GenGroup< qan::GraphConfig >{}
+Group::Group(QObject* parent) :
+    qan::Node{parent}
 {
-    Q_UNUSED(parent);
-}
-
-Group::~Group() {
-    if ( _item )
-        _item->deleteLater();
+    set_is_group(true);
 }
 
 qan::Graph*         Group::getGraph() noexcept {
-    return qobject_cast< qan::Graph* >( gtpo::GenGroup< qan::GraphConfig >::getGraph() );
+    return qobject_cast< qan::Graph* >( gtpo_node_t::get_graph() );
 }
 
 const qan::Graph*   Group::getGraph() const noexcept {
-    return qobject_cast< const qan::Graph* >( gtpo::GenGroup< qan::GraphConfig >::getGraph() );
+    return qobject_cast< const qan::Graph* >( gtpo_node_t::get_graph() );
 }
 
-qan::GroupItem*  Group::getItem() noexcept { return _item.data(); }
-const qan::GroupItem*   Group::getItem() const noexcept { return _item.data(); }
-
-void    Group::setItem(qan::GroupItem* item) noexcept
+std::unordered_set<qan::Edge*>  Group::collectAdjacentEdges() const
 {
-    if ( item != nullptr ) {
-        _item = item;
-        if ( item->getGroup() != this )
-            item->setGroup(this);
+    std::unordered_set<qan::Edge*> edges = collectAdjacentEdges0();
+    if (is_group()) {
+        for (const auto& group_node_ptr: qAsConst(group_nodes())) {
+            const auto group_node = group_node_ptr.lock();
+            if (group_node) {
+                const auto qanGroupNode = qobject_cast<qan::Group*>(group_node.get());
+                if (qanGroupNode != nullptr) {
+                    const auto groupNodeEdges = qanGroupNode->collectAdjacentEdges();
+                    edges.insert(groupNodeEdges.begin(),
+                                 groupNodeEdges.end());
+                } else {
+                    auto qanNode = qobject_cast<qan::Node*>(group_node.get());
+                    if (qanNode != nullptr) {
+                        auto nodeEdges = qanNode->collectAdjacentEdges0();
+                        edges.insert(nodeEdges.begin(), nodeEdges.end());
+                    }
+                }
+            }
+        }
+    }
+    return edges;
+}
+
+qan::GroupItem* Group::getGroupItem() noexcept { return qobject_cast<qan::GroupItem*>(getItem()); }
+const qan::GroupItem*   Group::getGroupItem() const noexcept { return qobject_cast<const qan::GroupItem*>(getItem()); }
+
+void    Group::setItem(qan::NodeItem* item) noexcept
+{
+    qan::Node::setItem(item);
+    const auto groupItem = qobject_cast<qan::GroupItem*>(item);
+    if ( groupItem != nullptr ) {
+        if ( groupItem->getGroup() != this )
+            groupItem->setGroup(this);
     }
 }
 
 void    Group::itemProposeNodeDrop()
 {
-    if ( _item )
-        _item->proposeNodeDrop();
+    const auto groupItem = getGroupItem();
+    if ( groupItem )
+        groupItem->proposeNodeDrop();
 }
 
 void    Group::itemEndProposeNodeDrop()
 {
-    if ( _item )
-        _item->endProposeNodeDrop();
+    const auto groupItem = getGroupItem();
+    if ( groupItem )
+        groupItem->endProposeNodeDrop();
 }
 //-----------------------------------------------------------------------------
 
 /* Group Static Factories *///-------------------------------------------------
-QQmlComponent*  Group::delegate(QQmlEngine& engine) noexcept
+QQmlComponent*  Group::delegate(QQmlEngine& engine, QObject* parent) noexcept
 {
+<<<<<<< HEAD
     static UniqueQQmlComponentPtr   delegate;
     if ( !delegate )
         delegate = UniqueQQmlComponentPtr(new QQmlComponent(&engine, "qrc:/QuickQanava/Group.qml"));
+=======
+    static std::unique_ptr<QQmlComponent>   delegate;
+    if (!delegate)
+        delegate = std::make_unique<QQmlComponent>(&engine, "qrc:/QuickQanava/Group.qml",
+                                                   QQmlComponent::PreferSynchronous, parent);
+>>>>>>> ab88d77ec62175b9fd499a154ffaf92f7bf23989
     return delegate.get();
 }
 
-qan::Style*     Group::style() noexcept
+qan::NodeStyle* Group::style(QObject* parent) noexcept
 {
-    static std::unique_ptr<qan::NodeStyle>  qan_Group_style;
-    if ( !qan_Group_style ) {
-        qan_Group_style = std::make_unique<qan::NodeStyle>();
+    static QScopedPointer<qan::NodeStyle>  qan_Group_style;
+    if (!qan_Group_style) {
+        qan_Group_style.reset(new qan::NodeStyle{parent});
         qan_Group_style->setFontPointSize(11);
         qan_Group_style->setFontBold(true);
+        qan_Group_style->setLabelColor(QColor{"black"});
         qan_Group_style->setBorderWidth(2.);
         qan_Group_style->setBackRadius(8.);
+        qan_Group_style->setBackOpacity(0.90);
+        qan_Group_style->setBaseColor(QColor(240, 245, 250));
+        qan_Group_style->setBackColor(QColor(242, 248, 255));
     }
     return qan_Group_style.get();
 }
 //-----------------------------------------------------------------------------
 
 /* Group Nodes Management *///-------------------------------------------------
-bool    Group::hasNode( qan::Node* node ) const
+bool    Group::hasNode(const qan::Node* node) const
 {
     if ( node == nullptr )
         return false;
-    WeakNode weakNode;
     try {
-        weakNode = WeakNode{ node->shared_from_this() };
-    } catch ( std::bad_weak_ptr ) { return false; }
-    return gtpo::GenGroup< qan::GraphConfig >::hasNode( weakNode );
+        auto weakNode = std::static_pointer_cast<qan::Node>(const_cast<qan::Node*>(node)->shared_from_this());
+        return gtpo_node_t::has_node(weakNode);
+    } catch (const std::bad_weak_ptr&) { /* Nil */ } // C++17
+    return false;
 }
+//-----------------------------------------------------------------------------
+
+/*! \name Group DnD Management *///----------------------------------------
+bool    Group::setDraggable(bool draggable) noexcept
+{
+    if (draggable != _draggable) {
+        _draggable = draggable;
+        emit draggableChanged();
+        return true;
+    }
+    return false;
+}
+
+bool    Group::getDraggable() const noexcept { return _draggable; }
 //-----------------------------------------------------------------------------
 
 } // ::qan
