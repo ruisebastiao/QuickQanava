@@ -43,10 +43,16 @@
 #include "./qanNode.h"
 #include "quickqanavaglobal.h"
 
+
+#include <QMetaObject>
+
+
+
 namespace qan { // ::qan
 
 class Graph;
 class EdgeItem;
+
 
 //! Weighted directed edge linking two nodes in a graph.
 /*!
@@ -142,5 +148,10 @@ signals:
 } // ::qan
 
 QML_DECLARE_TYPE( qan::Edge )
+#ifndef OPAQUE_PTR_qanedge
+  #define OPAQUE_PTR_qanedge
+  Q_DECLARE_OPAQUE_POINTER(qan::Graph*)
+  Q_DECLARE_OPAQUE_POINTER(qan::EdgeItem*)
+#endif //
 
 #endif // qanEdge_h

@@ -78,23 +78,23 @@ struct adapter< QList, T > {
     inline static int   indexOf(const QList<T>& c, const T& t) { return c.indexOf(t); }
 };
 
-template < typename T >
-struct adapter< QVector, T > {
-    inline static void  reserve(QVector<T>& c, std::size_t size) { c.reserve(static_cast<int>(size)); }
+//template < typename T >
+//struct adapter< QVector, T > {
+//    inline static void  reserve(QVector<T>& c, std::size_t size) { c.reserve(static_cast<int>(size)); }
 
-    inline static void  append(QVector<T>& c, const T& t)   { c.append(t); }
-    inline static void  append(QVector<T>& c, T&& t)        { c.append(t); }
+//    inline static void  append(QVector<T>& c, const T& t)   { c.append(t); }
+//    inline static void  append(QVector<T>& c, T&& t)        { c.append(t); }
 
-    inline static void  insert(QVector<T>& c, const T& t)   { c.append( t ); }
-    inline static void  insert(QVector<T>& c, T&& t)        { c.append( t ); }
-    inline static void  insert(QVector<T>& c, const T& t, int i ) { c.insert( i, t ); }
+//    inline static void  insert(QVector<T>& c, const T& t)   { c.append( t ); }
+//    inline static void  insert(QVector<T>& c, T&& t)        { c.append( t ); }
+//    inline static void  insert(QVector<T>& c, const T& t, int i ) { c.insert( i, t ); }
 
-    inline static void  remove(QVector<T>& c, std::size_t i)    { c.remove(static_cast<int>(i)); }
-    inline static int   removeAll(QVector<T>& c, const T& t )   { return c.removeAll(t); }
+//    inline static void  remove(QVector<T>& c, std::size_t i)    { c.remove(static_cast<int>(i)); }
+//    inline static int   removeAll(QVector<T>& c, const T& t )   { return c.removeAll(t); }
 
-    inline static bool      contains(const QVector<T>& c, const T& t) { return c.contains(t); }
-    inline static int       indexOf(const QVector<T>& c, const T& t) { return c.indexOf(t); }
-};
+//    inline static bool      contains(const QVector<T>& c, const T& t) { return c.contains(t); }
+//    inline static int       indexOf(const QVector<T>& c, const T& t) { return c.indexOf(t); }
+//};
 
 template < typename T >
 struct adapter< QSet, T > {

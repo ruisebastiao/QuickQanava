@@ -314,7 +314,7 @@ void    Navigable::setDragActive( bool dragActive ) noexcept
 }
 
 
-void    Navigable::geometryChanged( const QRectF& newGeometry, const QRectF& oldGeometry )
+void    Navigable::geometryChange( const QRectF& newGeometry, const QRectF& oldGeometry )
 {
     //qDebug() << "qan::Navigable::geometryChanged(): newGeometry=" << newGeometry << "\toldGeometry=" << oldGeometry;
     if ( getNavigable() ) {
@@ -383,7 +383,7 @@ void    Navigable::geometryChanged( const QRectF& newGeometry, const QRectF& old
 
         updateGrid();
     }
-    QQuickItem::geometryChanged( newGeometry, oldGeometry );
+    QQuickItem::geometryChange( newGeometry, oldGeometry );
 }
 
 void Navigable::panOffset(QPointF delta){
@@ -416,7 +416,7 @@ void    Navigable::mouseMoveEvent( QMouseEvent* event )
 {
     if ( getNavigable() && isDraggable() ) {
         if ( _leftButtonPressed && !viewPosition().isNull() ) {
-            panTo(event->localPos());
+            panTo(event->position());
         }
     }
     QQuickItem::mouseMoveEvent( event );
@@ -427,7 +427,7 @@ void    Navigable::mousePressEvent( QMouseEvent* event )
     if ( getNavigable() ) {
         if ( event->button() == Qt::LeftButton ) {
             _leftButtonPressed = true;
-            setViewPosition(event->localPos());
+            setViewPosition(event->position());
             event->accept();
             return;
         }
@@ -444,11 +444,11 @@ void    Navigable::mouseReleaseEvent( QMouseEvent* event )
     if ( getNavigable() ) {
         if ( event->button() == Qt::LeftButton &&
              !_dragActive ) {       // Do not emit clicked when dragging occurs
-            emit clicked( event->localPos() );
-            navigableClicked( event->localPos() );
+            emit clicked( event->position() );
+            navigableClicked( event->position() );
         } else if ( event->button() == Qt::RightButton ) {
-            emit rightClicked( event->localPos() );
-            navigableRightClicked(event->localPos() );
+            emit rightClicked( event->position() );
+            navigableRightClicked(event->position() );
         }
         setDragActive(false);
         _leftButtonPressed = false;
@@ -460,8 +460,8 @@ void    Navigable::wheelEvent( QWheelEvent* event )
 {
     if ( getNavigable() ) {
         qreal zoomFactor = ( event->angleDelta().y() > 0. ? _zoomIncrement : -_zoomIncrement );
-        zoomOn( QPointF{ static_cast<qreal>(event->x()),
-                         static_cast<qreal>(event->y()) },
+        zoomOn( QPointF{ static_cast<qreal>(event->position().x()),
+                         static_cast<qreal>(event->position().y()) },
                 getZoom() + zoomFactor );
     }
     updateGrid();

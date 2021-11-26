@@ -754,7 +754,7 @@ QPointF  EdgeItem::getLineIntersection( const QPointF& p1, const QPointF& p2,
     QPointF intersection;
     for ( auto p = 0; p < polygon.length() - 1 ; ++p ) {
         const QLineF polyLine( polygon[p], polygon[p + 1] );
-        if ( line.intersect( polyLine, &intersection ) == QLineF::BoundedIntersection ) {
+        if ( line.intersects( polyLine, &intersection ) == QLineF::BoundedIntersection ) {
             source = intersection;
             break;
         }
@@ -770,7 +770,7 @@ QLineF  EdgeItem::getLineIntersection( const QPointF& p1, const QPointF& p2,
     QPointF intersection;
     for ( auto p = 0; p < srcBp.length() - 1 ; ++p ) {
         const QLineF polyLine( srcBp[p], srcBp[p + 1] );
-        if ( line.intersect( polyLine, &intersection ) == QLineF::BoundedIntersection ) {
+        if ( line.intersects( polyLine, &intersection ) == QLineF::BoundedIntersection ) {
             source = intersection;
             break;
         }
@@ -778,7 +778,7 @@ QLineF  EdgeItem::getLineIntersection( const QPointF& p1, const QPointF& p2,
     QPointF destination{p2};
     for ( auto p = 0; p < dstBp.length() - 1 ; ++p ) {
         const QLineF polyLine( dstBp[p], dstBp[p + 1] );
-        if ( line.intersect( polyLine, &intersection ) == QLineF::BoundedIntersection ) {
+        if ( line.intersects( polyLine, &intersection ) == QLineF::BoundedIntersection ) {
             destination = intersection;
             break;
         }
@@ -831,10 +831,10 @@ qreal   EdgeItem::cubicCurveAngleAt(qreal pos, const QPointF& start, const QPoin
 /* Mouse Management *///-------------------------------------------------------
 void    EdgeItem::mouseDoubleClickEvent( QMouseEvent* event )
 {
-    const qreal d = distanceFromLine( event->localPos(), QLineF{_p1, _p2} );
+    const qreal d = distanceFromLine( event->position(), QLineF{_p1, _p2} );
     if ( d > -0.0001 && d < 5. &&
          event->button() == Qt::LeftButton ) {
-        emit edgeDoubleClicked( this, event->localPos() );
+        emit edgeDoubleClicked( this, event->position() );
         event->accept();
     }
     else
@@ -844,14 +844,14 @@ void    EdgeItem::mouseDoubleClickEvent( QMouseEvent* event )
 
 void    EdgeItem::mousePressEvent( QMouseEvent* event )
 {
-    const qreal d = distanceFromLine( event->localPos( ), QLineF{_p1, _p2} );
+    const qreal d = distanceFromLine( event->position(), QLineF{_p1, _p2} );
     if ( d > -0.0001 && d < 5. ) {
         if ( event->button() == Qt::LeftButton ) {
-            emit edgeClicked( this, event->localPos() );
+            emit edgeClicked( this, event->position() );
             event->accept();
         }
         else if ( event->button() == Qt::RightButton ) {
-            emit edgeRightClicked( this, event->localPos() );
+            emit edgeRightClicked( this, event->position() );
             event->accept();
             return;
         }
@@ -946,7 +946,7 @@ void    EdgeItem::dragEnterEvent( QDragEnterEvent* event )
 void	EdgeItem::dragMoveEvent( QDragMoveEvent* event )
 {
     if ( getAcceptDrops() ) {
-        qreal d = distanceFromLine( event->posF( ), QLineF{_p1, _p2} );
+        qreal d = distanceFromLine( event->position( ), QLineF{_p1, _p2} );
         if ( d > 0. && d < 5. )
             event->accept();
         else event->ignore();
@@ -982,10 +982,10 @@ void    EdgeItem::dropEvent( QDropEvent* event )
 void EdgeItem::hoverMoveEvent(QHoverEvent *event)
 {
 
-    const qreal d = distanceFromLine( event->pos(), QLineF{_p1, _p2} );
+    const qreal d = distanceFromLine( event->position(), QLineF{_p1, _p2} );
 
     if ( d >=0 && d < 10.) {
-        emit edgeHoverMove(this, event->pos() );
+        emit edgeHoverMove(this, event->position() );
         event->accept();
     }
     else{

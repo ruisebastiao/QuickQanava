@@ -344,7 +344,7 @@ signals:
     void        dragActiveChanged( );
 
 protected:
-    virtual void    geometryChanged( const QRectF& newGeometry, const QRectF& oldGeometry ) override;
+    virtual void    geometryChange( const QRectF& newGeometry, const QRectF& oldGeometry ) override;
     virtual void    mouseMoveEvent( QMouseEvent* event ) override;
     virtual void    mousePressEvent( QMouseEvent* event ) override;
     virtual void    mouseReleaseEvent( QMouseEvent* event ) override;

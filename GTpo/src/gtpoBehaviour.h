@@ -182,13 +182,13 @@ protected:
      * \endcode
      */
     template < class T >
-    auto    notifyBehaviours( void (Behaviour::*method)(T&) noexcept, T& arg ) noexcept -> void;
+    auto    notifyBehaviours( void (Behaviour::*method)(T&) , T& arg ) -> void;
 
     template < class T, class T2 >
-    auto    notifyBehaviours( void (Behaviour::*method)(T&, T2&) noexcept, T& arg, T2&) noexcept -> void;
+    auto    notifyBehaviours( void (Behaviour::*method)(T&, T2&) , T& arg, T2&) -> void;
 
     //! Similar to notifyBahaviours() but without arguments.
-    auto    notifyBehaviours0( void (Behaviour::*method)() noexcept ) noexcept -> void;
+    auto    notifyBehaviours0( void (Behaviour::*method)()  ) -> void;
 
 private:
     Behaviours  _behaviours;
@@ -205,7 +205,7 @@ public:
      * \endcode
      */
     template < class Functor >
-    auto    sNotifyBehaviours( Functor f ) noexcept -> void {
+    auto    sNotifyBehaviours( Functor f )  -> void {
         for_each_in_tuple( _sBehaviours, f );
     }
 

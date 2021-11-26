@@ -169,4 +169,11 @@ protected:
 
 QML_DECLARE_TYPE( qan::Node )
 
+#ifndef OPAQUE_PTR_qannode
+  #define OPAQUE_PTR_qannode
+  Q_DECLARE_OPAQUE_POINTER(qan::NodeItem*)
+
+#endif // OPAQUE_PTR_LanguageModel
+
+
 #endif // qanNode_h

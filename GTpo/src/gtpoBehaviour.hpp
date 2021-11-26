@@ -39,7 +39,7 @@ namespace gtpo { // ::gtpo
 /* Virtual Behaviours Management *///------------------------------------------
 template < class Behaviour, class SBehaviours  >
 template < class T >
-auto    Behaviourable< Behaviour, SBehaviours >::notifyBehaviours( void (Behaviour::*method)(T&), T& arg ) noexcept -> void
+auto    Behaviourable< Behaviour, SBehaviours >::notifyBehaviours( void (Behaviour::*method)(T&), T& arg ) -> void
 {
     // Note 20160314: See http://stackoverflow.com/questions/1485983/calling-c-class-methods-via-a-function-pointer
     // For calling pointer on template template parameter template keyword functions.
@@ -53,7 +53,7 @@ auto    Behaviourable< Behaviour, SBehaviours >::notifyBehaviours( void (Behavio
 
 template < class Behaviour, class SBehaviours  >
 template < class T, class T2 >
-auto    Behaviourable< Behaviour, SBehaviours >::notifyBehaviours( void (Behaviour::*method)(T&, T2&), T& arg, T2& arg2 ) noexcept -> void
+auto    Behaviourable< Behaviour, SBehaviours >::notifyBehaviours( void (Behaviour::*method)(T&, T2&), T& arg, T2& arg2 )  -> void
 {
     // Note 20160314: See http://stackoverflow.com/questions/1485983/calling-c-class-methods-via-a-function-pointer
     // For calling pointer on template template parameter template keyword functions.
@@ -66,7 +66,7 @@ auto    Behaviourable< Behaviour, SBehaviours >::notifyBehaviours( void (Behavio
 }
 
 template < class Behaviour, class SBehaviours  >
-auto    Behaviourable< Behaviour, SBehaviours >::notifyBehaviours0( void (Behaviour::*method)() ) noexcept -> void
+auto    Behaviourable< Behaviour, SBehaviours >::notifyBehaviours0( void (Behaviour::*method)() ) -> void
 {
     for ( auto& behaviour : _behaviours )
         if ( behaviour != nullptr )

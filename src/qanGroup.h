@@ -155,4 +155,10 @@ signals:
 
 QML_DECLARE_TYPE( qan::Group )
 
+
+#ifndef OPAQUE_PTR_GroupItem
+  #define OPAQUE_PTR_GroupItem
+  Q_DECLARE_OPAQUE_POINTER(qan::GroupItem*)
+
+#endif // OPAQUE_PTR_LanguageModel
 #endif // qanGroup_h
