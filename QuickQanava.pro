@@ -4,7 +4,7 @@ QT += opengl
 uri = QuickQanava
 DEFINES+=QUICKQANAVA_LIB
 
-CONFIG +=c++14
+CONFIG +=c++1z
 
 include(../../module.pri)
 
