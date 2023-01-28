@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2008-2021, Benoit AUTHEMAN All rights reserved.
+ Copyright (c) 2008-2018, Benoit AUTHEMAN All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
@@ -25,7 +25,7 @@
 */
 
 //-----------------------------------------------------------------------------
-// This file is a part of the QuickQanava software library.
+// This file is a part of the QuickQanava software library. Copyright 2015 Benoit AUTHEMAN.
 //
 // \file	RectGroupTemplate.qml
 // \author	benoit@destrat.io
@@ -35,45 +35,35 @@
 import QtQuick              2.7
 import QtQuick.Controls     2.1
 import QtQuick.Layouts      1.3
+import QtGraphicalEffects   1.0
 
 import QuickQanava 2.0      as Qan
+import "qrc:/QuickQanava"   as Qan
 
 Item {
     id: template
 
     default property alias children : content.children
-
-    // Binded to Tpp.Group.container in Tpp.Group.
     property alias  content: content
 
     property var    groupItem: undefined
 
     //! Show or hide group top left label editor (default to visible).
-    property alias  labelEditorVisible : labelEditorControl.visible
+    property alias labelEditorVisible : labelEditorControl.visible
 
     //! Show or hide group top left expand button (default to visible).
-    property alias  expandButtonVisible : collapser.visible
-
-    property real   preferredGroupWidth: 200
-    property real   preferredGroupHeight: 150
-
-    property alias  header: headerLayout
+    property alias expandButtonVisible : collapser.visible
 
     Item {
         id: content
+        anchors.fill: parent
         x: 0; y: 0; z: 3
-        width: preferredGroupWidth
-        height: preferredGroupHeight
         visible: !groupItem.collapsed
-        enabled: !groupItem.collapsed
-
-        // Necessary for Qan.GraphView
-        property var groupItem: template.groupItem
     }
-    RectGradientBackground {    // Node background and shadow with backOpacity and backRadius support
+    RectSolidBackground {        // Node background and shadow with backOpacity and backRadius support
         id: groupBackground
-        anchors.fill: content   // Note 20160328: Do not set as content child to avoid interferring
-        style: template.groupItem ? template.groupItem.style: undefined // with content.childrenRect
+        anchors.fill: content   // Note 20160328: Do not set as content child to avoid interferring with content.childrenRect
+        nodeItem: template.groupItem
         visible: !groupItem.collapsed
     }
     RowLayout {
@@ -87,7 +77,7 @@ Item {
             padding: 0
             Layout.preferredWidth: 32; Layout.preferredHeight: 32
             text: groupItem ? ( groupItem.collapsed ? "+" : "-" ) : "-"
-            font.pixelSize: 13; font.bold: true
+            font.pointSize: 13; font.bold: true
             onClicked: groupItem.collapsed = !groupItem.collapsed
         }
         Item {
@@ -96,8 +86,8 @@ Item {
             Layout.fillWidth: true; Layout.fillHeight: true
             property int fontPointSize : groupItem.style.fontPointSize  // Do not set pointSize for -1 value
             onFontPointSizeChanged: {
-                if (fontPointSize != -1)
-                    labelEditor.pixelSize = fontPointSize
+                if ( fontPointSize != -1 )
+                    labelEditor.pointSize = fontPointSize
                 groupLabel.font.pointSize = fontPointSize
             }
             LabelEditor {
@@ -106,6 +96,7 @@ Item {
                 anchors.top: parent.top; anchors.left: parent.left; anchors.right: parent.right
                 target: groupItem && groupItem.group ? groupItem.group : undefined
                 visible: false
+                //pointSize: groupItem.style.fontPointSize != -1
                 bold: groupItem.style.fontBold
             }
             Label {
@@ -115,23 +106,19 @@ Item {
                 visible: !labelEditor.visible
                 verticalAlignment: Text.AlignVCenter
                 font.bold: groupItem.style.fontBold
-                color: groupItem && groupItem.style && groupItem.style.labelColor ?
-                                                                        groupItem.style.labelColor : "black"
                 elide:  Text.ElideRight
                 MouseArea {
                     anchors.fill: parent
-                    enabled: !groupItem.group.locked    // Do not allow dragging of locked groups
                     preventStealing: true; propagateComposedEvents: true // Ensure event are forwarded to collapserArea
                     drag.target: groupItem.draggable ? groupItem : null
                     onDoubleClicked: labelEditor.visible = true
                 }
             }
-        } // labelEditor Item
+        }
     } // RowLayout: collapser + label
 
-    // FIXME 0.75
     // Emitted by qan::GroupItem when node dragging start
-    function onNodeDragEnter() { /*groupBackground.backColor = Qt.binding( function() { return Qt.darker( template.groupItem.style.backColor, 1.05 ) } ) */}
+    function onNodeDragEnter() { groupBackground.backColor = Qt.binding( function() { return Qt.darker( template.groupItem.style.backColor, 1.05 ) } ) }
     // Emitted by qan::GroupItem when node dragging ends
-    function onNodeDragLeave() { /*groupBackground.backColor = Qt.binding( function() { return template.groupItem.style.backColor } ) */}
+    function onNodeDragLeave() { groupBackground.backColor = Qt.binding( function() { return template.groupItem.style.backColor } ) }
 }

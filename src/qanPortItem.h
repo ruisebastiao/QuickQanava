@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2008-2021, Benoit AUTHEMAN All rights reserved.
+ Copyright (c) 2008-2018, Benoit AUTHEMAN All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
@@ -67,7 +67,7 @@ class QUICKQANAVA_EXPORT PortItem : public qan::NodeItem
 public:
     //! PortItem constructor.
     explicit PortItem( QQuickItem* parent = nullptr );
-    virtual ~PortItem() override = default;
+    virtual ~PortItem();
     PortItem( const PortItem& ) = delete;
     PortItem& operator=(const PortItem&) = delete;
     PortItem( PortItem&& ) = delete;
@@ -157,6 +157,10 @@ private:
 
 
 public:
+    /* Note: qcm::ContainerModel automatically monitor contained
+     * object for destruction, just delete an item with deleteLater() to
+     * remove it.
+     */
     using EdgeItems =   qcm::Container<QVector, qan::EdgeItem*>;
 
     void                addInEdgeItem(qan::EdgeItem& inEdgeItem) noexcept;
@@ -200,9 +204,6 @@ signals:
 protected:
     EdgeItems           _inEdgeItems;
     EdgeItems           _outEdgeItems;
-
-    //! Used internally to automatically monitor in/out edges items destruction.
-    void                onEdgeItemDestroyed(QObject* obj);
     //@}
     //-------------------------------------------------------------------------
 };
@@ -210,7 +211,5 @@ protected:
 } // ::qan
 
 QML_DECLARE_TYPE( qan::PortItem )
-Q_DECLARE_METATYPE( qan::PortItem::Type )
-Q_DECLARE_METATYPE( qan::PortItem::Multiplicity )
 
 #endif // qanPortItem_h

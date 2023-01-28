@@ -57,7 +57,7 @@ Qan.Graph {
 Graph View
 ------------------
 
-A `Qan.Graph` or `#!js qan::Graph` is a graphic item, but it is mainly used to define graph topology and should be embedded in a "graph view", following a (loose) MVC pattern to enable complete user interaction with the graph. A graph is binded to a view trough the `Qan.GraphView.graph` property:
+A `Qan.Graph` or `#!js qan::Graph` is actually a graphic item, but it is mainly used to define graph topology and should be embedded in a "graph view", following a (loose) MVC pattern to enable complete user interaction with the graph. A graph is binded to a view trough the `Qan.GraphView.graph` property:
 
 ``` cpp hl_lines="5"
 Qan.GraphView {
@@ -88,7 +88,7 @@ For a more detailed description, see [Material Styling](styles.md#material)
 Grid
 ------------------
 
-Grid could be configured with `Qan.GraphView.grid` property, only line grid is supported (see `Qan.LineGrid` component, `Qan.PointGrid` has been deprecated in 0.15.0), default grid is drawn with orthogonal lines.
+Grid could be configured with `Qan.GraphView.grid` property, either a point or line grid could be used (`Qan.PointGrid` and `Qan.LineGrid` components), default grid is drawn with orthogonal lines.
 
 ``` cpp hl_lines="5"
 import QuickQanava          2.0 as Qan
@@ -103,7 +103,10 @@ Qan.GraphView {
         gridScale: 50
         gridMajor: 5
       }
-    } // Qan.Graph: graph
+      // or 
+      //grid: Qan.PointGrid{
+      //}
+    } // Qan.Graph: topology
 } // Qan.GraphView
 ```
 
@@ -114,7 +117,7 @@ Grid appearance is configurable using the following abstract interface working f
 - `gridWidth`: size in points, either grid points or line width.
 - `thickColor`: Color for points or lines.
 
-| Qan.PointGrid *(deprecated)*                        |Qan.LineGrid                                       |
+| Qan.PointGrid                                       |Qan.LineGrid                                       |
 | ---                                                 | :---:                                             | 
 | ![Qan.GraphView properties](graph/grid_points.png)  | ![Qan.GraphView properties](graph/grid_lines.png) | 
 

@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2008-2021, Benoit AUTHEMAN All rights reserved.
+ Copyright (c) 2008-2018, Benoit AUTHEMAN All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
@@ -32,7 +32,8 @@
 // \date	2004 February 15
 //-----------------------------------------------------------------------------
 
-#pragma once
+#ifndef qanNode_h
+#define qanNode_h
 
 #include "quickqanavaglobal.h"
 
@@ -46,10 +47,7 @@
 #include "./qanEdge.h"
 #include "./qanStyle.h"
 #include "./qanBehaviour.h"
-<<<<<<< HEAD
 #include "./qanGroup.h"
-=======
->>>>>>> ab88d77ec62175b9fd499a154ffaf92f7bf23989
 
 namespace qan { // ::qan
 
@@ -66,11 +64,7 @@ class PortItem;
  *
  * \nosubgrouping
 */
-<<<<<<< HEAD
 class QUICKQANAVA_EXPORT  Node : public gtpo::GenNode< qan::GraphConfig >
-=======
-class Node : public gtpo::node<qan::Config>
->>>>>>> ab88d77ec62175b9fd499a154ffaf92f7bf23989
 {
     /*! \name Node Object Management *///--------------------------------------
     //@{
@@ -79,11 +73,11 @@ public:
     //! Node constructor.
     explicit Node(QObject* parent=nullptr);
     virtual ~Node();
-    Node(const Node&) = delete;
+    Node( const Node& ) = delete;
 
 public:
-    Q_PROPERTY(qan::Graph* graph READ getGraph CONSTANT FINAL)
-    //! Shortcut to gtpo::node<>::getGraph().
+    Q_PROPERTY( qan::Graph* graph READ getGraph CONSTANT FINAL )
+    //! Shortcut to gtpo::GenNode<>::getGraph().
     qan::Graph*         getGraph() noexcept;
     //! \copydoc getGraph()
     const qan::Graph*   getGraph() const noexcept;
@@ -92,13 +86,13 @@ public:
     /*!
      * \note only label is taken into account for equality comparison.
      */
-    bool    operator==(const qan::Node& right) const;
+    bool    operator==( const qan::Node& right ) const;
 
 public:
-    Q_PROPERTY(qan::NodeItem* item READ getItem CONSTANT)
+    Q_PROPERTY( qan::NodeItem* item READ getItem CONSTANT )
     qan::NodeItem*          getItem() noexcept;
     const qan::NodeItem*    getItem() const noexcept;
-    virtual void            setItem(qan::NodeItem* nodeItem) noexcept;
+    void                    setItem(qan::NodeItem* nodeItem) noexcept;
 protected:
     QPointer<qan::NodeItem> _item;
     //@}
@@ -112,13 +106,13 @@ public:
      *  \arg engine QML engine used to create delegate component.
      *  \return Default delegate component or nullptr (when nullptr is returned, QuickQanava default to Qan.Node component).
      */
-    static  QQmlComponent*      delegate(QQmlEngine& engine, QObject* parent = nullptr) noexcept;
+    static  QQmlComponent*      delegate(QQmlEngine& engine) noexcept;
 
     /*! \brief Return the default style that should be used with qan::Node.
      *
      *  \return Default style or nullptr (when nullptr is returned, qan::StyleManager default node style will be used).
      */
-    static  qan::NodeStyle*     style(QObject* parent = nullptr) noexcept;
+    static  qan::NodeStyle*     style() noexcept;
     //@}
     //-------------------------------------------------------------------------
 
@@ -126,34 +120,18 @@ public:
     //@{
 public:
     //! Read-only abstract item model of this node in nodes.
-    Q_PROPERTY(QAbstractItemModel* inNodes READ qmlGetInNodes CONSTANT FINAL)
-    QAbstractItemModel* qmlGetInNodes() const;
-
-public:
-    Q_PROPERTY(int  inDegree READ getInDegree NOTIFY inDegreeChanged FINAL)
-    int     getInDegree() const;
-signals:
-    void    inDegreeChanged();
+    Q_PROPERTY( QAbstractItemModel* inNodes READ qmlGetInNodes CONSTANT FINAL )
+    QAbstractItemModel* qmlGetInNodes( ) const { return const_cast<QAbstractItemModel*>( static_cast< const QAbstractItemModel* >( getInNodes().model() ) ); }
 
 public:
     //! Read-only abstract item model of this node out nodes.
     Q_PROPERTY( QAbstractItemModel* outNodes READ qmlGetOutNodes CONSTANT FINAL )
-    QAbstractItemModel* qmlGetOutNodes() const;
-
-public:
-    Q_PROPERTY(int  outDegree READ getOutDegree NOTIFY outDegreeChanged FINAL)
-    int     getOutDegree() const;
-signals:
-    void    outDegreeChanged();
+    QAbstractItemModel* qmlGetOutNodes() const { return const_cast< QAbstractItemModel* >( qobject_cast< const QAbstractItemModel* >( getOutNodes().model() ) ); }
 
 public:
     //! Read-only abstract item model of this node out nodes.
     Q_PROPERTY( QAbstractItemModel* outEdges READ qmlGetOutEdges CONSTANT FINAL )
-    QAbstractItemModel* qmlGetOutEdges() const;
-
-public:
-    //! Get this node level 0 adjacent edges (ie sum of node in edges and out edges).
-    std::unordered_set<qan::Edge*>  collectAdjacentEdges0() const;
+    QAbstractItemModel* qmlGetOutEdges() const { return const_cast< QAbstractItemModel* >( qobject_cast< const QAbstractItemModel* >( gtpo::GenNode< qan::GraphConfig >::getOutEdges().model() ) ); }
     //@}
     //-------------------------------------------------------------------------
 
@@ -167,49 +145,28 @@ public:
     /*! \name Appearance Management *///---------------------------------------
     //@{
 public:
-    Q_PROPERTY(QString label READ getLabel WRITE setLabel NOTIFY labelChanged FINAL)
-    bool            setLabel( const QString& label ) noexcept;
+    Q_PROPERTY( QString label READ getLabel WRITE setLabel NOTIFY labelChanged FINAL )
+    void            setLabel( const QString& label ) noexcept;
     QString         getLabel() const noexcept { return _label; }
 private:
     QString         _label{ QStringLiteral("") };
 signals:
     void            labelChanged( );
-
-public:
-    /*! \brief A locked node can't be selected / dragged by user (node are unlocked by default).
-     *
-     * Might be usefull to prevent user inputs when the node is laid out automatically.
-     *
-     * \note nodeDoubleClicked() signal is still emitted from locked node when node is double clicked.
-     */
-    Q_PROPERTY(bool locked READ getLocked WRITE setLocked NOTIFY lockedChanged FINAL)
-    bool            setLocked(bool locked) noexcept;
-    bool            getLocked() const noexcept { return _locked; }
-private:
-    bool            _locked = false;
-signals:
-    void            lockedChanged();
     //@}
     //-------------------------------------------------------------------------
 
     /*! \name Node Group Management *///---------------------------------------
     //@{
 public:
-    /*! \brief Node (or group) parent group.
-     *
-     * \note nullptr if group or node is ungrouped.
-     */
-    Q_PROPERTY(qan::Group* group READ getGroup FINAL)
-    const qan::Group*    getGroup() const noexcept { return get_group().lock().get(); }
-    qan::Group*          getGroup() noexcept { return get_group().lock().get(); }
-
-    //! Shortcut to base is_group() (ie return true if this node is a group and castable to qan::Group)..
-    Q_INVOKABLE bool     isGroup() const noexcept { return gtpo::node<qan::Config>::is_group(); }
+    Q_PROPERTY( qan::Group* group READ qmlGetGroup FINAL )
+protected:
+    inline qan::Group*  qmlGetGroup() noexcept { return getGroup().lock().get(); }
     //@}
     //-------------------------------------------------------------------------
 };
 
 } // ::qan
 
-QML_DECLARE_TYPE(qan::Node)
-QML_DECLARE_TYPE(const qan::Node)
+QML_DECLARE_TYPE( qan::Node )
+
+#endif // qanNode_h

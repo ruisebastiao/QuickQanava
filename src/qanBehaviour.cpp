@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2008-2021, Benoit AUTHEMAN All rights reserved.
+ Copyright (c) 2008-2018, Benoit AUTHEMAN All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
@@ -43,10 +43,8 @@
 namespace qan { // ::qan
 
 NodeBehaviour::NodeBehaviour( const std::string& name, QObject* parent ) :
-    QObject{ parent }
-{
-    gtpo::dynamic_node_behaviour< qan::Config >::setName(name);
-}
+    QObject{ parent },
+    gtpo::NodeBehaviour< qan::GraphConfig >::NodeBehaviour( name ) { /* Nil*/ }
 
 /* Behaviour Host Management *///----------------------------------------------
 void    NodeBehaviour::setHost( qan::Node* host )
@@ -60,36 +58,32 @@ void    NodeBehaviour::setHost( qan::Node* host )
 
 
 /* Notification Interface *///-------------------------------------------------
-void    NodeBehaviour::on_in_node_inserted( WeakNode& target, WeakNode& weakInNode, const WeakEdge& edge ) noexcept
+void    NodeBehaviour::inNodeInserted( WeakNode& weakInNode, const WeakEdge& edge ) noexcept
 {
-    Q_UNUSED(target);
     auto inNode = weakInNode.lock();
     auto inEdge = edge.lock();
     if ( inNode && inEdge )
         inNodeInserted( *qobject_cast<qan::Node*>(inNode.get()), *inEdge );
 }
 
-void    NodeBehaviour::on_in_node_removed( WeakNode& target, WeakNode& weakInNode, const WeakEdge& edge ) noexcept
+void    NodeBehaviour::inNodeRemoved( WeakNode& weakInNode, const WeakEdge& edge ) noexcept
 {
-    Q_UNUSED(target);
-    auto inNode = weakInNode.lock();
+    SharedNode inNode = weakInNode.lock();
     auto inEdge = edge.lock();
     if ( inNode && inEdge )
         inNodeRemoved( *qobject_cast<qan::Node*>(inNode.get()), *inEdge );
 }
 
-void    NodeBehaviour::on_out_node_inserted( WeakNode& target, WeakNode& weakOutNode, const WeakEdge& edge ) noexcept
+void    NodeBehaviour::outNodeInserted( WeakNode& weakOutNode, const WeakEdge& edge ) noexcept
 {
-    Q_UNUSED(target);
     auto outNode = weakOutNode.lock();
     auto outEdge = edge.lock();
     if ( outNode && outEdge )
         outNodeInserted( *qobject_cast<qan::Node*>(outNode.get()), *outEdge );
 }
 
-void    NodeBehaviour::on_out_node_removed( WeakNode& target, WeakNode& weakOutNode, const WeakEdge& edge ) noexcept
+void    NodeBehaviour::outNodeRemoved( WeakNode& weakOutNode, const WeakEdge& edge ) noexcept
 {
-    Q_UNUSED(target);
     auto outNode = weakOutNode.lock();
     auto outEdge = edge.lock();
     if ( outNode && outEdge )

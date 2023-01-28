@@ -69,7 +69,6 @@ Component.onCompleted: {	// Qan.Graph.Component.onCompleted()
 
 Docks could be fully customized using QML delegates and custom node items, refer to [customdocks.qml](https://github.com/cneben/QuickQanava/blob/master/samples/connector/customdocks.qml) example in connector sample.
 
-
 ### Node Resizing
 
 Node resizing behaviour could be configured with the following Qan.NodeItem (or qan::NodeItem) properties:
@@ -96,22 +95,6 @@ Default resizer color could be configured in `Qan.GraphView` using the following
 - `resizeHandlerColor` (color): Color of the visual drop node component (could be set to Material.accent for example)
 
 Node defining custom delegate resizing will be handled automatically by the framework. Complete customization of the resizing behaviour of custom nodes is possible using the `Qan.BottomRightResizer` component directly from custom delegates (See [Bottom Right Resizer](utilities.md)). 
-
-
-### Observing Topology
-
-Node related topology changes could be observed at graph or node level in the following ways:
-
-- Overloading dedicated methods in `qan::Graph`: `onNodeInserted()`, `onNodeRemoved()`, default implementation is empty.
-- Binding to properties: 
-    - `qan::Graph::nodes::length`: Number of node actually registered in graph (observable QML property).
-    - `qan::Node::inDegree`/ `qan::Node::outDegree`: In/out degree of a node updated in real-time, binded to a Qt Quick property useable from QML.
-    - `qan::Node::inNodes`/ `qan::Node::outNodes`: Observable container of in/out nodes (in/out degree is inNodes.length/outNodes.length).
-- Binding to signals `qan::Graph::nodeInserted()` and `qan::Graph::nodeRemoved()`.
-
-
-![Observing Topology](nodes/topology_observation-class.png)
-
 
 Selection
 ------------------
@@ -198,7 +181,7 @@ Grouping Nodes
 
 ### Default Groups
 
-Groups are a specific kind of nodes that can contains mutliple regular nodes. Groups are created using `#!js Qan.Graph.insertGroup()` method. Nodes are ususally inserted into existing groups visually by dragging and dropping a node inside a group. Group topology could also be modified from C++ using `qan::Graph::groupNode()` and `qan::Graph::ungroupNode()` API.
+Groups are a specific kind of nodes that can contains mutliple regular nodes. Groups are created using `#!js Qan.Graph.insertGroup()` method. Nodes are ususally inserted inside existing groups visually by dragging and dropping a node inside a group. Group topology could also be modified from C++ using `qan::Graph::groupNode()` and `qan::Graph::ungroupNode()` API.
 
 Group visual item (`Qan.GroupItem`) is accessible from `Qan.Group.item` property, the API is fully consistent with nodes. A group could have a custom label (editable directly from the default delegate using Quick Controls 2 text input) and could be collapsed visually using the `Qan.GroupItem.collapsed` property.
 
@@ -211,20 +194,16 @@ Qan.Graph {
   anchors.fill: parent
 
   Component.onCompleted: {
-    var n1 = graph.insertNode()
+    var n1 = graph.insertNode( )
     n1.label = "N1"
-    var n2 = graph.insertNode()
+    var n2 = graph.insertNode( )
     n2.label = "N2"
-    var n3 = graph.insertNode()
+    var n3 = graph.insertNode( )
     n3.label = "N3"
-    graph.insertEdge(n1, n2)
-    graph.insertEdge(n2, n3)
+    graph.insertEdge( n1, n2 )
+    graph.insertEdge( n2, n3 )
 
     var gg = graph.insertGroup();
-    gg.item.preferredGroupWidth = 300.
-    gg.item.preferredGroupHeight = 250.
-    gg.item.minimumGroupWidth = 200.
-    gg.item.minimumGroupHeight = 150.
     gg.label = "Group"
   }
 } // Qan.Graph: graph
@@ -236,10 +215,7 @@ The following configuration options are available for `Qan.Group`:
 - `Group.labelEditorVisible (QML only)`: Show or hide the group label visualization and edition visual component (label is editable by default).
 - `Group.expandButtonVisible (QML only)`: Show or hide the group default delegate expand/collapse button (button is visible by default).
 
-Group sizing is managed automatically by the framework to prevent resizing group below it's content `contentsRect`. Group size **should not** be modified directly trough standard quick items `width` and `height` properties, instead use:
-
-- `GroupItem.preferredGroupWidth` / `GroupItem.preferredGroupHeight`: Initial group size (should be used instead of setting group item width/height directly), default to (250x200).
-- `GroupItem.minimumGroupWidth` / `GroupItem.minimumGroupHeight`: Group can't be resized below specified width/height, default to (150x100).
+Group size could be modified directly trough standard `Qan.GroupItem` quick items `width` and `height` properties, if no size is specified `minimumSize` property will be used.
 
 Refer to [Group Sample](https://github.com/cneben/QuickQanava/blob/master/samples/groups/groups.qml) for more detailled informations.
 

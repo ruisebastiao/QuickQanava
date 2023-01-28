@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2008-2021, Benoit AUTHEMAN All rights reserved.
+ Copyright (c) 2008-2018, Benoit AUTHEMAN All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
@@ -42,10 +42,10 @@
 #include <QSet>
 
 // GTpo headers
-#include "../GTpo/src/gtpo/qt_container_adapter.h"
+#include "gtpoContainerAdapter.h"
 
 // QuickContainers headers
-#include "../QuickContainers/include/qcmContainer.h"
+#include "../QuickContainers/src/qcmContainer.h"
 
 namespace qan { // ::qan
 

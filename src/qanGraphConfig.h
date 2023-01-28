@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2008-2021, Benoit AUTHEMAN All rights reserved.
+ Copyright (c) 2008-2018, Benoit AUTHEMAN All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
@@ -46,10 +46,10 @@
 #include <QQuickItem>
 
 // GTpo headers
-#include "../GTpo/src/gtpo/GTpo"
+#include <GTpo>
 
 // QuickContainers headers
-#include "../QuickContainers/include/qcmContainer.h"
+#include "../QuickContainers/src/qcmContainer.h"
 
 // QuickQanava headers
 #include "./qanNavigable.h"
@@ -73,28 +73,32 @@ class Node;
 class Edge;
 class Group;
 
-struct Config final : public gtpo::config<Config>
+class GraphConfig final : public gtpo::GraphConfig
 {
-    typedef QQuickItem  graph_base;
-    typedef QObject     node_base;
-    typedef QObject     edge_base;
-    typedef QObject     group_base;
+public:
+    using GraphBase = QQuickItem;
+    using NodeBase  = QObject;
+    using EdgeBase  = QObject;
+    using GroupBase = QObject;
 
-    typedef qan::Node   final_node_t;
-    typedef qan::Edge   final_edge_t;
-    typedef qan::Group  final_group_t;
+    using GraphBehaviours = std::tuple< gtpo::GraphGroupAjacentEdgesBehaviour< qan::GraphConfig > >;
+    using GroupBehaviours = std::tuple< gtpo::GroupAdjacentEdgesBehaviour< qan::GraphConfig > >;
 
     template <typename T>
     using container_adapter = qan::ContainerAdapter<T>;
 
-    template <class ...Args>
-    using node_container_t = qcm::Container< QVector, Args... >;
+    using FinalNode     = qan::Node;
+    using FinalEdge     = qan::Edge;
+    using FinalGroup    = qan::Group;
 
     template <class ...Args>
-    using edge_container_t = qcm::Container< QVector, Args... >;
+    using NodeContainer = qcm::Container< QVector, Args... >;
+
+    template <class ...Args>
+    using EdgeContainer = qcm::Container< QVector, Args... >;
 
     template < class ...Args >
-    using search_container_t = QSet< Args... >;
+    using SearchContainer = QSet< Args... >;
 };
 
 } // ::qan

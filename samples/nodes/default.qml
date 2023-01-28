@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2008-2021, Benoit AUTHEMAN All rights reserved.
+ Copyright (c) 2008-2017, Benoit AUTHEMAN All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
@@ -24,13 +24,14 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-import QtQuick                   2.12
+import QtQuick                   2.8
 import QtQuick.Controls          2.1
 import QtQuick.Controls.Material 2.1
 import QtQuick.Layouts           1.3
 
 import QuickQanava 2.0 as Qan
 import "qrc:/QuickQanava" as Qan
+import "." as Qan
 
 Qan.GraphView {
     id: graphView
@@ -38,18 +39,8 @@ Qan.GraphView {
     navigable   : true
     resizeHandlerColor: "#03a9f4"       // SAMPLE: Set resize handler color to blue for 'resizable' nodes
     gridThickColor: Material.theme === Material.Dark ? "#4e4e4e" : "#c1c1c1"
-    PinchHandler {
-        target: null
-        onActiveScaleChanged: {
-            console.error('centroid.position=' + centroid.position)
-            console.error('activeScale=' + activeScale)
-            var p = centroid.position
-            var f = activeScale > 1.0 ? 1. : -1.
-            graphView.zoomOn(p, graphView.zoom + (f * 0.03))
-        }
-    }
+
     graph: Qan.Graph {
-        parent: graphView
         id: graph
         Component.onCompleted: {
             var n1 = graph.insertNode()
@@ -61,46 +52,13 @@ Qan.GraphView {
             var e = graph.insertEdge(n1, n2);
             defaultEdgeStyle.lineType = Qan.EdgeStyle.Curved
         }
-        onNodeClicked: function(node) {
+        onNodeClicked: {
             notifyUser( "Node <b>" + node.label + "</b> clicked" )
             nodeEditor.node = node
         }
-        onNodeRightClicked: function(node) { notifyUser( "Node <b>" + node.label + "</b> right clicked" ) }
-        onNodeDoubleClicked: function(node) { notifyUser( "Node <b>" + node.label + "</b> double clicked" ) }
-        onNodeMoved: function(node) { notifyUser("Node <b>" + node.label + "</b> moved") }
-    } // Qan.Graph
-
-    Menu {      // Context menu demonstration
-        id: contextMenu
-        property var node: undefined
-        MenuItem {
-            text: "Insert Node"
-            onClicked: {
-                let n = graph.insertNode()
-                n.label = 'New Node'
-                n.item.x = contextMenu.x
-                n.item.y = contextMenu.y
-            }
-        }
-        MenuItem {
-            text: "Remove node"
-            enabled: contextMenu.node !== undefined
-            onClicked: {
-                graph.removeNode(contextMenu.node)
-                contextMenu.node = undefined
-            }
-        }
-        onClosed: { // Clean internal state when context menu us closed
-            contextMenu.node = undefined
-        }
-    } // Menu
-
-    onRightClicked: function(pos) {
-        contextMenu.x = pos.x
-        contextMenu.y = pos.y
-        contextMenu.open()
+        onNodeRightClicked: { notifyUser( "Node <b>" + node.label + "</b> right clicked" ) }
+        onNodeDoubleClicked: { notifyUser( "Node <b>" + node.label + "</b> double clicked" ) }
     }
-
     ToolTip { id: toolTip; timeout: 2500 }
     function notifyUser(message) { toolTip.text=message; toolTip.open() }
     Label {

@@ -7,7 +7,7 @@ include(../../src/quickqanava.pri)
 
 SOURCES     +=  edges.cpp
 
-OTHER_FILES +=  edges.qml curved.qml endings.qml ortho.qml
+OTHER_FILES +=  edges.qml
 
 RESOURCES   +=  edges.qrc
 

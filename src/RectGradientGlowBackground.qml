@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2008-2021, Benoit AUTHEMAN All rights reserved.
+ Copyright (c) 2008-2018, Benoit AUTHEMAN All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
@@ -25,7 +25,7 @@
 */
 
 //-----------------------------------------------------------------------------
-// This file is a part of the QuickQanava software library.
+// This file is a part of the QuickQanava software. Copyright 2017 Benoit AUTHEMAN.
 //
 // \file	RectGradientGlowBackground.qml
 // \author	benoit@destrat.io
@@ -35,6 +35,7 @@
 import QtQuick              2.7
 import QtQuick.Layouts      1.3
 import QtQuick.Controls     2.0
+import QtGraphicalEffects   1.0
 
 import QuickQanava          2.0 as Qan
 
@@ -44,16 +45,63 @@ import QuickQanava          2.0 as Qan
 Item {
     id: background
 
-    // PUBLIC /////////////////////////////////////////////////////////////////
-    property var    style: undefined
+    // Public:
+    property var    nodeItem: undefined
 
-    // PRIVATE ////////////////////////////////////////////////////////////////
-    RectGlowEffect {
-        anchors.fill: parent
-        style: background.style
+    //! Back color property, default to style.backColor, but available for user overidde.
+    property color  backColor: nodeItem.style.backColor
+
+    // private:
+    // Default settings for rect radius, shadow margin is the _maximum_ shadow radius (+vertical or horizontal offset).
+    property real   glowRadius: nodeItem && nodeItem.style ? nodeItem.style.effectRadius : 15
+    property color  glowColor: nodeItem && nodeItem.style ? nodeItem.style.effectColor : Qt.rgba(0,0,0, 0.45)
+    property real   effectMargin: glowRadius * 2.
+
+    Item {
+        id: fakeBackground
+        z: -1   // Effect should be behind edges , docks and connectors...
+        x: -glowRadius; y: -glowRadius
+        width: nodeItem.width + effectMargin; height: nodeItem.height + effectMargin
+        visible: false
+        Rectangle {
+            x: glowRadius + 0.5 ; y: glowRadius + 0.5
+            width: nodeItem.width - 1.      // Avoid aliasing artifacts for mask at high scales.
+            height: nodeItem.height - 1.
+            radius: nodeItem.style.backRadius
+            color: Qt.rgba(0, 0, 0, 1)
+            antialiasing: true
+            layer.enabled: true
+            layer.effect: Glow {
+                color: background.glowColor
+                radius: background.glowRadius;     samples: Math.min( 15, background.glowRadius * 0.75)
+                spread: 0.25;   transparentBorder: true;    cached: false
+                visible: nodeItem.style.effectEnabled
+            }
+        }
     }
+    Item {
+        id: backgroundMask
+        x: -glowRadius; y: -glowRadius
+        width: nodeItem.width + effectMargin; height: nodeItem.height + effectMargin
+        visible: false
+        Rectangle {
+            x: glowRadius + 0.5; y: glowRadius + 0.5
+            width: nodeItem.width - 1.;  height: nodeItem.height - 1.
+            radius: nodeItem.style.backRadius
+            color: Qt.rgba(0,0,0,1)
+            antialiasing: true
+        }
+    }
+    OpacityMask {
+        x: -glowRadius; y: -glowRadius
+        width: nodeItem.width + effectMargin; height: nodeItem.height + effectMargin
+        source: ShaderEffectSource { sourceItem: fakeBackground; hideSource: false }
+        maskSource: ShaderEffectSource { format: ShaderEffectSource.Alpha; sourceItem: backgroundMask; hideSource: false }
+        invert: true
+    }
+
     RectGradientBackground {
         anchors.fill: parent
-        style: background.style
+        nodeItem: background.nodeItem
     }
-}  // Item: background
+}

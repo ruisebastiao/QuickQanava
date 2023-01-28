@@ -1,4 +1,4 @@
-import QtQuick          2.12
+import QtQuick          2.7
 import QtQuick.Controls 2.0
 import QtQuick.Layouts  1.3
 import QtQuick.Shapes   1.0
@@ -8,6 +8,7 @@ import "qrc:/QuickQanava"   as Qan
 
 Item {
     Qan.LineGrid { id: lineGrid }
+    Qan.PointGrid { id: pointGrid }
 
     Qan.Navigable {
         id: navigable
@@ -15,17 +16,6 @@ Item {
         clip: true
         navigable: true
         grid: lineGrid
-        PinchHandler {
-            target: null
-            onActiveScaleChanged: {
-                console.error('centroid.position=' + centroid.position)
-                console.error('activeScale=' + activeScale)
-                var p = centroid.position
-                var f = activeScale > 1.0 ? 1. : -1.
-                navigable.zoomOn(p, navigable.zoom + (f * 0.03))
-            }
-        }
-
         Rectangle {
             parent: navigable.containerItem
             x: 100; y: 100
@@ -55,8 +45,7 @@ Item {
     RowLayout {
         CheckBox {
             text: "Grid Visible"
-            enabled: navigable.grid
-            checked: navigable.grid ? navigable.grid.visible : false
+            checked: navigable.grid.visible
             onCheckedChanged: navigable.grid.visible = checked
         }
         Label { text: "Grid Type:" }
@@ -65,14 +54,11 @@ Item {
             textRole: "key"
             model: ListModel {
                 ListElement { key: "Lines";  value: 25 }
-                ListElement { key: "None"; value: 50 }
+                ListElement { key: "Points"; value: 50 }
             }
             currentIndex: 0 // Default to "Lines"
             onActivated: {
-                switch ( currentIndex ) {
-                case 0: navigable.grid = lineGrid; break;
-                case 2: navigable.grid = null; break;
-                }
+                navigable.grid = currentIndex == 0 ? lineGrid : pointGrid
             }
         }
         Label { text: "Grid Scale:" }
@@ -94,16 +80,14 @@ Item {
         Label { Layout.leftMargin: 25; text: "Grid Major:" }
         SpinBox {
             from: 1;    to: 10
-            enabled: navigable.grid
-            value: navigable.grid ? navigable.grid.gridMajor : 0
-            onValueModified: navigable.grid.gridMajor = value
+            value: navigable.grid.gridMajor
+            onValueChanged: navigable.grid.gridMajor = value
         }
         Label { Layout.leftMargin: 25; text: "Point size:" }
         SpinBox {
             from: 1;    to: 10
-            enabled: navigable.grid
-            value: navigable.grid ? navigable.grid.gridWidth : 0
-            onValueModified: navigable.grid.gridWidth = value
+            value: navigable.grid.gridWidth
+            onValueChanged: navigable.grid.gridWidth = value
         }
     }
 }

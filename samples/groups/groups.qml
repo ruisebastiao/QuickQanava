@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2008-2020, Benoit AUTHEMAN All rights reserved.
+ Copyright (c) 2008-2018, Benoit AUTHEMAN All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
@@ -55,6 +55,8 @@ ApplicationWindow {
             var graphNodeCenter = window.contentItem.mapToItem( containerItem, windowCenter.x, windowCenter.y )
             item.x = graphNodeCenter.x
             item.y = graphNodeCenter.y
+            item.z = graphView.maxZ
+            graphView.maxZ += 1.
         }
         graph: Qan.Graph {
             id: topology
@@ -77,8 +79,7 @@ ApplicationWindow {
                 var g1 = topology.insertGroup()
                 g1.label = "GROUP";
                 g1.item.x = 300; g1.item.y = 80
-
-                //g1.item.width = 250; g1.item.height = 270
+                g1.item.width = 250; g1.item.height = 270
                 //topology.insertEdge( n2, g1 )
             }
             onGroupClicked: {
@@ -86,80 +87,17 @@ ApplicationWindow {
                 groupEditor.group = group
             }
             onGroupDoubleClicked: { window.notifyUser( "Group <b>" + group.label + "</b> double clicked" ) }
-            onGroupRightClicked: {
-                window.notifyUser( "Group <b>" + group.label + "</b> right clicked" )
-                contextMenu.group = group
-
-                if (!window.contentItem ||
-                    !group.item)
-                    return;
-                let globalPos = window.contentItem.mapFromItem(group.item, pos.x, pos.y);
-                contextMenu.x = globalPos.x
-                contextMenu.y = globalPos.y
-                contextMenu.open()
-            }
+            onGroupRightClicked: { window.notifyUser( "Group <b>" + group.label + "</b> right clicked" ) }
             onNodeClicked: {
                 ungroupNodeButton.node = node
-                contextMenu.node = node
-            }
-            onNodeRightClicked: {
-                ungroupNodeButton.node = node
-                contextMenu.node = node
-
-                if (!window.contentItem ||
-                    !node.item)
-                    return;
-                let globalPos = window.contentItem.mapFromItem(node.item, pos.x, pos.y);
-                contextMenu.x = globalPos.x
-                contextMenu.y = globalPos.y
-                contextMenu.open()
-            }
-            onNodeMoved: {
-                if (node && node.isGroup)
-                    window.notifyUser("Group <b>" + node.label + "</b> moved")
             }
         } // Qan.Graph: graph
 
         onClicked: {
             ungroupNodeButton.node = undefined
             groupEditor.group = undefined
-            contextMenu.node = undefined
-        }
-        onRightClicked: {
-            contextMenu.x = pos.x
-            contextMenu.y = pos.y
-            contextMenu.open()
         }
 
-        Menu {      // Context menu demonstration
-            id: contextMenu
-            property var node: undefined
-            property var group: undefined
-            MenuItem {
-                text: "Insert Node"
-                enabled: contextMenu.node === undefined
-                onClicked: {
-                    let n = topology.insertNode()
-                    n.label = 'New Node'
-                    n.item.x = contextMenu.x
-                    n.item.y = contextMenu.y
-                    if (contextMenu.group)
-                        topology.groupNode(contextMenu.group, n)
-                }
-            }
-            MenuItem {
-                text: "Remove node"
-                enabled: contextMenu.node !== undefined
-                onClicked: {
-                    topology.removeNode(contextMenu.node)
-                    contextMenu.node = undefined
-                }
-            }
-            onClosed: { // Clean internal state when context menu us closed
-                contextMenu.node = undefined
-                contextMenu.group = undefined
-            }
-        } // Menu
 
         RowLayout {
             anchors.top: parent.top; anchors.topMargin: 15
@@ -197,28 +135,16 @@ ApplicationWindow {
                         topology.ungroupNode(node)
                 }
             }
-            // Note: QQmlEngine::retranslate() is often use to force applications using QuickQanava to
-            // reevaluate all qsTr() bindings: unfortunately all application bindings are actually reevaluated,
-            // sometime leading to unexpected behaviours for custom groups.
-            ToolButton {
-                id: retranslate
-                text: "Retranslate"
-                onClicked: {
-                    ;
-                }
-            }
         }
         Control {
             id: groupEditor
             property var group: undefined
             onGroupChanged: groupItem = group ? group.item : undefined
-
             property var groupItem: undefined
             anchors.bottom: parent.bottom; anchors.bottomMargin: 15
             anchors.right: parent.right; anchors.rightMargin: 15
-
             width: 220; height: 385; padding: 0
-            Pane { anchors.fill: parent; opacity: 0.9; padding: 0; Pane { anchors.fill: parent } } // Background
+            Frame { anchors.fill: parent; opacity: 0.9; padding: 0; Pane { anchors.fill: parent } } // Background
             ColumnLayout {
                 Label {
                     text: groupEditor.group ? "Editing group <b>" + groupEditor.group.label + "</b>": "Select a group..."

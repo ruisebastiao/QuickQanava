@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2008-2021, Benoit AUTHEMAN All rights reserved.
+ Copyright (c) 2008-2018, Benoit AUTHEMAN All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
@@ -25,7 +25,7 @@
 */
 
 //-----------------------------------------------------------------------------
-// This file is a part of the QuickQanava software library.
+// This file is a part of the QuickQanava software. Copyright 2015 Benoit AUTHEMAN.
 //
 // \file	RectNodeTemplate.qml
 // \author	benoit@destrat.io
@@ -35,6 +35,7 @@
 import QtQuick              2.7
 import QtQuick.Layouts      1.3
 import QtQuick.Controls     2.0
+import QtGraphicalEffects   1.0
 
 import QuickQanava          2.0 as Qan
 
@@ -44,26 +45,16 @@ import QuickQanava          2.0 as Qan
  */
 Item {
     id: template
-
-    // PUBLIC /////////////////////////////////////////////////////////////////
     property var            nodeItem : undefined
     default property alias  children : contentLayout.children
 
-    // PRIVATE ////////////////////////////////////////////////////////////////
-    onNodeItemChanged: {
-        if (delegateLoader.item &&
-            delegateLoader.item.nodeItem)
-            delegateLoader.item.nodeItem = nodeItem
-    }
-    readonly property real   backRadius: nodeItem && nodeItem.style ? nodeItem.style.backRadius : 4.
     Loader {
-        id: delegateLoader
         anchors.fill: parent
         source: {
-            if (!nodeItem ||
-                !nodeItem.style)     // Defaul to solid no effect with unconfigured nodes
+            if ( !nodeItem ||
+                 !nodeItem.style )     // Defaul to solid no effect with unconfigured nodes
                 return "qrc:/QuickQanava/RectSolidBackground.qml";
-            switch (nodeItem.style.fillType) {  // Otherwise, select the delegate according to current style configuration
+            switch ( nodeItem.style.fillType ) {  // Otherwise, select the delegate according to current style configuration
             case Qan.NodeStyle.FillSolid:
                 switch (nodeItem.style.effectType ) {
                 case Qan.NodeStyle.EffectNone:   return "qrc:/QuickQanava/RectSolidBackground.qml";
@@ -82,14 +73,13 @@ Item {
         }
         onItemChanged: {
             if (item)
-                item.style = template.nodeItem ? template.nodeItem.style : undefined
+                item.nodeItem = Qt.binding(function() { return template.nodeItem; } );
         }
     }
     ColumnLayout {
         id: layout
         anchors.fill: parent
-        anchors.margins: backRadius / 2.
-        spacing: 0
+        anchors.margins: nodeItem.style.backRadius / 2.; spacing: 0
         visible: !labelEditor.visible
         Label {
             id: nodeLabel
@@ -98,12 +88,10 @@ Item {
             Layout.preferredHeight: contentHeight
             Layout.alignment: Qt.AlignHCenter | Qt.AlignTop
             textFormat: Text.PlainText
-            text: nodeItem && nodeItem.node ? nodeItem.node.label : ''
-            horizontalAlignment: Qt.AlignHCenter
-            verticalAlignment: Qt.AlignVCenter
+            text: nodeItem && nodeItem.node ? nodeItem.node.label : ""
+            horizontalAlignment: Qt.AlignHCenter; verticalAlignment: Qt.AlignVCenter
             maximumLineCount: 3 // Must be set, otherwise elide don't work and we end up with single line text
-            elide: Text.ElideRight
-            wrapMode: Text.Wrap
+            elide: Text.ElideRight; wrapMode: Text.Wrap
         }
         Item {
             id: contentLayout
@@ -115,13 +103,13 @@ Item {
     }
     Connections {
         target: nodeItem
-        function onNodeDoubleClicked() { labelEditor.visible = true }
+        onNodeDoubleClicked: labelEditor.visible = true
     }
     LabelEditor {
         id: labelEditor
         anchors.fill: parent
-        anchors.margins: backRadius / 2.
-        target: template.nodeItem.node
+        anchors.margins: nodeItem.style.backRadius / 2.
+        target: parent.nodeItem.node
         visible: false
     }
-} // Item: template
+}

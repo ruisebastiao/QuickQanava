@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2008-2021, Benoit AUTHEMAN All rights reserved.
+ Copyright (c) 2008-2018, Benoit AUTHEMAN All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
@@ -32,7 +32,8 @@
 // \date    2015 06 05
 //-----------------------------------------------------------------------------
 
-#pragma once
+#ifndef qanStyle_h
+#define qanStyle_h
 
 // Qt headers
 #include <QColor>
@@ -67,24 +68,23 @@ class Style : public QObject
 public:
     /*! \brief Style constructor with style name initialisation.
      */
-    Style(QObject* parent = nullptr);
-    explicit Style(QString name, QObject* parent = nullptr);
-    virtual ~Style() override = default;
-    Style(const Style&) = delete;
+    explicit Style( QString name = "", QObject* parent = nullptr );
+    virtual ~Style( ) { }
+    Style( const Style& ) = delete;
     //@}
     //-------------------------------------------------------------------------
 
     /*! \name Style Management *///--------------------------------------------
     //@{
 public:
-    Q_PROPERTY(QString name READ getName WRITE setName NOTIFY nameChanged FINAL)
-    inline  void        setName(QString name) noexcept { if (name != _name) { _name = name; emit nameChanged(); } }
+    Q_PROPERTY( QString name READ getName WRITE setName NOTIFY nameChanged FINAL )
+    inline  void        setName( QString name ) noexcept { if ( name != _name ) { _name = name; emit nameChanged( ); } }
     inline  QString     getName() noexcept { return _name; }
     inline  QString     getName() const noexcept { return _name; }
 signals:
-    void        nameChanged();
+    void        nameChanged( );
 private:
-    QString     _name = QStringLiteral("");
+    QString     _name{ QStringLiteral("") };
     //@}
     //-------------------------------------------------------------------------
 };
@@ -100,10 +100,9 @@ public:
      * Style \c metaTarget is "qan::Node". NodeStyle objects are usually created
      * with qan:StyleManager::createNodeStyle() factory method.
      */
-    NodeStyle(QObject* parent = nullptr);
-    explicit NodeStyle(QString name, QObject* parent = nullptr);
-    virtual ~NodeStyle() override = default;
-    NodeStyle(const NodeStyle&) = delete;
+    explicit NodeStyle( QString name = "", QObject* parent = nullptr );
+    virtual ~NodeStyle( ) { }
+    NodeStyle( const NodeStyle& ) = delete;
     //@}
     //-------------------------------------------------------------------------
 
@@ -116,14 +115,14 @@ public:
      * built using Qan.RectNodeTemplate and Qan.RectSolidBackground. When defining custom node
      * items, value can't be interpreted by the user with no limitations.
      */
-    Q_PROPERTY(qreal backRadius READ getBackRadius WRITE setBackRadius NOTIFY backRadiusChanged FINAL)
+    Q_PROPERTY( qreal backRadius READ getBackRadius WRITE setBackRadius NOTIFY backRadiusChanged FINAL )
     //! \copydoc backRadius
-    void            setBackRadius(qreal backRadius) noexcept;
+    void            setBackRadius( qreal backRadius ) noexcept;
     //! \copydoc backRadius
     inline qreal    getBackRadius() const noexcept { return _backRadius; }
 protected:
     //! \copydoc backRadius
-    qreal           _backRadius = 4.;
+    qreal           _backRadius{4.};
 signals:
     //! \copydoc backRadius
     void            backRadiusChanged();
@@ -137,14 +136,14 @@ public:
      * limitations (Qan.RectSolidBackground could be used to add backOpacity support to custom node delegates).
      *
      */
-    Q_PROPERTY(qreal backOpacity READ getBackOpacity WRITE setBackOpacity NOTIFY backOpacityChanged FINAL)
+    Q_PROPERTY( qreal backOpacity READ getBackOpacity WRITE setBackOpacity NOTIFY backOpacityChanged FINAL )
     //! \copydoc backOpacity
-    void            setBackOpacity(qreal backOpacity) noexcept;
+    void            setBackOpacity( qreal backOpacity ) noexcept;
     //! \copydoc backOpacity
     inline qreal    getBackOpacity() const noexcept { return _backOpacity; }
 protected:
     //! \copydoc backOpacity
-    qreal           _backOpacity = 0.80;
+    qreal           _backOpacity{0.80};
 signals:
     //! \copydoc backOpacity
     void            backOpacityChanged();
@@ -159,7 +158,6 @@ public:
      * \since 0.9.4
      */
     enum class FillType : unsigned int {
-        Undefined       = 0,    // Reserved for serialization purposes, do not use Undefined = set to default value
         FillSolid       = 1,
         FillGradient    = 2
     };
@@ -167,7 +165,7 @@ public:
 
 public:
     //! \copydoc FillType
-    Q_PROPERTY(FillType fillType READ getFillType WRITE setFillType NOTIFY fillTypeChanged FINAL)
+    Q_PROPERTY( FillType fillType READ getFillType WRITE setFillType NOTIFY fillTypeChanged FINAL )
     //! \copydoc FillType
     void                setFillType(FillType fillType) noexcept;
     //! \copydoc FillType
@@ -181,8 +179,8 @@ signals:
 
 public:
     //! \brief Node background color (default to white).
-    Q_PROPERTY(QColor backColor READ getBackColor WRITE setBackColor NOTIFY backColorChanged FINAL)
-    void            setBackColor(const QColor& backColor) noexcept;
+    Q_PROPERTY( QColor backColor READ getBackColor WRITE setBackColor NOTIFY backColorChanged FINAL )
+    void            setBackColor( const QColor& backColor ) noexcept;
     const QColor&   getBackColor() const noexcept { return _backColor; }
 protected:
     QColor          _backColor{Qt::white};
@@ -194,8 +192,8 @@ public:
      *
      * \since 0.9.4
      */
-    Q_PROPERTY(QColor baseColor READ getBaseColor WRITE setBaseColor NOTIFY baseColorChanged FINAL)
-    void            setBaseColor(const QColor& backColor) noexcept;
+    Q_PROPERTY( QColor baseColor READ getBaseColor WRITE setBaseColor NOTIFY baseColorChanged FINAL )
+    void            setBaseColor( const QColor& backColor ) noexcept;
     const QColor&   getBaseColor() const noexcept { return _baseColor; }
 protected:
     QColor          _baseColor{Qt::white};
@@ -203,8 +201,8 @@ signals:
     void            baseColorChanged();
 
 public:
-    Q_PROPERTY(QColor borderColor READ getBorderColor WRITE setBorderColor NOTIFY borderColorChanged FINAL)
-    void            setBorderColor(const QColor& borderColor) noexcept;
+    Q_PROPERTY( QColor borderColor READ getBorderColor WRITE setBorderColor NOTIFY borderColorChanged FINAL )
+    void            setBorderColor( const QColor& borderColor ) noexcept;
     const QColor&   getBorderColor() const noexcept { return _borderColor; }
 protected:
     QColor          _borderColor = QColor(Qt::black);
@@ -212,8 +210,8 @@ signals:
     void            borderColorChanged();
 
 public:
-    Q_PROPERTY(qreal borderWidth READ getBorderWidth WRITE setBorderWidth NOTIFY borderWidthChanged FINAL)
-    void            setBorderWidth(qreal borderWidth) noexcept;
+    Q_PROPERTY( qreal borderWidth READ getBorderWidth WRITE setBorderWidth NOTIFY borderWidthChanged FINAL )
+    void            setBorderWidth( qreal borderWidth ) noexcept;
     inline qreal    getBorderWidth() const noexcept { return _borderWidth; }
 protected:
     qreal           _borderWidth = 1.0;
@@ -223,25 +221,24 @@ signals:
 public:
     //! Define what effect should be used when drawing node background (either nothing, a drop shadow or a glow effect).
     enum class EffectType : unsigned int {
-        Undefined       = 0,
-        EffectNone      = 1,
-        EffectShadow    = 2,
-        EffectGlow      = 3
+        EffectNone      = 0,
+        EffectShadow    = 1,
+        EffectGlow      = 2
     };
     Q_ENUM(EffectType)
 
 public:
-    Q_PROPERTY(EffectType effectType READ getEffectType WRITE setEffectType NOTIFY effectTypeChanged FINAL)
+    Q_PROPERTY( EffectType effectType READ getEffectType WRITE setEffectType NOTIFY effectTypeChanged FINAL )
     void                setEffectType(EffectType effectType) noexcept;
     inline EffectType   getEffectType() const noexcept { return _effectType; }
 protected:
-    EffectType          _effectType = EffectType::EffectShadow;
+    EffectType          _effectType{EffectType::EffectShadow};
 signals:
     void                effectTypeChanged();
 
 public:
-    Q_PROPERTY(bool effectEnabled READ getEffectEnabled WRITE setEffectEnabled NOTIFY effectEnabledChanged FINAL)
-    void            setEffectEnabled(bool effectEnabled) noexcept;
+    Q_PROPERTY( bool effectEnabled READ getEffectEnabled WRITE setEffectEnabled NOTIFY effectEnabledChanged FINAL )
+    void            setEffectEnabled( bool effectEnabled ) noexcept;
     inline bool     getEffectEnabled() const noexcept { return _effectEnabled; }
 protected:
     bool            _effectEnabled = true;
@@ -249,20 +246,20 @@ signals:
     void            effectEnabledChanged();
 
 public:
-    Q_PROPERTY(QColor effectColor READ getEffectColor WRITE setEffectColor NOTIFY effectColorChanged FINAL)
-    void            setEffectColor(QColor effectColor) noexcept;
+    Q_PROPERTY( QColor effectColor READ getEffectColor WRITE setEffectColor NOTIFY effectColorChanged FINAL )
+    void            setEffectColor( QColor effectColor ) noexcept;
     inline QColor   getEffectColor() const noexcept { return _effectColor; }
 protected:
-    QColor          _effectColor = QColor{0, 0, 0, 127};
+    QColor          _effectColor = QColor{ 0, 0, 0, 127 };
 signals:
     void            effectColorChanged();
 
 public:
-    Q_PROPERTY(qreal effectRadius READ getEffectRadius WRITE setEffectRadius NOTIFY effectRadiusChanged FINAL)
-    void            setEffectRadius(qreal effectRadius) noexcept;
+    Q_PROPERTY( qreal effectRadius READ getEffectRadius WRITE setEffectRadius NOTIFY effectRadiusChanged FINAL )
+    void            setEffectRadius( qreal effectRadius ) noexcept;
     inline qreal    getEffectRadius() const noexcept { return _effectRadius; }
 protected:
-    qreal           _effectRadius = 3.;
+    qreal           _effectRadius{3.};
 signals:
     void            effectRadiusChanged();
 
@@ -271,20 +268,20 @@ public:
      *
      * Any value is considered valid (even negative offset for drop shadows).
      */
-    Q_PROPERTY(qreal effectOffset READ getEffectOffset WRITE setEffectOffset NOTIFY effectOffsetChanged FINAL)
-    void            setEffectOffset(qreal effectOFfset) noexcept;
+    Q_PROPERTY( qreal effectOffset READ getEffectOffset WRITE setEffectOffset NOTIFY effectOffsetChanged FINAL )
+    void            setEffectOffset( qreal effectOFfset ) noexcept;
     inline qreal    getEffectOffset() const noexcept { return _effectOffset; }
 protected:
-    qreal           _effectOffset = 3.;
+    qreal           _effectOffset{3.};
 signals:
     void            effectOffsetChanged();
 
 public:
     /*! \brief Node content text font \c pointSize, set to -1 to use system default (default to -1 ie system default size).
      */
-    Q_PROPERTY(int fontPointSize READ getFontPointSize WRITE setFontPointSize NOTIFY fontPointSizeChanged FINAL)
+    Q_PROPERTY( int fontPointSize READ getFontPointSize WRITE setFontPointSize NOTIFY fontPointSizeChanged FINAL )
     //! \copydoc fontPointSize
-    void            setFontPointSize(int fontPointSize) noexcept;
+    void            setFontPointSize( int fontPointSize ) noexcept;
     //! \copydoc fontPointSize
     inline int      getFontPointSize() const noexcept { return _fontPointSize; }
 protected:
@@ -297,32 +294,17 @@ signals:
 public:
     /*! \brief Set to true to display node text with bold font (default to false).
      */
-    Q_PROPERTY(bool fontBold READ getFontBold WRITE setFontBold NOTIFY fontBoldChanged FINAL)
+    Q_PROPERTY( bool fontBold READ getFontBold WRITE setFontBold NOTIFY fontBoldChanged FINAL )
     //! \copydoc fontBold
-    void            setFontBold(bool fontBold) noexcept;
+    void            setFontBold( bool fontBold ) noexcept;
     //! \copydoc fontBold
     inline bool     getFontBold() const noexcept { return _fontBold; }
 protected:
     //! \copydoc fontBold
-    bool            _fontBold = false;
+    bool            _fontBold{false};
 signals:
     //! \copydoc fontBold
     void            fontBoldChanged();
-
-public:
-    /*! \brief Color to use to paint the node label (default to black)
-     */
-    Q_PROPERTY(QColor labelColor READ getLabelColor WRITE setLabelColor NOTIFY labelColorChanged FINAL)
-    //! \copydoc labelColor
-    void            setLabelColor(QColor labelColor) noexcept;
-    //! \copydoc labelColor
-    inline QColor   getLabelColor() const noexcept { return _labelColor; }
-protected:
-    //! \copydoc labelColor
-    QColor          _labelColor = QColor{"black"};
-signals:
-    //! \copydoc labelColor
-    void            labelColorChanged();
     //@}
     //-------------------------------------------------------------------------
 };
@@ -336,10 +318,9 @@ public:
     /*! \brief Edge style constructor with style \c name and \c target initialisation.
      *
      */
-    EdgeStyle(QObject* parent = nullptr);
-    explicit EdgeStyle(QString name, QObject* parent = nullptr);
-    virtual ~EdgeStyle() override = default;
-    EdgeStyle(const EdgeStyle&) = delete;
+    explicit EdgeStyle( QString name = "", QObject* parent = nullptr );
+    virtual ~EdgeStyle( ) { }
+    EdgeStyle( const EdgeStyle& ) = delete;
     //@}
     //-------------------------------------------------------------------------
 
@@ -349,67 +330,44 @@ signals:
     void            styleModified();
 
 public:
-    //! End type drawing configuration
-    enum class ArrowShape {
-        //! Invalid undefined value, usefull for serialization (if Undefined, default to Arrow).
-        //Undefined = 0,
-        //! Do not draw an end.
-        None = 0,
-        //! End shape is an arrow.
-        Arrow = 1,
-        //! End shape is an open arrow.
-        ArrowOpen = 2,
-        //! End shape is a filled circle.
-        Circle = 3,
-        //! End shape is an open circle.
-        CircleOpen = 4,
-        //! End shape is a filled rectangle.
-        Rect = 5,
-        //! End shape is a open rectangle.
-        RectOpen = 6
-    };
-    Q_ENUM(ArrowShape)
-
     //! Define edge style: either straight (drawn with a line) or curved (drawn with a cubic path).
     enum class LineType : unsigned int {
-        Undefined   = 0,
-        Straight    = 1,
-        Curved      = 2,
-        Ortho       = 3
+        Straight    = 0,
+        Curved      = 1
     };
     Q_ENUM(LineType)
 
 public:
     //! Define edge line type: either plain line (Straight) or curved cubic path (Curved), default to Straight.
-    Q_PROPERTY(LineType lineType READ getLineType WRITE setLineType NOTIFY lineTypeChanged FINAL)
-    void            setLineType(LineType lineType) noexcept;
+    Q_PROPERTY( LineType lineType READ getLineType WRITE setLineType NOTIFY lineTypeChanged FINAL )
+    void            setLineType( LineType lineType ) noexcept;
     inline LineType getLineType() const noexcept { return _lineType; }
 protected:
-    LineType        _lineType = LineType::Straight;
+    LineType        _lineType{LineType::Straight};
 signals:
     void            lineTypeChanged();
 
 public:
-    Q_PROPERTY(QColor lineColor READ getLineColor WRITE setLineColor NOTIFY lineColorChanged FINAL)
-    void                    setLineColor(const QColor& lineColor) noexcept;
+    Q_PROPERTY( QColor lineColor READ getLineColor WRITE setLineColor NOTIFY lineColorChanged FINAL )
+    void                    setLineColor( const QColor& lineColor ) noexcept;
     inline const QColor&    getLineColor() const noexcept { return _lineColor; }
 protected:
-    QColor                  _lineColor = QColor{0, 0, 0, 255};
+    QColor                  _lineColor = QColor( 0, 0, 0, 255 );
 signals:
     void                    lineColorChanged();
 
 public:
-    Q_PROPERTY(qreal lineWidth READ getLineWidth WRITE setLineWidth NOTIFY lineWidthChanged FINAL)
-    void            setLineWidth(qreal lineWidth) noexcept;
+    Q_PROPERTY( qreal lineWidth READ getLineWidth WRITE setLineWidth NOTIFY lineWidthChanged FINAL )
+    void            setLineWidth( qreal lineWidth ) noexcept;
     inline qreal    getLineWidth() const noexcept { return _lineWidth; }
 protected:
-    qreal           _lineWidth = 3.0;
+    qreal           _lineWidth = 2.0;
 signals:
     void            lineWidthChanged();
 
 public:
-    Q_PROPERTY(qreal arrowSize READ getArrowSize WRITE setArrowSize NOTIFY arrowSizeChanged FINAL)
-    void            setArrowSize(qreal arrowSize) noexcept;
+    Q_PROPERTY( qreal arrowSize READ getArrowSize WRITE setArrowSize NOTIFY arrowSizeChanged FINAL )
+    void            setArrowSize( qreal arrowSize ) noexcept;
     inline qreal    getArrowSize() const noexcept { return _arrowSize; }
 protected:
     qreal           _arrowSize = 4.0;
@@ -417,57 +375,29 @@ signals:
     void            arrowSizeChanged();
 
 public:
-
-    //! \copydoc Define shape of source arrow, default None.
-    Q_PROPERTY(qan::EdgeStyle::ArrowShape srcShape READ getSrcShape WRITE setSrcShape NOTIFY srcShapeChanged FINAL)
-    //! \copydoc srcShape
-    inline ArrowShape   getSrcShape() const noexcept { return _srcShape; }
-    //! \copydoc srcShape
-    auto                setSrcShape(ArrowShape srcShape) noexcept -> void;
-private:
-    //! \copydoc srcShape
-    ArrowShape          _srcShape = ArrowShape::None;
-signals:
-    void                srcShapeChanged();
-
-public:
-    //! \copydoc Define shape of destination arrow, default arrow.
-    Q_PROPERTY(qan::EdgeStyle::ArrowShape dstShape READ getDstShape WRITE setDstShape NOTIFY dstShapeChanged FINAL)
-
-    //! \copydoc dstShape
-    inline ArrowShape   getDstShape() const noexcept { return _dstShape; }
-    //! \copydoc dstShape
-    auto                setDstShape(ArrowShape dstShape) noexcept -> void;
-private:
-    //! \copydoc dstShape
-    ArrowShape          _dstShape = ArrowShape::Arrow;
-signals:
-    void                dstShapeChanged();
-
-public:
     //! Draw edge with dashed line (default to false), when set to true \c dashPattern is active.
-    Q_PROPERTY(bool dashed READ getDashed WRITE setDashed NOTIFY dashedChanged FINAL)
+    Q_PROPERTY( bool dashed READ getDashed WRITE setDashed NOTIFY dashedChanged FINAL )
     //! \copydoc dashed
-    void            setDashed(bool dashed) noexcept;
+    void            setDashed( bool dashed ) noexcept;
     //! \copydoc dashed
     inline bool     getDashed() const noexcept { return _dashed; }
 protected:
     //! \copydoc dashed
-    bool            _dashed = false;
+    bool            _dashed{false};
 signals:
     //! \copydoc dashed
     void            dashedChanged();
 
 public:
     //! See QtQuick.Shape ShapePath.dashPattern property documentation, default to [2,2] ie regular dash line, used when dashed property is set to true.
-    Q_PROPERTY(QVector<qreal> dashPattern READ getDashPattern WRITE setDashPattern NOTIFY dashPatternChanged FINAL)
+    Q_PROPERTY( QVector<qreal> dashPattern READ getDashPattern WRITE setDashPattern NOTIFY dashPatternChanged FINAL )
     //! \copydoc dashPattern
-    void            setDashPattern(const QVector<qreal>& dashPattern) noexcept;
+    void            setDashPattern( const QVector<qreal>& dashPattern ) noexcept;
     //! \copydoc dashPattern
     const QVector<qreal>&   getDashPattern() const noexcept;
 protected:
     //! \copydoc dashPattern
-    QVector<qreal>  _dashPattern{2, 2};
+    QVector<qreal>  _dashPattern{ 2, 2 };
 signals:
     //! \copydoc dashPattern
     void            dashPatternChanged();
@@ -477,12 +407,9 @@ signals:
 
 } // ::qan
 
-QML_DECLARE_TYPE(qan::Style)
+QML_DECLARE_TYPE( qan::Style )
+QML_DECLARE_TYPE( qan::NodeStyle )
+QML_DECLARE_TYPE( qan::EdgeStyle )
 
-QML_DECLARE_TYPE(qan::NodeStyle)
-Q_DECLARE_METATYPE(qan::NodeStyle::FillType)
-Q_DECLARE_METATYPE(qan::NodeStyle::EffectType)
+#endif // qanStyle_h
 
-QML_DECLARE_TYPE(qan::EdgeStyle)
-Q_DECLARE_METATYPE(qan::EdgeStyle::LineType)
-Q_DECLARE_METATYPE(qan::EdgeStyle::ArrowShape)

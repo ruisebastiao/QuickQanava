@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2008-2021, Benoit AUTHEMAN All rights reserved.
+ Copyright (c) 2008-2018, Benoit AUTHEMAN All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
@@ -25,9 +25,9 @@
 */
 
 //-----------------------------------------------------------------------------
-// This file is a part of the QuickQanava software library.
+// This file is a part of the QuickQanva software. Copyright 2014 Benoit AUTHEMAN.
 //
-// \file	LabelEditor.qml
+// \file	CanvasTemplate.qml
 // \author	benoit@destrat.io
 // \date	2015 11 30
 //-----------------------------------------------------------------------------
@@ -72,22 +72,22 @@ Loader {
     property var    target: undefined
 
     property bool   bold: false
-    property real   pixelSize: 12
+    property real   pointSize: 11
 
     onVisibleChanged: {
-        if (visible && !item)
+        if ( visible && !item )
             sourceComponent = labelEditorComponent
-        if (item &&
-            visible)
+        if ( item &&
+             visible )
             showLabelEditor()
     }
     onItemChanged: {
-        if (item)             // If item is non null, it's creation has been request,
+        if ( item )             // If item is non null, it's creation has been request,
             showLabelEditor()   // force show label edition
     }
     function showLabelEditor() {
-        if (item) {
-            if (!visible)
+        if ( item ) {
+            if ( !visible )
                 visible = true
             item.forceActiveFocus()
             item.selectAll()
@@ -100,23 +100,19 @@ Loader {
             anchors.top: parent.top; anchors.left: parent.left; anchors.right: parent.right
             text: target ? target.label : ""
             font.bold: labelEditorLoader.bold
-            font.pixelSize: labelEditorLoader.pixelSize
+            font.pointSize: labelEditorLoader.pointSize
             onAccepted: {
-                if (target &&
-                    text.length !== 0)
+                if ( target &&
+                     text.length !== 0 )
                     target.label = text   // Do not allow empty labels
                 focus = false;          // Release focus once the label has been edited
             }
             onEditingFinished: labelEditorLoader.visible = false
             onActiveFocusChanged: {
-                if (target &&
-                    text !== target.label)  // Ensure that last edition text is removed
+                if ( target &&
+                     text !== target.label )  // Ensure that last edition text is removed
                     text = target.label       // for exemple if edition has been interrupted in a focus change
-            }
-            Keys.onEscapePressed: {
-                // Cancel edition on escape
-                labelEditorLoader.visible = false;
             }
         }
     }
-} // Loader
+}

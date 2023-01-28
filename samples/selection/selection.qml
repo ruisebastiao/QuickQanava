@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2008-2021, Benoit AUTHEMAN All rights reserved.
+ Copyright (c) 2008-2017, Benoit AUTHEMAN All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
@@ -24,46 +24,29 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-import QtQuick                   2.13
-import QtQuick.Controls          2.15
+import QtQuick                   2.8
+import QtQuick.Controls          2.1
 import QtQuick.Controls.Material 2.1
 import QtQuick.Layouts           1.3
 import QtQuick.Shapes            1.0
-import Qt.labs.platform          1.0 as Labs    // ColorDialog
+import Qt.labs.platform          1.0    // ColorDialog
 
 import QuickQanava          2.0 as Qan
 import "qrc:/QuickQanava"   as Qan
+import "."
 
 ApplicationWindow {
     id: window
     visible: true
     width: 1280; height: 720
-    title: 'Selection sample'
+    title: "Custom nodes sample"
     Pane { anchors.fill: parent }
     ToolTip { id: toolTip; timeout: 2000 }
-    function notifyUser(message) { toolTip.text = message; toolTip.open() }
-
-    Menu {
-        id: menu
-        title: 'Context Menu'
-        property var targetNode: undefined
-        property var targetGroup: undefined
-        onClosed: {
-            menu.targetNode = undefined
-            menu.targetGroup = undefined
-        }
-        MenuItem {
-            text: 'Copy'
-            onTriggered: {
-
-            }
-        }
-    } // Menu: menu
-
+    function notifyUser(message) { toolTip.text=message; toolTip.open() }
     Qan.GraphView {
         id: graphView
         anchors.fill: parent
-        navigable : true
+        navigable   : true
         graph: Qan.Graph {
             id: topology
             connectorEnabled: true
@@ -80,18 +63,9 @@ ApplicationWindow {
                 var g1 = topology.insertGroup()
                 g1.label = "GROUP"; g1.item.x = 250; g1.item.y = 45
             }
-            onGroupDoubleClicked: function(group) { window.notifyUser( "Group <b>" + group.label + "</b> double clicked" ) }
-            onGroupRightClicked: function(group) { window.notifyUser( "Group <b>" + group.label + "</b> right clicked" ) }
+            onGroupDoubleClicked: { window.notifyUser( "Group <b>" + group.label + "</b> double clicked" ) }
+            onGroupRightClicked: { window.notifyUser( "Group <b>" + group.label + "</b> right clicked" ) }
         } // Qan.Graph: graph
-        focus: true
-        Keys.onPressed: {
-            if (event.modifiers & Qt.ControlModifier &&      // CTRL+A
-                event.key === Qt.Key_A) {
-                topology.selectAll()
-                event.accepted = false
-            } else
-                event.accepted = false
-        }
 
         RowLayout {
             anchors.top: parent.top; anchors.topMargin: 15
@@ -116,21 +90,18 @@ ApplicationWindow {
             }
         }
 
-        Labs.ColorDialog {
+        ColorDialog {
             id: selectionColorDialog
             title: "Selection hilight color"
             onAccepted: { topology.selectionColor = color; }
         }
 
-        Frame {
+        Item {
             id: selectionSettings
-            anchors.bottom: parent.bottom;   anchors.bottomMargin: 10
-            anchors.right: parent.right;    anchors.rightMargin: 10
-            width: 250
-            height: 430
-            leftPadding: 0; rightPadding: 0
-            topPadding: 0;  bottomPadding: 0
-            Pane { anchors.fill: parent; anchors.margins: 1; opacity: 0.7 }
+            anchors.bottom: parent.bottom;   anchors.bottomMargin: 15
+            anchors.right: parent.right;    anchors.rightMargin: 15
+            width: 250; height: 390
+            Frame { anchors.fill: parent; opacity: 0.8; padding: 0; Pane { anchors.fill: parent } } // Background
             ColumnLayout {
                 anchors.fill: parent; anchors.margins: 10
                 ComboBox {
@@ -140,10 +111,11 @@ ApplicationWindow {
                         CustomSelectionItem { }
                     }
                     onActivated: {
-                        if (currentIndex == 0)
+                        if ( currentIndex == 0 )
                             topology.selectionDelegate = null  // Use undefined to set back the default delegate
-                        else if (currentIndex == 1)
+                        else if ( currentIndex == 1 ) {
                             topology.selectionDelegate = customSelectionComponent
+                        }
                     }
                 }
 
@@ -159,10 +131,8 @@ ApplicationWindow {
                     spacing: 4; focus: true; flickableDirection : Flickable.VerticalFlick
                     highlightFollowsCurrentItem: false
                     highlight: Rectangle {
-                        x: 0
-                        y: selectionListView.currentItem !== null ? selectionListView.currentItem.y : 0
-                        width: selectionListView.width
-                        height: selectionListView.currentItem ? selectionListView.currentItem.height : 0
+                        x: 0; y: ( selectionListView.currentItem !== null ? selectionListView.currentItem.y : 0 );
+                        width: selectionListView.width; height: selectionListView.currentItem.height
                         color: Material.accent; opacity: 0.7; radius: 3
                         Behavior on y { SpringAnimation { duration: 200; spring: 2; damping: 0.1 } }
                     }
@@ -188,8 +158,8 @@ ApplicationWindow {
                             text: "NoSelection"
                             checked: topology.selectionPolicy === Qan.Graph.NoSelection
                             onCheckedChanged: {
-                                if (checked)
-                                    topology.selectionPolicy = Qan.Graph.NoSelection
+                                if ( checked )
+                                    topology.selectionPolicy = Qan.Graph.NoSelection;
                             }
                         }
                         CheckBox {
@@ -199,8 +169,8 @@ ApplicationWindow {
                             text: "SelectOnClick"
                             checked: topology.selectionPolicy === Qan.Graph.SelectOnClick
                             onCheckedChanged: {
-                                if (checked)
-                                    topology.selectionPolicy = Qan.Graph.SelectOnClick
+                                if ( checked )
+                                    topology.selectionPolicy = Qan.Graph.SelectOnClick;
                             }
                         }
                         CheckBox {
@@ -210,8 +180,8 @@ ApplicationWindow {
                             text: "SelectOnCtrlClick"
                             checked: topology.selectionPolicy === Qan.Graph.SelectOnCtrlClick
                             onCheckedChanged: {
-                                if (checked)
-                                    topology.selectionPolicy = Qan.Graph.SelectOnCtrlClick
+                                if ( checked )
+                                    topology.selectionPolicy = Qan.Graph.SelectOnCtrlClick;
                             }
                         }
                     }
@@ -255,11 +225,6 @@ ApplicationWindow {
                         value: topology.selectionMargin
                         onValueChanged: { topology.selectionMargin = value  }
                     }
-                }
-                CheckBox {
-                    text: 'Enable visual selection rect'
-                    checked: graphView.selectionRectEnabled
-                    onClicked: graphView.selectionRectEnabled = checked
                 }
             }
         } // selectionSettings

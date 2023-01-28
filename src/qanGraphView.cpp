@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2008-2021, Benoit AUTHEMAN All rights reserved.
+ Copyright (c) 2008-2018, Benoit AUTHEMAN All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
@@ -43,143 +43,65 @@
 namespace qan { // ::qan
 
 /* GraphView Object Management *///--------------------------------------------
-GraphView::GraphView(QQuickItem* parent) :
-    qan::Navigable{parent}
+GraphView::GraphView( QQuickItem* parent ) :
+    qan::Navigable{ parent }
 {
-    setAntialiasing(true);
-    setSmooth(true);
-    setFocus(true);
+    setAntialiasing( true );
+    setSmooth( true );
 }
 
-void    GraphView::setGraph(qan::Graph* graph)
+void    GraphView::setGraph( qan::Graph* graph )
 {
-    if (graph == nullptr) {
+    if ( graph == nullptr ) {
         qWarning() << "qan::GraphView::setGraph(): Error: Setting a nullptr graph in Qan.GraphView is not supported.";
         return;
     }
-    if (graph != _graph) {
-        if (_graph != nullptr)
-            disconnect(_graph, 0, this, 0);
+    if ( graph != _graph ) {
+        if ( _graph != nullptr )
+            disconnect(_graph, 0, this, 0 );
         _graph = graph;
-        auto graphViewQmlContext = qmlContext(this);
-        // FIXME remove that
-        //auto containerQmlContext = qmlContext(getContainerItem());
-        QQmlEngine::setContextForObject(getContainerItem(), graphViewQmlContext);
-        _graph->setContainerItem(getContainerItem());
-        connect(_graph, &qan::Graph::nodeClicked,
-                this,   &qan::GraphView::nodeClicked);
+        _graph->setContainerItem( getContainerItem() );
+        connect( _graph, &qan::Graph::nodeClicked,
+                 this,   &qan::GraphView::nodeClicked );
 
-        connect(_graph, &qan::Graph::connectorChanged,
-                this,   &qan::GraphView::connectorChanged);
+        connect( _graph, &qan::Graph::connectorChanged,
+                 this,   &qan::GraphView::connectorChanged );
 
-        connect(_graph, &qan::Graph::nodeRightClicked,
-                this,   &qan::GraphView::nodeRightClicked);
-        connect(_graph, &qan::Graph::nodeDoubleClicked,
-                this,   &qan::GraphView::nodeDoubleClicked);
+        connect( _graph, &qan::Graph::nodeRightClicked,
+                 this,   &qan::GraphView::nodeRightClicked );
+        connect( _graph, &qan::Graph::nodeDoubleClicked,
+                 this,   &qan::GraphView::nodeDoubleClicked );
 
-        connect(_graph, &qan::Graph::portClicked,
-                this,   &qan::GraphView::portClicked);
-        connect(_graph, &qan::Graph::portRightClicked,
-                this,   &qan::GraphView::portRightClicked);
+        connect( _graph, &qan::Graph::portClicked,
+                 this,   &qan::GraphView::portClicked );
+        connect( _graph, &qan::Graph::portRightClicked,
+                 this,   &qan::GraphView::portRightClicked );
 
-        connect(_graph, &qan::Graph::edgeClicked,
-                this,   &qan::GraphView::edgeClicked);
-        connect(_graph, &qan::Graph::edgeRightClicked,
-                this,   &qan::GraphView::edgeRightClicked);
-        connect(_graph, &qan::Graph::edgeDoubleClicked,
-                this,   &qan::GraphView::edgeDoubleClicked);
+        connect( _graph, &qan::Graph::edgeClicked,
+                 this,   &qan::GraphView::edgeClicked );
+        connect( _graph, &qan::Graph::edgeRightClicked,
+                 this,   &qan::GraphView::edgeRightClicked );
+        connect( _graph, &qan::Graph::edgeDoubleClicked,
+                 this,   &qan::GraphView::edgeDoubleClicked );
 
-        connect(_graph, &qan::Graph::groupClicked,
-                this,   &qan::GraphView::groupClicked);
-        connect(_graph, &qan::Graph::groupRightClicked,
-                this,   &qan::GraphView::groupRightClicked);
-        connect(_graph, &qan::Graph::groupDoubleClicked,
-                this,   &qan::GraphView::groupDoubleClicked);
+        connect( _graph, &qan::Graph::groupClicked,
+                 this,   &qan::GraphView::groupClicked );
+        connect( _graph, &qan::Graph::groupRightClicked,
+                 this,   &qan::GraphView::groupRightClicked );
+        connect( _graph, &qan::Graph::groupDoubleClicked,
+                 this,   &qan::GraphView::groupDoubleClicked );
         emit graphChanged();
     }
 }
 
 void    GraphView::navigableClicked(QPointF pos)
 {
-    Q_UNUSED(pos)
-    if (_graph)
+    Q_UNUSED(pos);
+    if ( _graph )
         _graph->clearSelection();
 }
 
-void    GraphView::navigableRightClicked(QPointF pos)
-{
-    emit    rightClicked(pos);
-}
-
-QString GraphView::urlToLocalFile(QUrl url) const noexcept
-{
-    if (url.isLocalFile())
-        return url.toLocalFile();
-    return QString{};
-}
-//-----------------------------------------------------------------------------
-
-
-/* Selection Rectangle Management *///-----------------------------------------
-void    GraphView::selectionRectActivated(const QRectF& rect)
-{
-    if (!_graph ||
-        _graph->getContainerItem() == nullptr)
-        return;
-    if (rect.isEmpty())
-        return;
-    // Algorithm:
-    // 1. Iterate over all already selected items, remove one that are no longer inside selection rect
-    //    (for example, if selection rect has grown down...)
-    // 2. Iterate over all graph items, select items inside selection rect.
-
-    // 1.
-    QSetIterator<QQuickItem*> selectedItem(_selectedItems);
-    while (selectedItem.hasNext()) {
-        const auto item = selectedItem.next();
-        auto nodeItem = qobject_cast<qan::NodeItem*>(item);
-        if (nodeItem != nullptr &&
-            nodeItem->getNode() != nullptr ) {
-            const auto itemBr = item->mapRectToItem(_graph->getContainerItem(),
-                                                    item->boundingRect());
-            if (!rect.contains(itemBr)) {
-                _graph->setNodeSelected(*nodeItem->getNode(), false);
-                        _selectedItems.remove(item);
-            }
-        }
-    }
-
-    // 2.
-    const auto items = _graph->getContainerItem()->childItems();
-    for (const auto item: items) {
-        auto nodeItem = qobject_cast<qan::NodeItem*>(item);
-        if (nodeItem != nullptr &&
-            nodeItem->getNode() != nullptr) {
-            auto node = nodeItem->getNode();
-            const auto itemBr = item->mapRectToItem(_graph->getContainerItem(),
-                                                    item->boundingRect());
-            if (rect.contains(itemBr)) {
-                _graph->setNodeSelected(*node, true);
-                /*if (node->isGroup()) {
-                    auto subNodes = _graph->collectDfs(*node, true);   // Insert group content to selection
-                    for (auto subNode: subNodes)
-                        if (subNode != nullptr) {
-                            _graph->setNodeSelected(const_cast<qan::Node&>(*subNode), true);
-                            _selectedItems.insert(const_cast<qan::NodeItem*>(subNode->getItem()));
-                        }
-                }*/
-                // Note we assume that items are not deleted while the selection
-                // is in progress... (QPointer can't be trivially inserted in QSet)
-                _selectedItems.insert(nodeItem);
-            }
-        }
-    }
-}
-
-void    GraphView::selectionRectEnd()
-{
-    _selectedItems.clear();  // Clear selection cache
-}
+void    GraphView::navigableRightClicked(QPointF pos) { emit    rightClicked(pos); }
 //-----------------------------------------------------------------------------
 
 } // ::qan
