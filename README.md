@@ -1,3 +1,4 @@
+
 # QuickQanava 
 
 ![Build linux master](https://github.com/cneben/QuickQanava/actions/workflows/build-linux-master.yml/badge.svg) ![Build linux develop](https://github.com/cneben/QuickQanava/actions/workflows/build-linux-develop.yml/badge.svg)
