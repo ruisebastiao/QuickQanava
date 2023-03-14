@@ -36,7 +36,7 @@
 #define qanGraphView_h
 
 // GTpo headers
-#include <GTpo>
+#include <GTpo.h>
 
 // QuickQanava headers
 #include "./qanGraph.h"

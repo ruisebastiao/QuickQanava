@@ -1,4 +1,6 @@
 
+INCLUDEPATH     += $$PWD
+
 HEADERS +=  \
     $$PWD/qanEdgeItem.h \
     $$PWD/qanNode.h \
@@ -7,8 +9,6 @@ HEADERS +=  \
     $$PWD/qanEdge.h \
     $$PWD/qanPortItem.h \
     $$PWD/qanUtils.h
-
-INCLUDEPATH     += $$PWD
 
 include(../QuickContainers/src/quickcontainersheaders.pri)
 include(../GTpo/src/gtpoheaders.pri)
