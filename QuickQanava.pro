@@ -4,7 +4,7 @@ QT += opengl
 uri = QuickQanava
 DEFINES+=QUICKQANAVA_LIB
 
-CONFIG +=c++1z
+CONFIG +=c++2a
 
 include(../../module.pri)
 
@@ -18,6 +18,7 @@ include(src/quickqanava.pri)
 
 
 DISTFILES = qml/qmldir
+
 
 !equals(_PRO_FILE_PWD_, $$OUT_PWD) {
     copy_qmldir.target = $$OUT_PWD/qmldir
