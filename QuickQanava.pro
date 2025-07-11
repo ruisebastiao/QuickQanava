@@ -14,6 +14,7 @@ OTHER_FILES += \
     qml/*.qml \
     qml/qmldir
 
+
 include(src/quickqanava.pri)
 
 
