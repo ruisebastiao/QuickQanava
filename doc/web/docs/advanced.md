@@ -27,7 +27,7 @@ On the C++ side, a QML engine should be initialized before starting the applicat
 
 ``` cpp hl_lines="7"
 // main.cpp
-int	main( int argc, char** argv )
+int	main(int argc, char** argv)
 {
     QGuiApplication app(argc, argv);
     QQmlApplicationEngine engine;
@@ -55,7 +55,7 @@ At this point, any modification should be done:
 
 - Synchronously before application event loop is started using app.exec().
 - In signals handlers reacting to `qan::Graph` or `qan::GraphView` events such as `nodeClicked()` or `groupClicked()` and so on (See [qan::Graph](https://github.com/cneben/QuickQanava/blob/master/src/qanGraph.h) and [qan::GraphView](https://github.com/cneben/QuickQanava/blob/master/src/qanGraphView.h) signals).
-- Using behavior observers (See [Behaviors section](advanced.qml#observation-of-topological-modifications)).
+- Using behavior observers (See [Behaviors section](advanced.md#observation-of-topological-modifications)).
 
 Please refer to the [cpp sample](https://github.com/cneben/QuickQanava/tree/master/samples/cpp) and more specifically [cpp_sample.cpp](https://github.com/cneben/QuickQanava/blob/master/samples/cpp/cpp_sample.cpp) for a sample about using `qan::Graph` topology related methods.
 
@@ -92,7 +92,7 @@ qan::Node* MyGraph::insertMyNode() noexcept {
 QQmlComponent*  MyNode::delegate(QQmlEngine& engine) noexcept
 {
 static std::unique_ptr<QQmlComponent>   MyNode_delegate;
-    if ( !MyNode_delegate )
+    if (!MyNode_delegate)
             CustomRectNode_delegate = std::make_unique<QQmlComponent>(&engine, "qrc:/MyNode.qml");
     return CustomRectNode_delegate.get();
 }
@@ -100,7 +100,7 @@ static std::unique_ptr<QQmlComponent>   MyNode_delegate;
 qan::NodeStyle* MyNode::style() noexcept
 {
 	static std::unique_ptr<qan::NodeStyle>  MyNode_style;
-    if ( !MyNode_style ) {
+    if (!MyNode_style) {
         MyNode_style = std::make_unique<qan::NodeStyle>();
         MyNode_style->setBackColor(QColor("#ff29fc"));		// Initialize primitive default style here
     }
@@ -135,13 +135,13 @@ class CustomBehaviour : public qan::NodeBehaviour
 {
   Q_OBJECT
 public:
-  explicit NodeBehaviour( QObject* parent = nullptr ) :
-     qan::NodeBehaviour{ "Custom Behaviour", parent } { }
-  virtual ~NodeBehaviour() { /* Nil */ } 
-  NodeBehaviour( const NodeBehaviour& ) = delete;
+  explicit NodeBehaviour(QObject* parent = nullptr) :
+     qan::NodeBehaviour{"Custom Behaviour", parent} { }
+  virtual ~NodeBehaviour() override { /* Nil */ } 
+  NodeBehaviour(const NodeBehaviour&) = delete;
 protected:
-  virtual void  inNodeInserted( qan::Node& inNode, qan::Edge& edge ) noexcept override;
-  virtual void  inNodeRemoved( qan::Node& inNode, qan::Edge& edge ) noexcept override;
+  virtual void  inNodeInserted(qan::Node& inNode, qan::Edge& edge) noexcept override;
+  virtual void  inNodeRemoved(qan::Node& inNode, qan::Edge& edge) noexcept override;
 };
 ```
 
@@ -151,7 +151,7 @@ Such a custom node behaviour could be installed with the following code:
 {
   qan::Graph graph;
   auto node = graph.insertNode();
-  node->attachBehaviour( std::make_unique<CustomBehaviour>() );
+  node->attachBehaviour(std::make_unique<CustomBehaviour>());
   // node will now react when an in node is inserted or removed
   auto source = graph.insertNode();
   auto edge = graph.insertEdge(source, node);   // CustomBehaviour::Inserted() called

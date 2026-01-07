@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2008-2018, Benoit AUTHEMAN All rights reserved.
+ Copyright (c) 2008-2024, Benoit AUTHEMAN All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
@@ -25,21 +25,43 @@
 */
 
 //-----------------------------------------------------------------------------
-// This file is a part of the QuickQanava software library. Copyright 2015 Benoit AUTHEMAN.
+// This file is a part of the QuickQanava software library.
 // \file	Port.qml
 // \author	benoit@destrat.io
 // \date	2017 08 12
 //-----------------------------------------------------------------------------
-import QtQuick 2.7
-import QtQuick.Controls 2.1
 
-import QuickQanava 2.0 as Qan
-import "qrc:/QuickQanava" as Qan
+import QtQuick
+import QtQuick.Controls
+
+import QuickQanava as Qan
 
 Qan.PortItem {
     id: portItem
     width: 24
     height: 24
+
+    onXChanged: {
+        x = 0
+    }
+
+    onYPositionChanged: {
+        y = yPosition
+    }
+
+    onYChanged: {
+        var nodeHeight = portItem.parent.parent.height
+        var stepy = Math.round(y / portItem.height) * portItem.height
+
+        if (stepy > 0 && stepy >= ((nodeHeight - height) / 2)) {
+            stepy = ((nodeHeight - height) / 2)
+        } else if (stepy < 0 && stepy <= -((nodeHeight - height) / 2)) {
+            stepy = -((nodeHeight - height) / 2)
+        }
+
+        y = stepy
+    }
+
     states: [
         State {
             name: "left"
@@ -108,36 +130,6 @@ Qan.PortItem {
             }
         }
     ]
-
-    onXChanged:{
-//        console.log("x:"+x)
-        x=0
-    }
-
-    onYPositionChanged:{
-        y=yPosition;
-    }
-
-    onYChanged:{
-
-        var nodeHeight=portItem.parent.parent.height;
-
-        var stepy=Math.round(y/portItem.height)*portItem.height
-
-        if(stepy>0 && stepy>=((nodeHeight-height)/2)){
-            stepy=((nodeHeight-height)/2)
-        }
-        else if(stepy< 0 && stepy<=-((nodeHeight-height)/2)){
-            stepy=-((nodeHeight-height)/2)
-        }
-
-        y=stepy
-
-    }
-
-    Component.onCompleted: {
-
-    }
 
     Rectangle {
         id: contentItem

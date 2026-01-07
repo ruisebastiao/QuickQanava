@@ -1,74 +1,68 @@
 site_name: 'QuickQanava C++ graph visualization library'
 site_url: 'http://cneben.github.io/QuickQanava/'
 site_author: 'Destrat.io'
-site_description: 'Graph topology library for C++14'
+site_description: 'Graph visualization library for Qt / QML C++17'
 repo_name: 'GitHub'
 repo_url: 'https://github.com/cneben/QuickQanava'
 edit_uri: ""
 
-copyright: 'Copyright &copy; 2018 BA'
+copyright: 'Copyright &copy; 2024 BA'
 use_directory_urls: false
 
 theme: 
-  name: 'material'
-#  logo: 'images/logo.png'
-  logo:
-    icon: 'share'
+  name: material
+  icon:
+    logo: material/graph-outline
   palette:
-    primary: 'indigo'
-    accent: 'amber'
+    primary: indigo
+    accent: amber
   font:
     text: 'Roboto'
     code: 'Roboto Mono'
     
 extra:
-  version: '0.9.4'
+  version: '2.5.0'
   author:
-    github: 'cneben'
+    github: 'cneben'    
   social:
-    - type: 'twitter'
+    - icon: fontawesome/brands/twitter
       link: 'https://twitter.com/QuickQanava'
-    - type: 'github'
-      link: 'https://github.com/cneben'
+    - icon: fontawesome/brands/github
+      link: https://github.com/cneben/QuickQanava
 
 markdown_extensions:
+  - attr_list
   - admonition
-  - codehilite(linenums=true)
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - attr_list
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg  
   - footnotes
   - meta
-  - toc(permalink=true)
-  - pymdownx.tasklist(custom_checkbox=true)
-  - markdown.extensions.def_list
-  - markdown.extensions.footnotes
-  - markdown.extensions.meta
-  - markdown.extensions.toc:
+  - toc:
       permalink: true
   - pymdownx.arithmatex
   - pymdownx.betterem:
       smart_enable: all
-  - pymdownx.caret
-  - pymdownx.critic
-  - pymdownx.details
-  - pymdownx.emoji:
-      emoji_generator: !!python/name:pymdownx.emoji.to_svg
-  - pymdownx.inlinehilite
-  - pymdownx.magiclink
-  - pymdownx.mark
-  - pymdownx.smartsymbols
-  - pymdownx.superfences
-  - pymdownx.tasklist:
-      custom_checkbox: true
-  - pymdownx.tilde
+  - pymdownx.snippets
 
-pages:
-  - 'QuickQanava': 'index.md'
+nav:
+  - 'QuickQanava':  'index.md'
   - 'Installation': 'installation.md'
-  - 'Graph': 'graph.md'
-  - 'Nodes': 'nodes.md'
-  - 'Edges': 'edges.md'
-  - 'Styles': 'styles.md'
-  - 'Utilities': 'utilities.md'
+  - 'Graph':        'graph.md'
+  - 'Nodes/Groups': 'nodes.md'
+  - 'Edges':        'edges.md'
+  - 'Styles':       'styles.md'
+  - 'Utilities':    'utilities.md'
   - 'Advanced use (C++)': 'advanced.md'
-  - 'Samples': 'samples.md'
+  - 'Samples':      'samples.md'
   - 'API Reference': 'reference.md'
-  - 'Licence': 'licence.md'
+  - 'Licence':      'licence.md'
+  - 'Internals/Contributors': 'internals.md'

@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2008-2018, Benoit AUTHEMAN All rights reserved.
+ Copyright (c) 2008-2024, Benoit AUTHEMAN All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
@@ -38,53 +38,47 @@
 namespace qan { // ::qan
 
 /* Node Object Management *///-------------------------------------------------
-Draggable::Draggable() { /* Nil */ }
-Draggable::~Draggable() { /* Nil */ }
-
-void    Draggable::configure(QQuickItem* target )
+void    Draggable::configure(QQuickItem* target)
 {
     _target = target;
 }
 //-----------------------------------------------------------------------------
 
 /* Draggable Management *///---------------------------------------------------
-void    Draggable::setDraggable( bool draggable ) noexcept
+void    Draggable::setDraggable(bool draggable) noexcept
 {
-    if ( draggable != _draggable ) {
+    if (draggable != _draggable) {
         _draggable = draggable;
-        if ( !draggable ) {
+        if (!draggable)
             setDragged(false);
-            // FIXME QAN3
-            //endDragMove();
-        }
         emitDraggableChanged();
     }
 }
 
-void    Draggable::setDragged( bool dragged ) noexcept
+void    Draggable::setDragged(bool dragged) noexcept
 {
-    if ( dragged != _dragged ) {
+    if (dragged != _dragged) {
         _dragged = dragged;
-        emitDraggedChanged( );
+        emitDraggedChanged();
     }
 }
 
-void    Draggable::setDroppable( bool droppable ) noexcept
+void    Draggable::setDroppable(bool droppable) noexcept
 {
-    if ( droppable != _droppable ) {
+    if (droppable != _droppable) {
         _droppable = droppable;
         emitDroppableChanged();
     }
 }
 
-void    Draggable::setAcceptDrops( bool acceptDrops ) noexcept
+void    Draggable::setAcceptDrops(bool acceptDrops) noexcept
 {
-    if ( acceptDrops != _acceptDrops ) {
+    if (acceptDrops != _acceptDrops) {
         _acceptDrops = acceptDrops;
-        if ( acceptDrops &&
-             _target &&
-             !(_target->flags().testFlag(QQuickItem::ItemAcceptsDrops)) )
-            _target->setFlag( QQuickItem::ItemAcceptsDrops, acceptDrops );
+        if (acceptDrops &&
+            _target &&
+            !(_target->flags().testFlag(QQuickItem::ItemAcceptsDrops)))
+            _target->setFlag( QQuickItem::ItemAcceptsDrops, acceptDrops);
         emitAcceptDropsChanged();
     }
 }

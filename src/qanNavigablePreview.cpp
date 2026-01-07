@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2008-2018, Benoit AUTHEMAN All rights reserved.
+ Copyright (c) 2008-2024, Benoit AUTHEMAN All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
@@ -32,16 +32,13 @@
 // \date	2017 06 02
 //-----------------------------------------------------------------------------
 
-// Qt headers
-// Nil
-
 // QuickQanava headers
 #include "./qanNavigablePreview.h"
 
 namespace qan { // ::qan
 
 /* NavigablePreview Object Management *///-------------------------------------
-NavigablePreview::NavigablePreview( QQuickItem* parent ) :
+NavigablePreview::NavigablePreview(QQuickItem* parent) :
     QQuickItem{parent}
 {
     setFlag(QQuickItem::ItemHasContents);
@@ -49,13 +46,15 @@ NavigablePreview::NavigablePreview( QQuickItem* parent ) :
 //-----------------------------------------------------------------------------
 
 /* Preview Management *///-----------------------------------------------------
-void    NavigablePreview::setSource( qan::Navigable* source ) noexcept
+void    NavigablePreview::setSource(qan::Navigable* source) noexcept
 {
-    if ( source != _source ) {
+    if (source != _source) {
         _source = source;
         emit sourceChanged();
     }
 }
+
+QRectF  NavigablePreview::rectUnion(QRectF a, QRectF b) const { return a.united(b); }
 //-----------------------------------------------------------------------------
 
 } // ::qan

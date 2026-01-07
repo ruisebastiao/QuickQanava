@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2008-2018, Benoit AUTHEMAN All rights reserved.
+ Copyright (c) 2008-2024, Benoit AUTHEMAN All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
@@ -32,23 +32,22 @@
 // \date	2016 04 04
 //-----------------------------------------------------------------------------
 
-#ifndef qanBehaviour_h
-#define qanBehaviour_h
+#pragma once
 
 // Qt headers
 #include <QObject>
 #include <QQuickItem>
 
-// GTpo headers
-#include "../GTpo/src/gtpoNodeBehaviour.h"
-
 // QuickQanava headers
-#include "./qanGraphConfig.h"
+#include "./gtpo/observer.h"
 #include "./qanEdge.h"
 
 namespace qan { // ::qan
 
-/*! \brief Define node behaviour interface to react to node topology events (QuickQanava adapter for gtpo::NodeBehaviour<>).
+class Node;
+class Edge;
+
+/*! \brief Define node behaviour interface to react to node topology events (QuickQanava adapter for gtpo::dynamic_node_nehaviour<>).
  *
  * Use qan::Node::installBehaviour() method to install a custom behaviour on a host node to be notified
  * and react to topological changes.
@@ -60,14 +59,19 @@ namespace qan { // ::qan
  *
  *  \nosubgrouping
  */
-class QUICKQANAVA_EXPORT NodeBehaviour : public QObject,
-                      public gtpo::NodeBehaviour< qan::GraphConfig >
+class NodeBehaviour : public QObject,
+                      public gtpo::node_observer<qan::Node, qan::Edge>
 {
     Q_OBJECT
+
+    /*! \name NodeBehaviour Management *///------------------------------------
+    //@{
 public:
-    explicit NodeBehaviour( const std::string& name, QObject* parent = nullptr );
-    virtual ~NodeBehaviour() { }
-    NodeBehaviour( const NodeBehaviour& ) = delete;
+    explicit NodeBehaviour(const std::string& name, QObject* parent = nullptr);
+    virtual ~NodeBehaviour() override { }
+    NodeBehaviour(const NodeBehaviour&) = delete;
+    //@}
+    //-------------------------------------------------------------------------
 
     /*! \name Behaviour Host Management *///-----------------------------------
     //@{
@@ -80,11 +84,11 @@ public:
      * Behaviour is set for a host node via qan::Node::installBehaviour(), it can be changed
      * dynamically after it has been installed (read-only property).
      */
-    Q_PROPERTY( qan::Node* host READ getHost NOTIFY hostChanged FINAL )
+    Q_PROPERTY(qan::Node* host READ getHost NOTIFY hostChanged FINAL)
     inline qan::Node*       getHost() noexcept { return _host.data(); }
     inline const qan::Node* getHost() const noexcept { return _host.data(); }
     //! \brief Set behaviour host node to \c host (can't be nullptr), disconnect any signal connected from an old existing host and this.
-    virtual void            setHost( qan::Node* host );
+    virtual void            setHost(qan::Node* host);
 private:
     //! \copydoc host
     QPointer<qan::Node> _host{nullptr};
@@ -97,35 +101,30 @@ signals:
     /*! \name Notification Interface *///--------------------------------------
     //@{
 public:
-    using WeakNode  = gtpo::NodeBehaviour< qan::GraphConfig >::WeakNode;
-    using WeakEdge  = gtpo::NodeBehaviour< qan::GraphConfig >::WeakEdge;
+    virtual void    on_in_node_inserted(qan::Node& target, qan::Node& weakInNode, const qan::Edge& edge) noexcept override;
+    //! \copydoc gtpo::dynamic_node_nehaviour::inNodeRemoved()
+    virtual void    on_in_node_removed(qan::Node& target, qan::Node& weakInNode, const qan::Edge& edge) noexcept override;
+    //! \copydoc gtpo::dynamic_node_nehaviour::inNodeRemoved()
+    virtual void    on_in_node_removed(qan::Node& target) noexcept override { Q_UNUSED(target); }
 
-    //! \copydoc gtpo::NodeBehaviour::inNodeInserted()
-    virtual void    inNodeInserted( WeakNode& weakInNode, const WeakEdge& edge ) noexcept override;
-    //! \copydoc gtpo::NodeBehaviour::inNodeRemoved()
-    virtual void    inNodeRemoved( WeakNode& weakInNode, const WeakEdge& edge ) noexcept override;
-    //! \copydoc gtpo::NodeBehaviour::inNodeRemoved()
-    virtual void    inNodeRemoved() noexcept override { }
-
-    //! \copydoc gtpo::NodeBehaviour::outNodeInserted()
-    virtual void    outNodeInserted( WeakNode& weakOutNode, const WeakEdge& edge  ) noexcept override;
-    //! \copydoc gtpo::NodeBehaviour::outNodeRemoved()
-    virtual void    outNodeRemoved( WeakNode& weakOutNode, const WeakEdge& edge  ) noexcept override;
-    //! \copydoc gtpo::NodeBehaviour::outNodeRemoved()
-    virtual void    outNodeRemoved() noexcept override { }
+    //! \copydoc gtpo::dynamic_node_nehaviour::outNodeInserted()
+    virtual void    on_out_node_inserted(qan::Node& target, qan::Node& weakOutNode, const qan::Edge& edge) noexcept override;
+    //! \copydoc gtpo::dynamic_node_nehaviour::outNodeRemoved()
+    virtual void    on_out_node_removed(qan::Node& target, qan::Node& weakOutNode, const qan::Edge& edge) noexcept override;
+    //! \copydoc gtpo::dynamic_node_nehaviour::outNodeRemoved()
+    virtual void    on_out_node_removed(qan::Node& target) noexcept override { Q_UNUSED(target); }
 
 protected:
-    virtual void    inNodeInserted( qan::Node& inNode, qan::Edge& edge ) noexcept { Q_UNUSED( inNode ); Q_UNUSED(edge); }
-    virtual void    inNodeRemoved( qan::Node& inNode, qan::Edge& edge  ) noexcept { Q_UNUSED( inNode ); Q_UNUSED(edge); }
+    virtual void    inNodeInserted(qan::Node& inNode, qan::Edge& edge) noexcept { Q_UNUSED(inNode); Q_UNUSED(edge); }
+    virtual void    inNodeRemoved(qan::Node& inNode, qan::Edge& edge) noexcept { Q_UNUSED(inNode); Q_UNUSED(edge); }
 
-    virtual void    outNodeInserted( qan::Node& outNode, qan::Edge& edge  ) noexcept { Q_UNUSED( outNode ); Q_UNUSED(edge); }
-    virtual void    outNodeRemoved( qan::Node& outNode, qan::Edge& edge  ) noexcept { Q_UNUSED( outNode ); Q_UNUSED(edge); }
+    virtual void    outNodeInserted(qan::Node& outNode, qan::Edge& edge) noexcept { Q_UNUSED(outNode); Q_UNUSED(edge); }
+    virtual void    outNodeRemoved(qan::Node& outNode, qan::Edge& edge) noexcept { Q_UNUSED(outNode); Q_UNUSED(edge); }
     //@}
     //-------------------------------------------------------------------------
 };
 
 } // ::qan
 
-QML_DECLARE_TYPE( qan::NodeBehaviour )
+QML_DECLARE_TYPE(qan::NodeBehaviour)
 
-#endif // qanBehaviour_h

@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2008-2018, Benoit AUTHEMAN All rights reserved.
+ Copyright (c) 2008-2024, Benoit AUTHEMAN All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
@@ -25,15 +25,15 @@
 */
 
 //-----------------------------------------------------------------------------
-// This file is a part of the QuickQanva software. Copyright 2014 Benoit AUTHEMAN.
+// This file is a part of the QuickQanava software library.
 //
-// \file	CanvasTemplate.qml
+// \file	LabelEditor.qml
 // \author	benoit@destrat.io
 // \date	2015 11 30
 //-----------------------------------------------------------------------------
 
-import QtQuick              2.7
-import QtQuick.Controls     2.0
+import QtQuick
+import QtQuick.Controls
 
 /*! \brief Reusable component for visual edition of node and groups labels with on-demand loading.
  *
@@ -46,7 +46,7 @@ import QtQuick.Controls     2.0
  *
  * Exemple use on an user defined custom node:
  * \code
- * Qan.AbstractNode {
+ * Qan.Node {
  *   id: rectNode
  *   width: 110; height: 50
  *   Connections {
@@ -71,23 +71,22 @@ Loader {
     //! Editor target node or group (or any Qan primitive with a \c label property).
     property var    target: undefined
 
-    property bool   bold: false
-    property real   pointSize: 11
+    property real   fontPixelSize: 11
 
     onVisibleChanged: {
-        if ( visible && !item )
+        if (visible && !item)
             sourceComponent = labelEditorComponent
-        if ( item &&
-             visible )
+        if (item &&
+            visible)
             showLabelEditor()
     }
     onItemChanged: {
-        if ( item )             // If item is non null, it's creation has been request,
+        if (item)             // If item is non null, it's creation has been request,
             showLabelEditor()   // force show label edition
     }
     function showLabelEditor() {
-        if ( item ) {
-            if ( !visible )
+        if (item) {
+            if (!visible)
                 visible = true
             item.forceActiveFocus()
             item.selectAll()
@@ -97,22 +96,31 @@ Loader {
         id: labelEditorComponent
         TextField {
             id: labelTextField
-            anchors.top: parent.top; anchors.left: parent.left; anchors.right: parent.right
+            anchors.top: parent.top
+            anchors.left: parent.left
+            anchors.right: parent.right
             text: target ? target.label : ""
-            font.bold: labelEditorLoader.bold
-            font.pointSize: labelEditorLoader.pointSize
+            font.bold: false
+            font.pixelSize: 22
             onAccepted: {
-                if ( target &&
-                     text.length !== 0 )
+                if (target &&
+                    text.length !== 0)
                     target.label = text   // Do not allow empty labels
                 focus = false;          // Release focus once the label has been edited
             }
             onEditingFinished: labelEditorLoader.visible = false
             onActiveFocusChanged: {
-                if ( target &&
-                     text !== target.label )  // Ensure that last edition text is removed
+                if (target &&
+                    text !== target.label)  // Ensure that last edition text is removed
                     text = target.label       // for exemple if edition has been interrupted in a focus change
+            }
+            background: Rectangle {
+                color: Qt.rgba(0., 0., 0., 0.)  // Disable editor background
+            }
+            Keys.onEscapePressed: {
+                // Cancel edition on escape
+                labelEditorLoader.visible = false;
             }
         }
     }
-}
+} // Loader

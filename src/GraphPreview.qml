@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2008-2021, Benoit AUTHEMAN All rights reserved.
+ Copyright (c) 2008-2024, Benoit AUTHEMAN All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
@@ -23,12 +23,10 @@
  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-import QtQuick 2.7
-import QtQuick.Controls 2.13
-import QtGraphicalEffects   1.0
 
-import QuickQanava 2.0 as Qan
-import "qrc:/QuickQanava" as Qan
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Effects
 
 /*! \brief Visual graph preview.
  *
@@ -38,39 +36,47 @@ Control {
 
     // PUBLIC /////////////////////////////////////////////////////////////////
     width: 200
-    height: 113
+    height: 135
 
-    property alias source: navigablePreview.source
-    property alias visibleWindowColor: navigablePreview.visibleWindowColor
+    //! Source Qan.GraphView that should be previewed.
+    property var    source: undefined
+
+    property alias  viewWindowColor: navigablePreview.viewWindowColor
 
     // Preview background panel opacity (default to 0.9).
-    property alias previewOpactity: previewBackground.opacity
+    property alias  previewOpactity: previewBackground.opacity
 
-    // PUBLIC /////////////////////////////////////////////////////////////////
+    //! Initial (and minimum) scene rect (should usually fit your initial screen size).
+    property alias  initialRect: navigablePreview.initialRect
+
+    // PRIVATE ////////////////////////////////////////////////////////////////
     padding: 0
 
-    property real   previewSize: 0.15
-    property    real graphRatio: graphView.containerItem.childrenRect.width / graphView.containerItem.childrenRect.height
-    property    real previewRatio: graphView.width / graphView.height
+    property real   graphRatio: source ? (source.containerItem.childrenRect.width /
+                                         source.containerItem.childrenRect.height) :
+                                         1.
+    property real   previewRatio: source ? (source.width / source.height) : 1.0
     onGraphRatioChanged: updateNavigablePreviewSize()
     onPreviewRatioChanged: updateNavigablePreviewSize()
+    onSourceChanged: updateNavigablePreviewSize()
+    onWidthChanged: updateNavigablePreviewSize()
+    onHeightChanged: updateNavigablePreviewSize()
 
     function updateNavigablePreviewSize() {
+        // Update the navigable preview width/height such that it's aspect ratio
+        // is correct but fit in this graph preview size.
         // Algorithm:
         // 1. Compute navigable preview height (nph) given graph width (gw) and graphRatio.
         // 2. If navigable preview height (nph) < preview height (ph), then use graphRatio to
         //    generate nph.
         // 3. Else compute navigable preview width using previewRatio and fix nph to ph.
-
+        if (!source || !source.containerItem)
+            return
         const pw = graphPreview.width
         const ph = graphPreview.height
-        const gw = graphView.containerItem.childrenRect.width
-        const gh = graphView.containerItem.childrenRect.height
 
-        //console.error('')
-        //console.error('graphRatio=' + graphRatio + '    previewRatio=' + previewRatio)
-        //console.error('pw=' + pw + '   ph=' + ph)
-        //console.error('gw=' + gw + '   gh=' + gh)
+        const gw = source.containerItem.childrenRect.width
+        const gh = source.containerItem.childrenRect.height
 
         // 1.
         let sw = pw / gw
@@ -95,16 +101,21 @@ Control {
     }
 
     opacity: 0.8
-    hoverEnabled: true; ToolTip.visible: hovered; ToolTip.delay: 1500
-    ToolTip.text: qsTr("Show parts of image that have actually been viewed with more than 100% zoom")
+    hoverEnabled: true
+
     z: 3    // Avoid tooltips beeing generated on top of preview
-    RectangularGlow {
-        anchors.fill: parent
-        cached: true
-        glowRadius:  8
-        cornerRadius: 8
-        spread: 0.5
-        color: "lightgrey"
+    MultiEffect {
+        source: previewBackground
+        anchors.centerIn: previewBackground
+        visible: true
+        width: previewBackground.width + 5
+        height: previewBackground.height + 5
+        blurEnabled: true
+        blurMax: 16
+        blur: 0.6
+        blurMultiplier: 0.1
+        colorization: 1.0
+        colorizationColor: Qt.rgba(0.7, 0.7, 0.7, 0.9)
     }
     Pane {
         id: previewBackground
@@ -115,12 +126,14 @@ Control {
         Label {
             x: 4
             y: 2
-            text: (graphView.zoom * 100).toFixed(1) + "%"
+            text: source ? ((source.zoom * 100).toFixed(1) + "%") :
+                           ''
             font.pixelSize: 11
         }
-        Qan.NavigablePreview {
+        NavigablePreview {
             id: navigablePreview
             anchors.centerIn: parent
+            source: graphPreview.source
         }  // Qan.NavigablePreview
     }
 }  // Control graph preview

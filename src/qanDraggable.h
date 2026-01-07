@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2008-2018, Benoit AUTHEMAN All rights reserved.
+ Copyright (c) 2008-2024, Benoit AUTHEMAN All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
@@ -32,19 +32,12 @@
 // \date	2017 03 15
 //-----------------------------------------------------------------------------
 
-#ifndef qanDraggable_h
-#define qanDraggable_h
-
-// Std headers
-#include <memory>
+#pragma once
 
 // Qt headers
 #include <QObject>      // Q_DECLARE_INTERFACE
 #include <QPointer>
 #include <QQuickItem>
-#include "quickqanavaglobal.h"
-// QuickQanava headers
-/* Nil */
 
 namespace qan { // ::qan
 
@@ -54,14 +47,14 @@ class Graph;
  *
  * \nosubgrouping
  */
-class QUICKQANAVA_EXPORT Draggable
+class Draggable
 {
     /*! \name Draggable Object Management *///---------------------------------
     //@{
 public:
-    explicit Draggable();
-    virtual ~Draggable();
-    Draggable( const Draggable& ) = delete;
+    explicit Draggable() = default;
+    virtual ~Draggable() = default;
+    Draggable(const Draggable&) = delete;
 
 protected:
     //! Configure this \c qan::Draggable interface with a valid \c target (usually a qan::Node or qan::Group).
@@ -75,7 +68,7 @@ private:
     /*! \name Draggable Management *///----------------------------------------
     //@{
 public:
-    void            setDraggable( bool draggable ) noexcept;
+    void            setDraggable(bool draggable) noexcept;
     inline bool     getDraggable() const noexcept { return _draggable; }
 protected:
     virtual void    emitDraggableChanged() = 0;
@@ -87,19 +80,21 @@ private:
      *
      * Default to true.
      */
-    bool            _draggable{true};
+    bool            _draggable = true;
 
 public:
-    void            setDragged( bool dragged ) noexcept;
+    void            setDragged(bool dragged) noexcept;
     inline bool     getDragged() const noexcept { return _dragged; }
 protected:
     virtual void    emitDraggedChanged() = 0;
 private:
     //! True when the node is currently beeing dragged.
-    bool            _dragged{false};
+    bool            _dragged = false;
 
 public:
-    void            setDroppable( bool droppable ) noexcept;
+    //! Set to false to prevent this primitive beeing dropped on groups (default to true ie droppable).
+    void            setDroppable(bool droppable) noexcept;
+    //! \copydoc setDroppable()
     inline bool     getDroppable() const noexcept { return _droppable; }
 protected:
     virtual void    emitDroppableChanged() = 0;
@@ -110,10 +105,10 @@ private:
      * Default to true.
      * Setting this property to false may lead to a significant performance improvement if group dropping is not needed.
      */
-    bool            _droppable{true};
+    bool            _droppable = true;
 
 public:
-    void            setAcceptDrops( bool acceptDrops ) noexcept;
+    void            setAcceptDrops(bool acceptDrops) noexcept;
     inline bool     getAcceptDrops() const noexcept { return _acceptDrops; }
 protected:
     virtual void    emitAcceptDropsChanged() = 0;
@@ -124,7 +119,7 @@ private:
      *
      * Setting this property to false may lead to a significant performance improvement if DropNode support is not needed.
      */
-    bool            _acceptDrops{true};
+    bool            _acceptDrops = true;
     //@}
     //-------------------------------------------------------------------------
 };
@@ -135,5 +130,3 @@ Q_DECLARE_INTERFACE(
     qan::Draggable,
     "com.destrat.io.QuickQanava.Draggable/3.0"
 )
-
-#endif // qanDraggable_h

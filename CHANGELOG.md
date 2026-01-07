@@ -1,5 +1,79 @@
-CHANGELOG
----------
+# CHANGELOG
+
+## 20240922 2.5.0:
+- #248: Add full support for cmake qt_add_qml_module(), QuickQanava must now be used
+  as a static QML module (qml compiler is automatically applied, it look like it is a lot faster...).
+- #244: Add scrollbar support to qan::Navigable, better graph view area support.
+- #238: Change group layout, add header support in group delegate.
+- #228: Add preliminary support for auto tree layouts.
+
+## 20240812 2.4.2:
+- Merge #230 by @emmenlau, enhance node/group factory methods template signature.
+- Merge #236 by @emmenlau, fix a memory leak.
+- Merge #233 by @emmenlau, fix a compilation issue in graph.h.
+- Change group dragging default behaviour: group are now only draggable by their
+  header. Old policy can be restored with qan::GroupItem::DragPolicy.
+
+## 20231116 2.4.0:
+- Rewrite the Qt5/6 CMake configuration.
+- Remove all QUICKQANAVA_QT_MAJOR_VERSION and all compilation options, compilation is now always "static".
+- Fix bugs in multiple selection dragging.
+- Update https://github.com/oysteinmyrmo/bezier to `0.2.1`.
+- Features:
+  - Add dragging of nodes / groups by keyboard arrow keys.
+  - Add custom QML group delegate support in `qan::Graph::insertGroup()`.
+
+## 20230406 prev2.3.0:
+- Fix a serious bug on multiple selection dragging and snap to grid.
+- Fix a table node grouping issue when cols==1 or rows==1.
+
+## 20221226 prev2.3.0:
+- #185: Add horizontal or vertical constrain on node/group dragging, see new property `qan::NodeItem::dragOrientation`.
+
+## 20221225 prev2.3.0:
+- #185: Add support for "snap to grid" when moving node or groups.
+- Add |qan::Graph`, `snapToGrid` and `snapToGridSize` properties.
+
+## 20221225 v2.2.0:
+- Release v2.2.0
+
+## 20221215 v2.2.0:
+- #183: Add a `multipleSelectionEnabled` property to `qan::Graph` to enable or disable multiple selection.
+
+## 20221204 v2.2.0:
+- #161: Add graph dynamic graph preview (move, center on, zoom on).
+
+## 20221011 v2.2.0:
+- #169: Create qan::RightResizer and qan::BottomResizer.
+- By default, nodes and groups are resizable from their right and bottom borders.
+- Refactor qan::BottomRightResizer completely.
+
+## 20221002 v2.2.0:
+- #167: Reduce memory use by 7%/8% when lot of edges are used.
+- #167: Add partial edge selection support.
+- #164: Change signature of qan::Graph::connectorRequestEdgeCreation().
+
+## 20220824 v2*$.1.1:
+- Change signature of two public API methods (public but presumably mainly used internally):
+  - Rename qan::Graph::collectInerEdges() to qan::Graph::collectInnerEdges().
+  - Rename qan::Graph::collectAncestorsDfs() to qan::Graph::collectAncestors().
+- Add qan::Graph::collectNeighbours() method.
+- Debug and rename qan::Flickable::fitInView() to fitContentInView().
+
+## 20220817 v2.1.0:
+- First Github release 
+- Multiple bug fixes on internal topology backend and memory management.
+- QuickQanava now build with Qt from Qt 5.15 to Qt 6.3 with g++, msvc and clang with both qmake and CMake.
+- Add Qan.HeatMapPreview component that could be used to help user explore large graphs:
+
+## 20220427 v2.0.0:
+- Release v2.0.0.
+- Simplify and clean GTpo framework (which is no longer usefull outside of QuickQanava).
+- Simplify memory management, remove most c++ smartpointers (See #148)
+
+## 20201205:
+- Update copyright notice.
+- Multiple bug fixes.
 
 **20201205:** 
 + Update copyright notice.

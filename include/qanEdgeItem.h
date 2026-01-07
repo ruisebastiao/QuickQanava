@@ -1,1 +1,0 @@
-#include "../src/qanEdgeItem.h"

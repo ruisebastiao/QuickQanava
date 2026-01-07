@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2008-2018, Benoit AUTHEMAN All rights reserved.
+ Copyright (c) 2008-2024, Benoit AUTHEMAN All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
@@ -27,13 +27,12 @@
 //-----------------------------------------------------------------------------
 // This file is a part of the QuickQanava software library.
 //
-// \file	qanGroup.h
-// \author	benoit@destrat.io
-// \date	2016 03 22
+// \file    qanGroup.h
+// \author  benoit@destrat.io
+// \date    2016 03 22
 //-----------------------------------------------------------------------------
 
-#ifndef qanGroup_h
-#define qanGroup_h
+#pragma once
 
 // Qt headers
 #include <QQuickItem>
@@ -41,9 +40,11 @@
 #include <QPolygonF>
 
 // QuickQanava headers
-#include "./qanGraphConfig.h"
 #include "./qanStyle.h"
 #include "./qanNode.h"
+
+Q_MOC_INCLUDE("./qanGraph.h")
+Q_MOC_INCLUDE("./qanGroupItem.h")
 
 namespace qan { // ::qan
 
@@ -54,35 +55,35 @@ class GroupItem;
  *
  * \nosubgrouping
  */
-class Group : public gtpo::GenGroup< qan::GraphConfig >
+class Group : public qan::Node
 {
     /*! \name Group Object Management *///-------------------------------------
     //@{
     Q_OBJECT
 public:
     //! Group constructor.
-    explicit Group( QObject* parent = nullptr );
+    explicit Group(QObject* parent = nullptr);
     /*! \brief Remove any childs group who have no QQmlEngine::CppOwnership.
      *
      */
-    virtual ~Group();
-    Group( const Group& ) = delete;
+    virtual ~Group() override = default;
+    Group(const Group&) = delete;
+
 public:
-    Q_PROPERTY( qan::Graph* graph READ getGraph CONSTANT FINAL )
-    //! Shortcut to gtpo::GenGroup<>::getGraph().
-    qan::Graph*         getGraph() noexcept;
-    //! \copydoc getGraph()
-    const qan::Graph*   getGraph() const noexcept;
+    //! Return true if this group is a table (ie a qan::TableGroup or subclass).
+    Q_INVOKABLE virtual bool    isTable() const;
+
+    /*! \brief Collect this group adjacent edges (ie adjacent edges of group and group nodes).
+     *
+     */
+    virtual std::unordered_set<qan::Edge*>  collectAdjacentEdges() const override;
 
 public:
     friend class qan::GroupItem;
 
-    Q_PROPERTY( qan::GroupItem* item READ getItem CONSTANT FINAL )
-    qan::GroupItem*         getItem() noexcept;
-    const qan::GroupItem*   getItem() const noexcept;
-    void                    setItem(qan::GroupItem* item) noexcept;
-private:
-    QPointer<qan::GroupItem> _item;
+    qan::GroupItem*         getGroupItem() noexcept;
+    const qan::GroupItem*   getGroupItem() const noexcept;
+    virtual void            setItem(qan::NodeItem* item) noexcept override;
 
 public:
     //! Shortcut to getItem()->proposeNodeDrop(), defined only for g++ compatibility to avoid forward template declaration.
@@ -92,7 +93,7 @@ public:
     //@}
     //-------------------------------------------------------------------------
 
-    /*! \name Group Static Factories *///---------------------------------------
+    /*! \name Group Static Factories *///--------------------------------------
     //@{
 public:
     /*! \brief Return the default delegate QML component that should be used to generate group \c item.
@@ -100,59 +101,25 @@ public:
      *  \arg engine QML engine used for delegate QML component creation.
      *  \return Default delegate component or nullptr (when nullptr is returned, QuickQanava default to Qan.Group component).
      */
-    static  QQmlComponent*      delegate(QQmlEngine& engine) noexcept;
+    static  QQmlComponent*      delegate(QQmlEngine& engine, QObject* parent = nullptr) noexcept;
 
     /*! \brief Return the default style that should be used with qan::Group.
      *
      *  \return Default style or nullptr (when nullptr is returned, qan::StyleManager default group style will be used).
      */
-    static  qan::Style*         style() noexcept;
+    static  qan::NodeStyle*     style(QObject* parent = nullptr) noexcept;
     //@}
     //-------------------------------------------------------------------------
 
     /*! \name Group Nodes Management *///--------------------------------------
     //@{
 public:
-    //! Return true if node \c node is registered in this group, shortcut to gtpo::GenGroup<qan::GraphConfig>::hasNode().
-    Q_INVOKABLE bool    hasNode( qan::Node* node ) const;
-    //@}
-    //-------------------------------------------------------------------------
-
-    /*! \name Appearance Management *///---------------------------------------
-    //@{
-public:
-    Q_PROPERTY( QString label READ getLabel WRITE setLabel NOTIFY labelChanged FINAL )
-    void        setLabel( const QString& label ) { _label = label; emit labelChanged( ); }
-    QString     getLabel( ) const { return _label; }
-private:
-    QString     _label = QString{ "" };
-signals:
-    void        labelChanged( );
-    //@}
-    //-------------------------------------------------------------------------
-
-    /*! \name Group DnD Management *///----------------------------------------
-    //@{
-public:
-    /*! \brief Define if the group could actually be dragged by mouse.
-     *
-     * Set this property to true if you want to allow this group to be moved by mouse (if false, the node position is
-     * fixed and should be changed programmatically).
-     * Default to true.
-     */
-    Q_PROPERTY( bool draggable READ getDraggable WRITE setDraggable NOTIFY draggableChanged FINAL )
-    void            setDraggable( bool draggable ) { _draggable = draggable; emit draggableChanged( ); }
-    bool            getDraggable( ) { return _draggable; }
-private:
-    bool            _draggable = true;
-signals:
-    void            draggableChanged( );
+    //! Return true if node \c node is registered in this group, shortcut to gtpo::group<qan::Config>::hasNode().
+    Q_INVOKABLE bool    hasNode(const qan::Node* node) const;
     //@}
     //-------------------------------------------------------------------------
 };
 
 } // ::qan
 
-QML_DECLARE_TYPE( qan::Group )
-
-#endif // qanGroup_h
+QML_DECLARE_TYPE(qan::Group)

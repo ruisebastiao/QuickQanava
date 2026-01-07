@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2008-2017, Benoit AUTHEMAN All rights reserved.
+ Copyright (c) 2008-2024, Benoit AUTHEMAN All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
@@ -24,42 +24,46 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-import QtQuick                   2.8
+import QtQuick                   2.12
 import QtQuick.Controls          2.1
 import QtQuick.Controls.Material 2.1
 import QtQuick.Layouts           1.3
 
-import QuickQanava 2.0 as Qan
-import "qrc:/QuickQanava" as Qan
-import "." as Qan
+import QuickQanava as Qan
 
 Qan.GraphView {
-    id: graphView
     anchors.fill: parent
+    id: graphView
     navigable   : true
+    PinchHandler {
+        target: null
+        onActiveScaleChanged: {
+            console.error('centroid.position=' + centroid.position)
+            console.error('activeScale=' + activeScale)
+            var p = centroid.position
+            var f = activeScale > 1.0 ? 1. : -1.
+            navigable.zoomOn(p, navigable.zoom + (f * 0.03))
+        }
+    }
     graph: Qan.Graph {
         id: graph
-        property var customNodeDelegate: Qt.createComponent( "qrc:/CustomNode.qml" )
-        property var controlNodeDelegate: Qt.createComponent( "qrc:/ControlNode.qml" )
-        property var diamondNodeDelegate: Qt.createComponent( "qrc:/DiamondNode.qml" )
+        property var customNodeDelegate: Qt.createComponent("qrc:/CustomNode.qml")
+        property var controlNodeDelegate: Qt.createComponent("qrc:/ControlNode.qml")
+        property var diamondNodeDelegate: Qt.createComponent("qrc:/DiamondNode.qml")
         Component.onCompleted: {
-            var rectNode = graph.insertNode()
+            const rectNode = graph.insertNode()
             rectNode.label = "Rectangle"
             rectNode.item.x = 45; rectNode.item.y = 140
 
-            var customNode = graph.insertNode(customNodeDelegate)
+            const customNode = graph.insertNode(customNodeDelegate)
             customNode.item.x = 45; customNode.item.y = 280
 
-            var diamondNode = graph.insertNode(diamondNodeDelegate)
+            const diamondNode = graph.insertNode(diamondNodeDelegate)
             diamondNode.label = "Diamond"
             diamondNode.item.x = 280; diamondNode.item.y = 170
 
-            var controlNode = graph.insertNode(controlNodeDelegate)
+            const controlNode = graph.insertNode(controlNodeDelegate)
             controlNode.item.x = 540; controlNode.item.y = 140
-
-            //var g = graph.insertGroup()
-            //g.label = "Group"
         }
     }
 }  // Qan.GraphView
-

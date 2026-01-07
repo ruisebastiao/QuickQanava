@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2008-2018, Benoit AUTHEMAN All rights reserved.
+ Copyright (c) 2008-2024, Benoit AUTHEMAN All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
@@ -32,8 +32,7 @@
 // \date	2017 08 10
 //-----------------------------------------------------------------------------
 
-#ifndef qanPortItem_h
-#define qanPortItem_h
+#pragma once
 
 // Qt headers
 #include <QQuickItem>
@@ -45,7 +44,6 @@
 // QuickQanava headers
 #include "./qanNodeItem.h"
 #include "./qanEdgeItem.h"
-#include "quickqanavaglobal.h"
 
 namespace qan { // ::qan
 
@@ -56,21 +54,20 @@ namespace qan { // ::qan
  *
  * \nosubgrouping
  */
-class QUICKQANAVA_EXPORT PortItem : public qan::NodeItem
+class PortItem : public qan::NodeItem
 {
     /*! \name Dock Object Management *///--------------------------------------
     //@{
     Q_OBJECT
-
-    Q_PROPERTY(double yPosition READ yPosition WRITE setYPosition NOTIFY yPositionChanged)
-
+    QML_ELEMENT
+    Q_PROPERTY(double yPosition READ getYPosition WRITE setYPosition NOTIFY yPositionChanged FINAL)
 public:
     //! PortItem constructor.
-    explicit PortItem( QQuickItem* parent = nullptr );
-    virtual ~PortItem();
-    PortItem( const PortItem& ) = delete;
+    explicit PortItem(QQuickItem* parent = nullptr);
+    virtual ~PortItem() override = default;
+    PortItem(const PortItem&) = delete;
     PortItem& operator=(const PortItem&) = delete;
-    PortItem( PortItem&& ) = delete;
+    PortItem(PortItem&&) = delete;
     PortItem& operator=(PortItem&&) = delete;
     //@}
     //-------------------------------------------------------------------------
@@ -100,7 +97,7 @@ public:
 
 public:
     //! \copydoc Node in or out or in/out (default to in/out).
-    Q_PROPERTY( Type type READ getType FINAL )
+    Q_PROPERTY(Type type READ getType CONSTANT FINAL)
     //! \copydoc Type
     inline Type      getType() const noexcept { return _type; }
     //! \copydoc Type
@@ -111,7 +108,7 @@ private:
 
 public:
     //! \copydoc Multiplicity
-    Q_PROPERTY( Multiplicity multiplicity READ getMultiplicity WRITE setMultiplicity NOTIFY multiplicityChanged FINAL )
+    Q_PROPERTY(Multiplicity multiplicity READ getMultiplicity WRITE setMultiplicity NOTIFY multiplicityChanged FINAL)
     //! \copydoc Multiplicity
     inline Multiplicity getMultiplicity() const noexcept { return _multiplicity; }
     //! \copydoc Multiplicity
@@ -124,7 +121,7 @@ signals:
 
 public:
     //!
-    Q_PROPERTY( qan::NodeItem::Dock dockType READ getDockType NOTIFY dockTypeChanged FINAL )
+    Q_PROPERTY(qan::NodeItem::Dock dockType READ getDockType NOTIFY dockTypeChanged FINAL)
     inline NodeItem::Dock   getDockType() const noexcept { return _dockType; }
     void                    setDockType(NodeItem::Dock dockType) noexcept;
 private:
@@ -133,34 +130,27 @@ signals:
     void                    dockTypeChanged();
 
 public:
-    Q_PROPERTY( QString label READ getLabel WRITE setLabel NOTIFY labelChanged FINAL )
-    Q_PROPERTY( QString id READ getId NOTIFY idChanged FINAL )
-
+    Q_PROPERTY(QString label READ getLabel WRITE setLabel NOTIFY labelChanged FINAL)
+    Q_PROPERTY(QString id READ getId NOTIFY idChanged FINAL)
     void            setLabel( const QString& label ) noexcept;
     inline QString  getLabel() const noexcept { return _label; }
 private:
-    QString         _label{QStringLiteral("")};
+    QString         _label = "";
 signals:
     void            labelChanged();
 
 public:
-    void            setId(const QString& id) noexcept {
-        _id = id;
-        emit idChanged(id);
-    }
-
-    QString         getId() noexcept { return _id; }
+    void            setId(const QString& id) noexcept;
+    QString         getId() const noexcept { return _id; }
 private:
-    QString         _id{QStringLiteral("")};
-
-    double m_yPosition=0;
-
+    QString         _id = "";
+    double          _yPosition = 0.0;
 
 public:
-    /* Note: qcm::ContainerModel automatically monitor contained
-     * object for destruction, just delete an item with deleteLater() to
-     * remove it.
-     */
+    double          getYPosition() const noexcept { return _yPosition; }
+    void            setYPosition(double yPosition) noexcept;
+
+public:
     using EdgeItems =   qcm::Container<QVector, qan::EdgeItem*>;
 
     void                addInEdgeItem(qan::EdgeItem& inEdgeItem) noexcept;
@@ -172,44 +162,30 @@ public:
     EdgeItems&          getOutEdgeItems() noexcept { return _outEdgeItems; }
     const EdgeItems&    getOutEdgeItems() const noexcept { return _outEdgeItems; }
 
-    double yPosition() const
-    {
-        return m_yPosition;
-    }
-
-public slots:
-    void setYPosition(double yPosition)
-    {
-        if (qFuzzyCompare(m_yPosition, yPosition))
-            return;
-
-        m_yPosition = yPosition;
-        emit yPositionChanged(m_yPosition);
-    }
-
 signals:
-
-    void outEdgeAdded(qan::EdgeItem& outEdgeItem);
-
-    void inEdgeAdded(qan::EdgeItem& inEdgeItem);
-
-    void inNonVisualEdgeAdded(qan::Edge& inEdge);
-
-    void outNonVisualEdgeAdded(qan::Edge& inEdge);
-
-    void yPositionChanged(double yPosition);
-
-    void idChanged(QString id);
+    void                outEdgeAdded(qan::EdgeItem* outEdgeItem);
+    void                inEdgeAdded(qan::EdgeItem* inEdgeItem);
+    void                inNonVisualEdgeAdded(qan::Edge* inEdge);
+    void                outNonVisualEdgeAdded(qan::Edge* outEdge);
+    void                yPositionChanged(double yPosition);
+    void                idChanged(const QString& id);
 
 protected:
     EdgeItems           _inEdgeItems;
     EdgeItems           _outEdgeItems;
+
+    //! Used internally to automatically monitor in/out edges items destruction.
+    void                onEdgeItemDestroyed(QObject* obj);
+
+public:
+    //! Force input/output edge update.
+    Q_INVOKABLE virtual void updateEdges();
     //@}
     //-------------------------------------------------------------------------
 };
 
 } // ::qan
 
-QML_DECLARE_TYPE( qan::PortItem )
-
-#endif // qanPortItem_h
+QML_DECLARE_TYPE(qan::PortItem)
+Q_DECLARE_METATYPE(qan::PortItem::Type)
+Q_DECLARE_METATYPE(qan::PortItem::Multiplicity)

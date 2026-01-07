@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2008-2017, Benoit AUTHEMAN All rights reserved.
+ Copyright (c) 2008-2024, Benoit AUTHEMAN All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
@@ -25,20 +25,18 @@
 */
 
 //-----------------------------------------------------------------------------
-// This file is a part of the QuickQanava software library. Copyright 2015 Benoit AUTHEMAN.
+// This file is a part of the QuickQanava software library. Copyright 2024 Benoit AUTHEMAN.
 //
-// \file	FlowNode.qml
+// \file	TintNode.qml
 // \author	benoit@destrat.io
 // \date	2017 12 12
 //-----------------------------------------------------------------------------
 
-import QtQuick              2.7
-import QtQuick.Controls     2.0
-import QtQuick.Layouts      1.3
-import QtGraphicalEffects   1.0
+import QtQuick
+import QtQuick.Effects
+import QtQuick.Layouts
 
-import QuickQanava          2.0 as Qan
-import "qrc:/QuickQanava"   as Qan
+import QuickQanava as Qan
 
 Qan.NodeItem {
     id: flowNodeItem
@@ -51,15 +49,13 @@ Qan.NodeItem {
     Qan.RectNodeTemplate {
         anchors.fill: parent
         nodeItem : parent
-        ColumnLayout {
-            anchors.fill: parent
-            Image {
-                anchors.fill: parent; anchors.margins: 2
-                source: node.source
-                layer.enabled: true
-                layer.effect: ColorOverlay {
-                    color: node.tintColor
-                }
+        Image {
+            anchors.fill: parent; anchors.margins: 2
+            source: node.source
+            layer.enabled: true
+            layer.effect: MultiEffect {
+                colorization: 1.
+                colorizationColor: node.tintColor
             }
         }
     }

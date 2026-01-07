@@ -2,8 +2,8 @@
 
 ## Dependencies
 
-- **Qt 5.10** _is mandatory_ for Qt Quick Shapes support.
-- **Google Test** is a *GTpo* dependency, it is optional for QuickQanava until you intent to use a graph with custom non-STL/non-Qt containers: ![Google Test GitHub](https://github.com/google/googletest)
+- **Qt > 6.5.0** _is mandatory_ for MultiEffect support.
+- **Google Test** is optional only to build and run tests ![Google Test GitHub](https://github.com/google/googletest).
 
 
 ## Building 
@@ -22,27 +22,11 @@ $ git submodule add https://github.com/cneben/QuickQanava
 $ git submodule update
 ```
 
-QuickQanava could be used with either _qmake_ or _CMake_ build configuration system.
-
-| qmake                | cmake             | 
-| :---:                | :---:             | 
-| Static build, no QML module, all resources are linked statically trough QRC | Installable or embedable, QuickQanava is loaded using a QML module that need to be installed, resources can be linked statically trough QRC | 
-
-
-Using qmake (**preferred and supported way of integrating QuickQanava**):
-
-1. Open _quickqanava.pro_ in QtCreator.
-
-2. Select a kit, build and launch samples.
-
-
-:warning: CMake support is "community maintained"
-
-or with (CMake >= 3.5) and Qt Creator:
+QuickQanava is configured with CMake >= 3.5.0.
 
 1. Open _CMakeLists.txt_ in QtCreator.
 
-2. In 'Projects' panel, set DBUILD_SAMPLES option to true in CMake configuration panel.
+2. In 'Projects' panel, set `QUICK_QANAVA_BUILD_SAMPLES` option to `ON` in CMake configuration panel.
 
 3. Select a kit, build and launch samples.
 
@@ -53,45 +37,17 @@ $ cd QuickQanava
 $ mkdir build
 $ cd build
 
-# IF QT_DIR IS CONFIGURED AND QMAKE IN PATH
-$ cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SAMPLES=TRUE -DBUILD_STATIC_QRC=TRUE ..
+# IF QT_DIR IS CONFIGURED
+$ cmake -DCMAKE_BUILD_TYPE=Release -DQUICK_QANAVA_BUILD_SAMPLES=OFF ..
 
 # IF QT DIR IS NOT CONFIGURED, CONFIGURE KIT MANUALLY
-$ cmake -DCMAKE_PREFIX_PATH="/home/b/Qt/5.11.0/gcc_64" -DQT_QMAKE_EXECUTABLE="/home/b/Qt/5.11.0/gcc_64/bin/qmake"  -DBUILD_SAMPLES=TRUE -DBUILD_STATIC_QRC=TRUE ../QuickQanava/
+$ cmake -DCMAKE_PREFIX_PATH="/home/xxx/Qt/6.6.1/gcc_64" -DQUICK_QANAVA_BUILD_SAMPLES=OFF -DBUILD_STATIC_QRC=TRUE ../QuickQanava/
 
 $ cmake --build .
-# Then run the samples in ./samples
 
-# Eventually make install
+# Then run the samples in ./samples (with QUICK_QANAVA_BUILD_SAMPLES=ON)
+
+# DO NOT make install, QuickQanava is not designed for system installation, only for submodule inclusion
 ```
 
 Detailed instructions:  [Installation](http://cneben.github.io/QuickQanava/installation/index.html)
-
-Note that a previously installed "QML plugin" version of QuickQanava might interfere with a fully static build using direct .pri inclusion. Typical error message looks like:
-
-```
-QQmlApplicationEngine failed to load component
-qrc:/nodes.qml:33 module "QuickQanava" plugin "quickqanavaplugin" not found
-```
-
-QuickQanava and QuickContainers plugins directories could be removed manually from `$QTDIR\..\qml` to fix the problem (ex: rm -rf '~/Qt/5.11.1/gcc_64/qml/QuickQanava').
-
-On Ubuntu system, the following dependencies must be isntalled:
-```
-$ sudo apt install libopengl0 -y
-```
-
-## Roadmap / Changelog
-
-  - **Done**:
-    - [X] Add full support for groups inside group (ie subgraphs).
-    - [X] Fix qan::LineGrid bugs
-  - **Todo**:
-    - [ ] Rewrite CMake configuration, add install step, use QML plugins.
-    - [ ] Update geometry creation interface and delegate management.
-    - [ ] Add support for direct visual dragging of port items.
-    - [ ] Add "snap to grid" support.
-  - **v1.: Advanced edge visualization**
-    - [ ] Add better support for graph fine grained locking strategies.
-    - [ ] Add simple layout algorithms (force directed, tree).
-    - [ ] Publish the 4k sample (40k is probably too much for QML without dedicated culling and LOD code).

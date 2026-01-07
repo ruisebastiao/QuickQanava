@@ -6,26 +6,29 @@ weight: 0
 ---
 ![home](images/home.png)
 
-[![Build Status](https://travis-ci.org/cneben/QuickQanava.svg?branch=master)](https://travis-ci.org/cneben/QuickQanava)  (Linux/g++5/Qt5.8 - OSX/Clang/Qt5.9)
 
-[![Build status](https://ci.appveyor.com/api/projects/status/ghpiaqqew63er8ea?svg=true)](https://ci.appveyor.com/project/cneben/quickqanava) (Windows MSVC 2015 x64/Qt5.9)
+![Linux Qt5 g++ qmake](https://github.com/cneben/QuickQanava/actions/workflows/build-linux-qt5.yml/badge.svg)  (Linux, g++, Qt5.15, qmake)
+
+![Win64 Qt5 msvc qmake](https://github.com/cneben/QuickQanava/actions/workflows/build-win64-qt5.yml/badge.svg) (Windows, msvc2019, Qt5.15, qmake)
+
+![Win64 Qt6 msvc CMake](https://github.com/cneben/QuickQanava/actions/workflows/build-win64-qt6.yml/badge.svg) (Windows, msvc2019, Qt6.4, CMake)
 
 [![Documentation](https://img.shields.io/badge/docs-doxygen-blue.svg)](http://www.destrat.io/quickqanava/doc)
 [![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
 [![Twitter URL](https://img.shields.io/twitter/url/https/twitter.com/fold_left.svg?style=social&label=Follow%20%40QuickQanava)](https://twitter.com/QuickQanava)
 
-
-!!! warning "QuickQanava is alpha, interface may change before 1.0.0 release, but QuickQanava is already used extensively in production code."
-
 !!! note "QuickQanava is licensed under BSD-3, specific features or support is available on demand: benoit@destrat.io"
+!!! note "Open an issue with `question` tag for support request / questions"
 
 ## Introduction
 
-`QuickQanava` is a C++14 library designed to display graphs and relational content in a QtQuick application. QuickQanava provide QML components and C++ classes to visualize medium-sized directed graphs in a C++/QML application. QuickQanava does not provide advanced layout algorithms, but rather focus on displaying relational content in advanced dynamic user interfaces (with DnD support, resizable content, visual connection of nodes).
+`QuickQanava` is a C++17 library developed for rendering graphs and relational content within a Qt/QML application. It offers QML components and C++ classes designed for visualizing medium-sized directed graphs in a C++/QML application. QuickQanava emphasizes the presentation of relational content in a dynamic user interface, featuring Drag-and-Drop support, resizable content, and visual creation of topology. `QuickQanava` focus authoring of topology delegates in pure QML.
 
 QuickQanava main repository is hosted on GitHub: https://github.com/cneben/quickqanava
 
-QuickQanava is primarily developed with Qt >= 5.10 with MSVC2015 and g++7. minimal required Qt version is **Qt 5.10**.
+QuickQanava is primarily developed with Qt 6.6.1 with MSVC2019 and g++11 (minimal required Qt version is **Qt 6.5.0**, recommended is **Qt 6.6.1**). 
+
+If you are interested in **Qt5.15** support, last release supporting Qt5 is [2.4.0](https://github.com/cneben/QuickQanava/releases/tag/2.4.0)
 
 + Project homepage: [http://cneben.github.io/QuickQanava/index.html](http://cneben.github.io/QuickQanava/index.html)
 
@@ -41,25 +44,4 @@ Please refer to [Installation](installation.md) manual and [Graph](graph.md), [N
 | ![connector](images/sample-dataflow-short.gif) | ![styles](images/sample-styles.gif) | 
 
 ![styles](samples/topology.png)
-
-## Roadmap
-
-  - **v0.9.4:**	 
-	- QuickContainers (Qt/QML observable adapter for STL or Qt containers):
-		- [X] Redesign QuickContainers: qcm::ContainerModel<> memory footprint is too high (inheritance from QAbstractItemModel comes with a strong virtual and signals/slots overhead)
-		- [X] Add support for standard library containers.
-		- [X] Increase test coverage.
-    - [X] Fix port remove issues.
-    - [X] Add full CMake support..    
-  - **v0.9.5:**
-    - [ ] Add support for direct visual dragging of port items.
-    - [ ] Add full support for groups inside group (ie subgraphs).
-    - [ ] Fix current qan::PointGrid bugs and add "snap to grid" support.
-  - **v0.9.6:**
-    - [ ] Add more configuration options to qan::Edge (source and destination arrow configuration).
-  - **v1.0.0: Advanced edge visualization**	 
-    - GTpo (Configurable topology library):
-        - [ ] Push test coverage to 100% (ie increase coverage for subgroups).- [80%] Redesign qan::Graph interface for creating content.
-    - [ ] Publish the 4k sample (40k is probably too much for QML without dedicated culling and LOD code).
-
 

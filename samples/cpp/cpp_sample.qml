@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2008-2018, Benoit AUTHEMAN All rights reserved.
+ Copyright (c) 2008-2020, Benoit AUTHEMAN All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
@@ -24,19 +24,18 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-import QtQuick                   2.8
-import QtQuick.Controls          2.1
-import QtQuick.Controls.Material 2.1
-import QtQuick.Layouts           1.3
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Controls.Material
+import QtQuick.Layouts
 
-import QuickQanava          2.0 as Qan
-import "qrc:/QuickQanava"   as Qan
-import MyModule             1.0        // Our custom topology is defined in MyModule
+import QuickQanava as Qan
+import MyModule   // Our custom topology is defined in MyModule
 
 ApplicationWindow {
     id: window
     visible: true
-    width: 1280; height: 720    // MPEG - 2 HD 720p - 1280 x 720 16:9
+    width: 1280; height: 720
 
     title: "QuickQanava cpp API"
 
@@ -49,9 +48,7 @@ ApplicationWindow {
             objectName: "graph"
             anchors.fill: parent
             clip: true
-            //enableConnectorDropNode: true
-            Component.onCompleted: {
-            }
+            Component.onCompleted: { }
             onNodeRightClicked: { }
             onEdgeRightClicked: { }
         } // Qan.Graph: graph

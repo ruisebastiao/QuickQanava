@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2008-2018, Benoit AUTHEMAN All rights reserved.
+ Copyright (c) 2008-2024, Benoit AUTHEMAN All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
@@ -25,19 +25,18 @@
 */
 
 //-----------------------------------------------------------------------------
-// This file is a part of the QuickQanava software. Copyright 2015 Benoit AUTHEMAN.
+// This file is a part of the QuickQanava software library.
 //
 // \file	RectNodeTemplate.qml
 // \author	benoit@destrat.io
 // \date	2015 11 30
 //-----------------------------------------------------------------------------
 
-import QtQuick              2.7
-import QtQuick.Layouts      1.3
-import QtQuick.Controls     2.0
-import QtGraphicalEffects   1.0
+import QtQuick
+import QtQuick.Layouts
+import QtQuick.Controls
 
-import QuickQanava          2.0 as Qan
+import QuickQanava as Qan
 
 /*! \brief Default template component for building a custom rectangular qan::Node item.
  *
@@ -45,25 +44,40 @@ import QuickQanava          2.0 as Qan
  */
 Item {
     id: template
+
+    // PUBLIC /////////////////////////////////////////////////////////////////
     property var            nodeItem : undefined
     default property alias  children : contentLayout.children
 
+    // PRIVATE ////////////////////////////////////////////////////////////////
+    onNodeItemChanged: {
+        if (delegateLoader?.item?.nodeItem)
+            delegateLoader.item.nodeItem = nodeItem
+    }
+    onWidthChanged: updateDefaultBoundingShape()
+    onHeightChanged: updateDefaultBoundingShape()
+    function updateDefaultBoundingShape() {
+        if (nodeItem)
+            nodeItem.setDefaultBoundingShape()
+    }
+
+    readonly property real   backRadius: nodeItem?.style?.backRadius ?? 4.
     Loader {
+        id: delegateLoader
         anchors.fill: parent
         source: {
-            if ( !nodeItem ||
-                 !nodeItem.style )     // Defaul to solid no effect with unconfigured nodes
+            if (!nodeItem?.style)     // Defaul to solid no effect with unconfigured nodes
                 return "qrc:/QuickQanava/RectSolidBackground.qml";
-            switch ( nodeItem.style.fillType ) {  // Otherwise, select the delegate according to current style configuration
+            switch (nodeItem.style.fillType) {  // Otherwise, select the delegate according to current style configuration
             case Qan.NodeStyle.FillSolid:
-                switch (nodeItem.style.effectType ) {
+                switch (nodeItem.style.effectType) {
                 case Qan.NodeStyle.EffectNone:   return "qrc:/QuickQanava/RectSolidBackground.qml";
                 case Qan.NodeStyle.EffectShadow: return "qrc:/QuickQanava/RectSolidShadowBackground.qml";
                 case Qan.NodeStyle.EffectGlow:   return "qrc:/QuickQanava/RectSolidGlowBackground.qml";
                 }
                 break;
             case Qan.NodeStyle.FillGradient:
-                switch (nodeItem.style.effectType ) {
+                switch (nodeItem.style.effectType) {
                 case Qan.NodeStyle.EffectNone:   return "qrc:/QuickQanava/RectGradientBackground.qml";
                 case Qan.NodeStyle.EffectShadow: return "qrc:/QuickQanava/RectGradientShadowBackground.qml";
                 case Qan.NodeStyle.EffectGlow:   return "qrc:/QuickQanava/RectGradientGlowBackground.qml";
@@ -73,13 +87,14 @@ Item {
         }
         onItemChanged: {
             if (item)
-                item.nodeItem = Qt.binding(function() { return template.nodeItem; } );
+                item.style = template.nodeItem?.style || undefined
         }
     }
     ColumnLayout {
         id: layout
         anchors.fill: parent
-        anchors.margins: nodeItem.style.backRadius / 2.; spacing: 0
+        anchors.margins: backRadius / 2.
+        spacing: 0
         visible: !labelEditor.visible
         Label {
             id: nodeLabel
@@ -88,10 +103,12 @@ Item {
             Layout.preferredHeight: contentHeight
             Layout.alignment: Qt.AlignHCenter | Qt.AlignTop
             textFormat: Text.PlainText
-            text: nodeItem && nodeItem.node ? nodeItem.node.label : ""
-            horizontalAlignment: Qt.AlignHCenter; verticalAlignment: Qt.AlignVCenter
+            text: nodeItem && nodeItem.node ? nodeItem.node.label : ''
+            horizontalAlignment: Qt.AlignHCenter
+            verticalAlignment: Qt.AlignVCenter
             maximumLineCount: 3 // Must be set, otherwise elide don't work and we end up with single line text
-            elide: Text.ElideRight; wrapMode: Text.Wrap
+            elide: Text.ElideRight
+            wrapMode: Text.Wrap
         }
         Item {
             id: contentLayout
@@ -103,13 +120,13 @@ Item {
     }
     Connections {
         target: nodeItem
-        onNodeDoubleClicked: labelEditor.visible = true
+        function onNodeDoubleClicked() { labelEditor.visible = true }
     }
     LabelEditor {
         id: labelEditor
         anchors.fill: parent
-        anchors.margins: nodeItem.style.backRadius / 2.
-        target: parent.nodeItem.node
+        anchors.margins: backRadius / 2.
+        target: template.nodeItem.node
         visible: false
     }
-}
+} // Item: template

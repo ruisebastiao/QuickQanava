@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2008-2018, Benoit AUTHEMAN All rights reserved.
+ Copyright (c) 2008-2024, Benoit AUTHEMAN All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
@@ -32,8 +32,7 @@
 // \date	2016 03 04
 //-----------------------------------------------------------------------------
 
-#ifndef qanNodeItem_h
-#define qanNodeItem_h
+#pragma once
 
 // Std headers
 #include <cstddef>  // std::size_t
@@ -47,15 +46,11 @@
 #include <QPointer>
 
 // QuickQanava headers
-#include "./qanGraphConfig.h"
 #include "./qanStyle.h"
-#include "./qanBehaviour.h"
 #include "./qanNode.h"
 #include "./qanSelectable.h"
 #include "./qanDraggable.h"
 #include "./qanAbstractDraggableCtrl.h"
-
-#include "quickqanavaglobal.h"
 
 namespace qan { // ::qan
 
@@ -81,7 +76,7 @@ class Graph;
  *
  * \nosubgrouping
  */
-class QUICKQANAVA_EXPORT NodeItem : public QQuickItem,
+class NodeItem : public QQuickItem,
                  public qan::Selectable,
                  public qan::Draggable
 {
@@ -90,22 +85,23 @@ class QUICKQANAVA_EXPORT NodeItem : public QQuickItem,
     Q_OBJECT
     Q_INTERFACES(qan::Selectable)
     Q_INTERFACES(qan::Draggable)
+    QML_ELEMENT
 public:
     //! Node constructor.
-    explicit NodeItem( QQuickItem* parent = nullptr );
+    explicit NodeItem(QQuickItem* parent = nullptr);
     virtual ~NodeItem() override;
-    NodeItem( const NodeItem& ) = delete;
-    NodeItem& operator=( const NodeItem& ) = delete;
-    NodeItem( NodeItem&& ) = delete;
-    NodeItem& operator=( NodeItem&& ) = delete;
+    NodeItem(const NodeItem&) = delete;
+    NodeItem& operator=(const NodeItem&) = delete;
+    NodeItem(NodeItem&&) = delete;
+    NodeItem& operator=(NodeItem&&) = delete;
+    //@}
+    //-------------------------------------------------------------------------
 
-public:
-    qan::AbstractDraggableCtrl&                 draggableCtrl();
-private:
-    std::unique_ptr<qan::AbstractDraggableCtrl> _draggableCtrl;
 
+    /*! \name Topology Management *///-----------------------------------------
+    //@{
 public:
-    Q_PROPERTY( qan::Node* node READ getNode  NOTIFY nodeChanged CONSTANT FINAL )
+    Q_PROPERTY(qan::Node* node READ getNode NOTIFY nodeChanged FINAL)
     auto        getNode() noexcept -> qan::Node*;
     auto        getNode() const noexcept -> const qan::Node*;
     auto        setNode(qan::Node* node) noexcept -> void;
@@ -114,22 +110,22 @@ private:
 
 public:
     //! Secure shortcut to getNode().getGraph().
-    Q_PROPERTY( qan::Graph* graph READ getGraph CONSTANT FINAL )
+    Q_PROPERTY(qan::Graph* graph READ getGraph CONSTANT)
     //! \copydoc graph
-    auto    setGraph(qan::Graph* graph) noexcept -> void;
+    auto    setGraph(qan::Graph* graph) -> void;
 protected:
-    auto    getGraph() const noexcept -> const qan::Graph*;
-    auto    getGraph() noexcept -> qan::Graph*;
+    auto    getGraph() const -> const qan::Graph*;
+    auto    getGraph() -> qan::Graph*;
 private:
     QPointer<qan::Graph>    _graph;
 
 public:
     //! Node minimum size, default to "100 x 45" (node could not be visually resized below this size if \c resizable property is true).
-    Q_PROPERTY( QSizeF minimumSize READ getMinimumSize WRITE setMinimumSize NOTIFY minimumSizeChanged FINAL )
+    Q_PROPERTY(QSizeF minimumSize READ getMinimumSize WRITE setMinimumSize NOTIFY minimumSizeChanged FINAL)
     //! \copydoc minimumSize
     const QSizeF&   getMinimumSize() const noexcept { return _minimumSize; }
     //! \copydoc minimumSize
-    void            setMinimumSize(QSizeF minimumSize) noexcept { _minimumSize = minimumSize; emit minimumSizeChanged( ); }
+    bool            setMinimumSize(QSizeF minimumSize) noexcept;
 private:
     QSizeF          _minimumSize{100., 45.};
 signals:
@@ -138,18 +134,37 @@ signals:
 
 public:
     //! Utility function to ease initialization from c++, call setX(), setY(), setWidth() and setHEight() with the content of \c rect bounding rect.
-    auto            setRect(const QRectF& r) noexcept -> void;
+    auto            setRect(const QRectF& r) noexcept -> void;    
     //@}
     //-------------------------------------------------------------------------
+
+
+    /*! \name Collapse Management *///-----------------------------------------
+    //@{
+public:
+    //! \brief True when the node (usually a group) is collapsed (content of a collapsed group is hidden, leaving just an header bar with a +/- collapse control).
+    Q_PROPERTY(bool collapsed READ getCollapsed WRITE setCollapsed NOTIFY collapsedChanged FINAL)
+    inline bool     getCollapsed() const noexcept { return _collapsed; }
+    virtual void    setCollapsed(bool collapsed) noexcept;
+private:
+    bool        _collapsed = false;
+signals:
+    void        collapsedChanged();
+public:
+    Q_INVOKABLE virtual void    collapseAncestors(bool collapsed = true);
+    Q_INVOKABLE virtual void    collapseChilds(bool collapsed = true);
+    //@}
+    //-------------------------------------------------------------------------
+
 
     /*! \name Selection Management *///----------------------------------------
     //@{
 public:
     //! Set this property to false to disable node selection (default to true, ie node are selectable by default).
-    Q_PROPERTY( bool selectable READ getSelectable WRITE setSelectable NOTIFY selectableChanged FINAL )
-    Q_PROPERTY( bool selected READ getSelected WRITE setSelected NOTIFY selectedChanged FINAL )
+    Q_PROPERTY(bool selectable READ getSelectable WRITE setSelectable NOTIFY selectableChanged FINAL)
+    Q_PROPERTY(bool selected READ getSelected WRITE setSelected NOTIFY selectedChanged FINAL)
     //! \brief Item used to hilight selection (usually a Rectangle quick item).
-    Q_PROPERTY( QQuickItem* selectionItem READ getSelectionItem WRITE setSelectionItem NOTIFY selectionItemChanged FINAL )
+    Q_PROPERTY(QQuickItem* selectionItem READ getSelectionItem WRITE setSelectionItem NOTIFY selectionItemChanged FINAL)
 protected:
     virtual void    emitSelectableChanged() override { emit selectableChanged(); }
     virtual void    emitSelectedChanged() override { emit selectedChanged(); }
@@ -165,18 +180,19 @@ protected slots:
     //@}
     //-------------------------------------------------------------------------
 
+
     /*! \name Node Configuration *///------------------------------------------
     //@{
 public:
     //! Enable or disable node item resizing (default to true, ie node is resizable).
-    Q_PROPERTY( bool resizable READ getResizable WRITE setResizable NOTIFY resizableChanged FINAL )
+    Q_PROPERTY(bool resizable READ getResizable WRITE setResizable NOTIFY resizableChanged FINAL)
     //! \copydoc resizable
     inline bool     getResizable() const noexcept { return _resizable; }
     //! \copydoc resizable
-    void            setResizable( bool resizable ) noexcept;
+    void            setResizable(bool resizable) noexcept;
 protected:
     //! \copydoc resizable
-    bool            _resizable{true};
+    bool            _resizable = true;
 signals:
     //! \copydoc resizable
     void            resizableChanged();
@@ -188,14 +204,14 @@ public:
      *
      * Ration conservation is disabled if \c ration is < 0.
      */
-    Q_PROPERTY( qreal ratio READ getRatio WRITE setRatio NOTIFY ratioChanged FINAL )
+    Q_PROPERTY(qreal ratio READ getRatio WRITE setRatio NOTIFY ratioChanged FINAL)
     //! \copydoc ratio
     inline qreal    getRatio() const noexcept { return _ratio; }
     //! \copydoc ratio
     void            setRatio(qreal ratio) noexcept;
 protected:
     //! \copydoc ratio
-    qreal           _ratio{-1.};
+    qreal           _ratio = -1.;
 signals:
     //! \copydoc ratio
     void            ratioChanged();
@@ -224,14 +240,14 @@ public:
      *
      * \sa Connectable
      */
-    Q_PROPERTY( Connectable connectable READ getConnectable WRITE setConnectable NOTIFY connectableChanged FINAL )
+    Q_PROPERTY(Connectable connectable READ getConnectable WRITE setConnectable NOTIFY connectableChanged FINAL)
     //! \copydoc connectable
     inline Connectable  getConnectable() const noexcept { return _connectable; }
     //! \copydoc connectable
-    void            setConnectable( Connectable connectable ) noexcept;
+    void            setConnectable(Connectable connectable) noexcept;
 protected:
     //! \copydoc connectable
-    Connectable     _connectable{Connectable::Connectable};
+    Connectable     _connectable = Connectable::Connectable;
 signals:
     //! \copydoc connectable
     void            connectableChanged();
@@ -241,34 +257,61 @@ signals:
     /*! \name Draggable Management *///----------------------------------------
     //@{
 public:
+    qan::AbstractDraggableCtrl&                 draggableCtrl();
+protected:
+    std::unique_ptr<qan::AbstractDraggableCtrl> _draggableCtrl;
+public:
     //! \copydoc qan::Draggable::_draggable
-    Q_PROPERTY( bool draggable READ getDraggable WRITE setDraggable NOTIFY draggableChanged FINAL )
+    Q_PROPERTY(bool draggable READ getDraggable WRITE setDraggable NOTIFY draggableChanged FINAL)
     //! \copydoc qan::Draggable::_dragged
-    Q_PROPERTY( bool dragged READ getDragged WRITE setDragged NOTIFY draggedChanged FINAL )
+    Q_PROPERTY(bool dragged READ getDragged WRITE setDragged NOTIFY draggedChanged FINAL)
     //! \copydoc qan::Draggable::_dropable
-    Q_PROPERTY( bool droppable READ getDroppable WRITE setDroppable NOTIFY droppableChanged FINAL )
+    Q_PROPERTY(bool droppable READ getDroppable WRITE setDroppable NOTIFY droppableChanged FINAL)
     //! \copydoc qan::Draggable::_acceptDrops
-    Q_PROPERTY( bool acceptDrops READ getAcceptDrops WRITE setAcceptDrops NOTIFY acceptDropsChanged FINAL )
+    Q_PROPERTY(bool acceptDrops READ getAcceptDrops WRITE setAcceptDrops NOTIFY acceptDropsChanged FINAL)
+
 protected:
     virtual void    emitDraggableChanged() override { emit draggableChanged(); }
     virtual void    emitDraggedChanged() override { emit draggedChanged(); }
     virtual void    emitAcceptDropsChanged() override { emit acceptDropsChanged(); }
     virtual void    emitDroppableChanged() override { emit droppableChanged(); }
+
 signals:
     void            draggableChanged();
     void            draggedChanged();
     void            droppableChanged();
     void            acceptDropsChanged();
 
+public:
+    //! Define an orientation contrain on node dragging.
+    enum class DragOrientation: unsigned int {
+        DragAll         = 0,  //! All is no constrain on dragging: drag in all directions
+        DragVertical    = 1,  //! Drag only horizontally
+        DragHorizontal  = 2   //! Drag only vertically
+    };
+    Q_ENUM(DragOrientation)
+    //! \copydoc getDragOrientation()
+    Q_PROPERTY(DragOrientation dragOrientation READ getDragOrientation WRITE setDragOrientation NOTIFY dragOrientationChanged FINAL)
+    //! \copydoc getDragOrientation()
+    bool                    setDragOrientation(DragOrientation dragOrientation) noexcept;
+    //! Define a constrain on node/group dragging, default to no constrain, set to horizontal or vertical to constrain dragging on one orientation.
+    DragOrientation         getDragOrientation() const noexcept { return _dragOrientation; }
+protected:
+    //! \copydoc getDragOrientation()
+    DragOrientation         _dragOrientation = DragOrientation::DragAll;
+signals:
+    //! \copydoc getDragOrientation()
+    void                    dragOrientationChanged();
+
 protected:
     //! Internally used to manage drag and drop over nodes, override with caution, and call base class implementation.
-    virtual void    dragEnterEvent( QDragEnterEvent* event ) override;
+    virtual void    dragEnterEvent(QDragEnterEvent* event) override;
     //! Internally used to manage drag and drop over nodes, override with caution, and call base class implementation.
-    virtual void    dragMoveEvent( QDragMoveEvent* event ) override;
+    virtual void    dragMoveEvent(QDragMoveEvent* event) override;
     //! Internally used to manage drag and drop over nodes, override with caution, and call base class implementation.
-    virtual void    dragLeaveEvent( QDragLeaveEvent* event ) override;
+    virtual void    dragLeaveEvent(QDragLeaveEvent* event) override;
     //! Internally used to accept style drops.
-    virtual void    dropEvent( QDropEvent* event ) override;
+    virtual void    dropEvent(QDropEvent* event) override;
 
     virtual void    mouseDoubleClickEvent(QMouseEvent* event) override;
     virtual void    mouseMoveEvent(QMouseEvent* event) override;
@@ -277,14 +320,15 @@ protected:
     //@}
     //-------------------------------------------------------------------------
 
+
     /*! \name Style Management *///--------------------------------------------
     //@{
 public:
     //! Node current style (this property is never null, a default style is returned when no style has been manually set).
-    Q_PROPERTY( qan::NodeStyle* style READ getStyle WRITE setStyle NOTIFY styleChanged FINAL )
-    void                        setStyle( qan::NodeStyle* style ) noexcept;
+    Q_PROPERTY(qan::NodeStyle* style READ getStyle WRITE setStyle NOTIFY styleChanged FINAL)
+    void                        setStyle(qan::NodeStyle* style) noexcept;
     //! Generic interface for qan::DraggableCtrl<>::handleDropEvent().
-    void                        setItemStyle( qan::Style* style ) noexcept;
+    void                        setItemStyle(qan::Style* style) noexcept;
     //! \copydoc style
     inline qan::NodeStyle*      getStyle() const noexcept { return _style.data(); }
 private:
@@ -295,49 +339,41 @@ signals:
     void                        styleChanged();
 private slots:
     //! Called when this node style is destroyed, remove any existing binding.
-    void                        styleDestroyed( QObject* style );
+    void                        styleDestroyed(QObject* style);
     //@}
     //-------------------------------------------------------------------------
 
     /*! \name Intersection Shape Management *///-------------------------------
     //@{
 signals:
-    //! Emmited whenever the node is clicked (even at the start of a dragging operation).
-    void    nodeClicked( qan::NodeItem* node, QPointF p );
-    //! Emmited whenever the node is double clicked.
-    void    nodeDoubleClicked( qan::NodeItem* node, QPointF p );
-    //! Emmited whenever the node is right clicked.
-    void    nodeRightClicked( qan::NodeItem* node, QPointF p );
+    //! Emitted whenever the node is clicked (even at the start of a dragging operation).
+    void    nodeClicked(qan::NodeItem* node, QPointF p);
+    //! Emitted whenever the node is double clicked.
+    void    nodeDoubleClicked(qan::NodeItem* node, QPointF p);
+    //! Emitted whenever the node is right clicked.
+    void    nodeRightClicked(qan::NodeItem* node, QPointF p);
 
 public:
-    //! Set to true if the node item has a complex non rounded rectangle bounding shape (and manually install a \c onRequestUpdateBoundingShape() handler in QML delegate).
-    Q_PROPERTY( bool complexBoundingShape READ getComplexBoundingShape WRITE setComplexBoundingShape NOTIFY complexBoundingShapeChanged FINAL )
-    void            setComplexBoundingShape( bool complexBoundingShape ) noexcept;
-    inline bool     getComplexBoundingShape() const noexcept { return _complexBoundingShape; }
-private:
-    bool            _complexBoundingShape{false};
-signals:
-    void            complexBoundingShapeChanged( );
-
-public:
-    /*! \brief Polygon used for mouse event clipping, and edge arrow clipping.
+    /*! \brief Polygon used for mouse event clipping, and edge arrow clipping (in item local coordinates).
      *
      * An intersection shape is automatically generated for rectangular nodes, it can be sets by the user
      * manually with setIntersectionShape() or setIntersectionShapeFromQml() if the node graphical representation is
      * not a rectangle.
      * \sa \ref custom
      */
-    Q_PROPERTY( QPolygonF boundingShape READ getBoundingShape WRITE setBoundingShape NOTIFY boundingShapeChanged FINAL )
-    QPolygonF           getBoundingShape() noexcept;
-    void                setBoundingShape( const QPolygonF& boundingShape ) { _boundingShape = boundingShape; emit boundingShapeChanged(); }
-signals:
-    void                boundingShapeChanged();
-    //! signal is emmited when the bounding shape become invalid and should be regenerated from QML.
-    void                requestUpdateBoundingShape();
-protected:
-    QPolygonF           generateDefaultBoundingShape() const;
+    Q_PROPERTY(QPolygonF boundingShape READ getBoundingShape WRITE setBoundingShape NOTIFY boundingShapeChanged FINAL)
+    QPolygonF           getBoundingShape();
+    Q_INVOKABLE void    setBoundingShape(const QPolygonF& boundingShape);
+
+public slots:
     //! Generate a default bounding shape (rounded rectangle) and set it as current bounding shape.
     Q_INVOKABLE void    setDefaultBoundingShape();
+signals:
+    void                boundingShapeChanged();
+    //! signal is Emitted when the bounding shape become invalid and should be regenerated from QML.
+    void                requestUpdateBoundingShape();
+public:
+    QPolygonF           generateDefaultBoundingShape() const;
 private:
     QPolygonF           _boundingShape;
 protected:
@@ -359,7 +395,7 @@ protected:
      *
      * \sa isInsideBoundingShape()
      */
-    Q_INVOKABLE virtual void    setBoundingShape( QVariantList boundingPolygon );
+    Q_INVOKABLE virtual void    setBoundingShape(QVariantList boundingPolygon);
 
     /*! \brief Test if a point in the node local CCS is inside the current intersection shape.
      *
@@ -372,7 +408,7 @@ protected:
      * \endcode
      *  \sa setBoundShapeFrom()
      */
-    Q_INVOKABLE virtual bool    isInsideBoundingShape( QPointF p );
+    Q_INVOKABLE virtual bool    isInsideBoundingShape(QPointF p);
     //@}
     //-------------------------------------------------------------------------
 
@@ -385,10 +421,13 @@ public:
     Q_INVOKABLE qan::PortItem*  findPort(const QString& portId) const noexcept;
 
     //! Read-only list model of this node ports (either in or out).
-    Q_PROPERTY( QAbstractListModel* ports READ getPortsModel CONSTANT FINAL )
-    QAbstractListModel* getPortsModel() { return qobject_cast<QAbstractListModel*>( _ports.getModel() ); }
+    Q_PROPERTY(QAbstractListModel* ports READ getPortsModel CONSTANT FINAL)
+    QAbstractListModel* getPortsModel() { return qobject_cast<QAbstractListModel*>(_ports.getModel()); }
     inline auto         getPorts() noexcept -> PortItems& { return _ports; }
     inline auto         getPorts() const noexcept -> const PortItems& { return _ports; }
+
+    //! Force update of all node ports edges (#145).
+    Q_INVOKABLE void    updatePortsEdges();
 private:
     PortItems           _ports;
 
@@ -404,9 +443,9 @@ public:
 
 public:
     //! Item left dock (usually build from qan::Graph::verticalDockDelegate).
-    Q_PROPERTY( QQuickItem* leftDock READ getLeftDock WRITE setLeftDock NOTIFY leftDockChanged FINAL )
+    Q_PROPERTY(QQuickItem* leftDock READ getLeftDock WRITE setLeftDock NOTIFY leftDockChanged FINAL)
     //! \copydoc leftDock
-    void                    setLeftDock( QQuickItem* leftDock ) noexcept;
+    void                    setLeftDock(QQuickItem* leftDock) noexcept;
     //! \copydoc leftDock
     inline QQuickItem*      getLeftDock() noexcept { return _dockItems[static_cast<std::size_t>(Dock::Left)].data(); }
 signals:
@@ -415,9 +454,9 @@ signals:
 
 public:
     //! Item top dock (usually build from qan::Graph::horizontalDockDelegate).
-    Q_PROPERTY( QQuickItem* topDock READ getTopDock WRITE setTopDock NOTIFY topDockChanged FINAL )
+    Q_PROPERTY(QQuickItem* topDock READ getTopDock WRITE setTopDock NOTIFY topDockChanged FINAL)
     //! \copydoc topDock
-    void                    setTopDock( QQuickItem* topDock ) noexcept;
+    void                    setTopDock(QQuickItem* topDock) noexcept;
     //! \copydoc topDock
     inline QQuickItem*      getTopDock() noexcept { return _dockItems[static_cast<std::size_t>(Dock::Top)].data(); }
 signals:
@@ -426,9 +465,9 @@ signals:
 
 public:
     //! Item right dock (usually build from qan::Graph::verticalDockDelegate).
-    Q_PROPERTY( QQuickItem* rightDock READ getRightDock WRITE setRightDock NOTIFY rightDockChanged FINAL )
+    Q_PROPERTY(QQuickItem* rightDock READ getRightDock WRITE setRightDock NOTIFY rightDockChanged FINAL)
     //! \copydoc rightDock
-    void                    setRightDock( QQuickItem* rightDock ) noexcept;
+    void                    setRightDock(QQuickItem* rightDock) noexcept;
     //! \copydoc rightDock
     inline QQuickItem*      getRightDock() noexcept { return _dockItems[static_cast<std::size_t>(Dock::Right)].data(); }
 signals:
@@ -437,16 +476,15 @@ signals:
 
 public:
     //! Item bottom dock (usually build from qan::Graph::horizontalDockDelegate).
-    Q_PROPERTY( QQuickItem* bottomDock READ getBottomDock WRITE setBottomDock NOTIFY bottomDockChanged FINAL )
+    Q_PROPERTY(QQuickItem* bottomDock READ getBottomDock WRITE setBottomDock NOTIFY bottomDockChanged FINAL)
     //! \copydoc bottomDock
-    void                    setBottomDock( QQuickItem* bottomDock ) noexcept;
+    void                    setBottomDock(QQuickItem* bottomDock) noexcept;
     //! \copydoc bottomDock
     inline QQuickItem*      getBottomDock() noexcept { return _dockItems[static_cast<std::size_t>(Dock::Bottom)].data(); }
 signals:
     //! \copydoc bottomDock
     void                    bottomDockChanged();
-
-    void nodeChanged(qan::Node* node);
+    void                    nodeChanged(qan::Node* node);
 
 public:
     //! Get \c dock dock item (warning: no bound checking, might return nullptr).
@@ -462,12 +500,10 @@ private:
     std::array<QPointer<QQuickItem>, dockCount> _dockItems;
     //@}
     //-------------------------------------------------------------------------
-    qan::Node* m_node;
 };
 
 } // ::qan
 
 QML_DECLARE_TYPE(qan::NodeItem)
+Q_DECLARE_METATYPE(qan::NodeItem::Connectable)
 Q_DECLARE_METATYPE(qan::NodeItem::Dock)
-
-#endif // qanNodeItem_h

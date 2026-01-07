@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2008-2018, Benoit AUTHEMAN All rights reserved.
+ Copyright (c) 2008-2024, Benoit AUTHEMAN All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
@@ -32,75 +32,130 @@
 // \date	2004 February 15
 //-----------------------------------------------------------------------------
 
-#ifndef qanGraph_h
-#define qanGraph_h
+#pragma once
 
-// GTpo headers
-#include <GTpo.h>
-
-// QuickQanava headers
-#include "./qanUtils.h"
-#include "./qanGraphConfig.h"
-#include "./qanStyleManager.h"
-#include "./qanEdge.h"
-#include "./qanNode.h"
-#include "./qanGroup.h"
-#include "./qanNavigable.h"
-#include "./qanSelectable.h"
-#include "./qanConnector.h"
-#include "quickqanavaglobal.h"
+#include "./gtpo/node.h"
+#include "./gtpo/graph.h"
 
 // Qt headers
+#include <QString>
 #include <QQuickItem>
 #include <QQmlParserStatus>
 #include <QSharedPointer>
 #include <QAbstractListModel>
 
+// QuickQanava headers
+#include "./qanUtils.h"
+#include "./qanStyleManager.h"
+#include "./qanEdge.h"
+#include "./qanNode.h"
+#include "./qanGroup.h"
+#include "./qanTableGroup.h"
+#include "./qanNavigable.h"
+#include "./qanSelectable.h"
+#include "./qanConnector.h"
+
+
 //! Main QuickQanava namespace
 namespace qan { // ::qan
 
 class Graph;
+class GraphView;
+class Node;
+class Connector;
 class PortItem;
 
 /*! \brief Main interface to manage graph topology.
  *
+ * Visual connection of nodes:
+ *   \li Visual connection of nodes with VisualConnector is enabled by setting the \c connectorEnabled property to \c true (default to true).
+ *   \li When an edge is created with the visual node connector, the signal \c connectorEdgeInserted with the newly inserted \c edge as an argument.
+
  * \nosubgrouping
  */
-class QUICKQANAVA_EXPORT Graph : public gtpo::GenGraph< qan::GraphConfig >
+class Graph : public gtpo::graph<QQuickItem, qan::Node, qan::Group, qan::Edge>
 {
     Q_OBJECT
+    QML_ELEMENT
     Q_INTERFACES(QQmlParserStatus)
 
-    using GTpoGraph = gtpo::GenGraph< qan::GraphConfig >;
-
+    using super_t = gtpo::graph<QQuickItem, qan::Node, qan::Group, qan::Edge>;
     friend class qan::Selectable;
 
     /*! \name Graph Object Management *///-------------------------------------
     //@{
 public:
     //! Graph default constructor.
-    explicit Graph( QQuickItem* parent = nullptr ) noexcept;
+    explicit Graph(QQuickItem* parent = nullptr) noexcept;
     /*! \brief Graph default destructor.
      *
      * Graph is a factory for inserted nodes and edges, even if they have been created trought
      * QML delegates, they will be destroyed with the graph they have been created in.
      */
     virtual ~Graph() override;
-    Graph( const Graph& ) = delete;
-    Graph& operator=( const Graph& ) = delete;
-    Graph( Graph&& ) = delete;
-    Graph& operator=( Graph&& ) = delete;
+    Graph(const Graph&) = delete;
+    Graph& operator=(const Graph&) = delete;
+    Graph(Graph&&) = delete;
+    Graph& operator=(Graph&&) = delete;
 public:
+    virtual void    classBegin() override;
+
     //! QQmlParserStatus Component.onCompleted() overload to initialize default graph delegate in a valid QQmlEngine.
     virtual void    componentComplete() override;
 
-    virtual void    classBegin() override;
+public:
+    //! \copydoc getGraphView()
+    Q_PROPERTY(QQuickItem*  graphView READ qmlGetGraphView NOTIFY graphViewChanged FINAL)
+    //! \copydoc getGraphView()
+    QQuickItem*             qmlGetGraphView();
+    //! qan::GrapvView where this graph is registered (a graph may have only one view).
+    qan::GraphView*         getGraphView();
+    //! \copydoc getGraphView()
+    const qan::GraphView*   getGraphView() const;
+    //! \copydoc getGraphView()
+    void                    setGraphView(qan::GraphView* graphView);
+signals:
+    //! \copydoc getGraphView()
+    void                    graphViewChanged();
+private:
+    //! \copydoc getGraphView()
+    qan::GraphView*         _graphView = nullptr;
 
+public:
+    //! \copydoc getContainerItem()
+    Q_PROPERTY(QQuickItem*      containerItem READ getContainerItem NOTIFY containerItemChanged FINAL)
+    /*! \brief Quick item used as a parent for all graphics item "factored" by this graph (default to this).
+     *
+     * \note Container item should be initialized at startup, any change will _not_ be refelected to existing
+     * graphics items.
+     */
+    inline QQuickItem*          getContainerItem() noexcept { return _containerItem.data(); }
+    //! \copydoc getContainerItem()
+    inline const QQuickItem*    getContainerItem() const noexcept { return _containerItem.data(); }
+    //! \copydoc getContainerItem()
+    void                        setContainerItem(QQuickItem* containerItem);
+signals:
+    //! \copydoc getContainerItem()
+    void                        containerItemChanged();
+private:
+    //! \copydoc getContainerItem()
+    QPointer<QQuickItem>        _containerItem;
+    //@}
+    //-------------------------------------------------------------------------
+
+    /*! \name Graph Management *///--------------------------------------------
+    //@{
 public:
     /*! \brief Clear this graph topology and styles.
      *
      */
-    Q_INVOKABLE virtual void    qmlClearGraph() noexcept;
+    Q_INVOKABLE virtual void    clearGraph() noexcept;
+
+    /*! \brief If unsure, use clearGraph() to clear the graph.
+     *
+     * Warning: clear() is not virtual, ensure you are calling clear() after a correct cast to the terminal
+     * graph type you are targetting.
+     */
     void                        clear() noexcept;
 
 public:
@@ -115,24 +170,9 @@ public:
 
     /*! \brief Similar to QQuickItem::childAt() method, except that it only take groups into account (and is hence faster, but still O(n)).
      *
+     * \arg except Return every compatible group except \c except (can be nullptr).
      */
-    Q_INVOKABLE qan::Group* groupAt( const QPointF& p, const QSizeF& s ) const;
-
-public:
-    /*! \brief Quick item used as a parent for all graphics item "factored" by this graph (default to this).
-     *
-     * \note Container item should be initialized at startup, any change will _not_ be refelected to existing
-     * graphics items.
-     */
-    Q_PROPERTY( QQuickItem* containerItem READ getContainerItem NOTIFY containerItemChanged FINAL )
-    //! \sa containerItem
-    inline QQuickItem*          getContainerItem() noexcept { return _containerItem.data(); }
-    inline const QQuickItem*    getContainerItem() const noexcept { return _containerItem.data(); }
-    void                        setContainerItem( QQuickItem* containerItem );
-signals:
-    void                        containerItemChanged();
-private:
-    QPointer< QQuickItem >      _containerItem{nullptr};
+    Q_INVOKABLE qan::Group* groupAt(const QPointF& p, const QSizeF& s, const QQuickItem* except = nullptr) const;
     //@}
     //-------------------------------------------------------------------------
 
@@ -146,28 +186,27 @@ public:
     Q_INVOKABLE void    setConnectorSource(qan::Node* sourceNode) noexcept;
 signals:
     //! \copydoc hlg::Connector::requestEdgeCreation
-    void                connectorRequestEdgeCreation(qan::Node* src, QObject* dst);
+    void                connectorRequestEdgeCreation(qan::Node* src, QObject* dst,
+                                                     qan::PortItem* srcPortItem, qan::PortItem* dstPortItem);
     //! \copydoc hlg::Connector::edgeInserted
-    void                connectorEdgeInserted( qan::Edge* edge );
-
+    void                connectorEdgeInserted(qan::Edge* edge);
     void                connectorRequestPortEdgeCreation(qan::PortItem* src, qan::PortItem* dst);
-
 
 public:
     //! Alias to VisualConnector::edgeColor property (default to Black).
-    Q_PROPERTY( QColor connectorEdgeColor READ getConnectorEdgeColor WRITE setConnectorEdgeColor NOTIFY connectorEdgeColorChanged FINAL )
-    inline QColor   getConnectorEdgeColor() const noexcept { return _connectorEdgeColor; }
-    void            setConnectorEdgeColor( QColor connectorEdgeColor ) noexcept;
+    Q_PROPERTY(QColor connectorEdgeColor READ getConnectorEdgeColor WRITE setConnectorEdgeColor NOTIFY connectorEdgeColorChanged FINAL)
+    QColor      getConnectorEdgeColor() const noexcept { return _connectorEdgeColor; }
+    void        setConnectorEdgeColor(QColor connectorEdgeColor) noexcept;
 signals:
-    void            connectorEdgeColorChanged();
+    void        connectorEdgeColorChanged();
 private:
-    QColor          _connectorEdgeColor{Qt::black};
+    QColor      _connectorEdgeColor{Qt::black};
 
 public:
     //! Alias to VisualConnector::connectorColor property (default to DodgerBlue).
-    Q_PROPERTY( QColor connectorColor READ getConnectorColor WRITE setConnectorColor NOTIFY connectorColorChanged FINAL )
+    Q_PROPERTY(QColor connectorColor READ getConnectorColor WRITE setConnectorColor NOTIFY connectorColorChanged FINAL)
     inline QColor   getConnectorColor() const noexcept { return _connectorColor; }
-    void            setConnectorColor( QColor connectorColor ) noexcept;
+    void            setConnectorColor(QColor connectorColor) noexcept;
 signals:
     void            connectorColorChanged();
 private:
@@ -175,9 +214,9 @@ private:
 
 public:
     //! Alias to VisualConnector::hEdgeEnabled (default to false).
-    Q_PROPERTY( bool connectorHEdgeEnabled READ getConnectorHEdgeEnabled WRITE setConnectorHEdgeEnabled NOTIFY connectorHEdgeEnabledChanged FINAL )
+    Q_PROPERTY(bool connectorHEdgeEnabled READ getConnectorHEdgeEnabled WRITE setConnectorHEdgeEnabled NOTIFY connectorHEdgeEnabledChanged FINAL)
     inline bool     getConnectorHEdgeEnabled() const noexcept { return _connectorHEdgeEnabled; }
-    void            setConnectorHEdgeEnabled( bool connectorHEdgeEnabled ) noexcept;
+    void            setConnectorHEdgeEnabled(bool connectorHEdgeEnabled) noexcept;
 signals:
     void            connectorHEdgeEnabledChanged();
 private:
@@ -185,17 +224,17 @@ private:
 
 public:
     //! Alias to VisualConnector::createDefaultEdge (default to true).
-    Q_PROPERTY( bool connectorCreateDefaultEdge READ getConnectorCreateDefaultEdge WRITE setConnectorCreateDefaultEdge NOTIFY connectorCreateDefaultEdgeChanged FINAL )
+    Q_PROPERTY(bool connectorCreateDefaultEdge READ getConnectorCreateDefaultEdge WRITE setConnectorCreateDefaultEdge NOTIFY connectorCreateDefaultEdgeChanged FINAL)
     inline bool     getConnectorCreateDefaultEdge() const noexcept { return _connectorCreateDefaultEdge; }
-    void            setConnectorCreateDefaultEdge( bool connectorCreateDefaultEdge ) noexcept;
+    void            setConnectorCreateDefaultEdge(bool connectorCreateDefaultEdge) noexcept;
 signals:
     void            connectorCreateDefaultEdgeChanged();
 private:
-    bool            _connectorCreateDefaultEdge{true};
+    bool            _connectorCreateDefaultEdge = true;
 
 public:
     //! Alias to qan::Connector::connectorItem property (default to nullptr, ie default connector item).
-    Q_PROPERTY( QQuickItem* connectorItem READ getConnectorItem WRITE setConnectorItem NOTIFY connectorItemChanged FINAL )
+    Q_PROPERTY(QQuickItem* connectorItem READ getConnectorItem WRITE setConnectorItem NOTIFY connectorItemChanged FINAL)
     inline QQuickItem*      getConnectorItem() const noexcept { return _connectorItem; }
     void                    setConnectorItem( QQuickItem* connectorItem ) noexcept;
 signals:
@@ -205,17 +244,17 @@ private:
 
 public:
     //! Enable or disable visual connector of nodes in the graph (default to false).
-    Q_PROPERTY( bool connectorEnabled READ getConnectorEnabled WRITE setConnectorEnabled NOTIFY connectorEnabledChanged FINAL )
+    Q_PROPERTY(bool connectorEnabled READ getConnectorEnabled WRITE setConnectorEnabled NOTIFY connectorEnabledChanged FINAL)
     inline bool     getConnectorEnabled() const noexcept { return _connectorEnabled; }
-    void            setConnectorEnabled( bool connectorEnabled ) noexcept;
+    void            setConnectorEnabled(bool connectorEnabled) noexcept;
 signals:
     void            connectorEnabledChanged();
 private:
-    bool            _connectorEnabled{false};
+    bool            _connectorEnabled = false;
 
 public:
     //! Control node used as a connector when \c connectorEnabled is set to true (might be nullptr).
-    Q_PROPERTY( qan::Connector* connector READ getConnector NOTIFY connectorChanged FINAL )
+    Q_PROPERTY(qan::Connector* connector READ getConnector NOTIFY connectorChanged FINAL)
     qan::Connector*             getConnector() noexcept;
 private:
     QScopedPointer<qan::Connector> _connector{};
@@ -228,50 +267,50 @@ signals:
     //@{
 public:
     //! Default delegate for qan::Node and Qan.Node nodes.
-    Q_PROPERTY( QQmlComponent* nodeDelegate READ getNodeDelegate WRITE setNodeDelegate NOTIFY nodeDelegateChanged FINAL )
+    Q_PROPERTY(QQmlComponent* nodeDelegate READ getNodeDelegate WRITE setNodeDelegate NOTIFY nodeDelegateChanged FINAL)
     inline QQmlComponent*   getNodeDelegate() noexcept { return _nodeDelegate.get(); }
 protected:
     void                    setNodeDelegate(QQmlComponent* nodeDelegate) noexcept;
-    void                    setNodeDelegate(UniqueQQmlComponentPtr nodeDelegate) noexcept;
+    void                    setNodeDelegate(std::unique_ptr<QQmlComponent> nodeDelegate) noexcept;
 signals:
     void                    nodeDelegateChanged();
 private:
-    UniqueQQmlComponentPtr _nodeDelegate;
+    std::unique_ptr<QQmlComponent> _nodeDelegate;
 
 public:
     //! Default delegate for qan::Edge and Qan.Edge edges.
-    Q_PROPERTY( QQmlComponent* edgeDelegate READ getEdgeDelegate WRITE setEdgeDelegate NOTIFY edgeDelegateChanged FINAL )
+    Q_PROPERTY(QQmlComponent* edgeDelegate READ getEdgeDelegate WRITE setEdgeDelegate NOTIFY edgeDelegateChanged FINAL)
     inline QQmlComponent*   getEdgeDelegate() noexcept { return _edgeDelegate.get(); }
 protected:
     void                    setEdgeDelegate(QQmlComponent* edgeDelegate) noexcept;
-    void                    setEdgeDelegate(UniqueQQmlComponentPtr edgeDelegate) noexcept;
+    void                    setEdgeDelegate(std::unique_ptr<QQmlComponent> edgeDelegate) noexcept;
 signals:
     void                    edgeDelegateChanged();
 private:
-    UniqueQQmlComponentPtr _edgeDelegate;
+    std::unique_ptr<QQmlComponent> _edgeDelegate;
 
 public:
     //! Default delegate for qan::Group and Qan.Group groups.
-    Q_PROPERTY( QQmlComponent* groupDelegate READ getGroupDelegate WRITE setGroupDelegate NOTIFY groupDelegateChanged FINAL )
+    Q_PROPERTY(QQmlComponent* groupDelegate READ getGroupDelegate WRITE setGroupDelegate NOTIFY groupDelegateChanged FINAL)
     inline QQmlComponent*   getGroupDelegate() noexcept { return _groupDelegate.get(); }
 protected:
     void                    setGroupDelegate(QQmlComponent* groupDelegate) noexcept;
-    void                    setGroupDelegate(UniqueQQmlComponentPtr groupDelegate) noexcept;
+    void                    setGroupDelegate(std::unique_ptr<QQmlComponent> groupDelegate) noexcept;
 signals:
     void                    groupDelegateChanged();
 private:
-    UniqueQQmlComponentPtr _groupDelegate;
+    std::unique_ptr<QQmlComponent> _groupDelegate;
 
 protected:
     //! Create a _styleable_ graph primitive using the given delegate \c component with either a source \c node or \c edge.
-    QQuickItem*             createFromComponent( QQmlComponent* component,
-                                                 qan::Style& style,
-                                                 qan::Node* node = nullptr,
-                                                 qan::Edge* edge = nullptr,
-                                                 qan::Group* group = nullptr ) noexcept;
+    QQuickItem*             createFromComponent(QQmlComponent* component,
+                                                qan::Style& style,
+                                                qan::Node* node = nullptr,
+                                                qan::Edge* edge = nullptr,
+                                                qan::Group* group = nullptr ) noexcept;
 
     //! Shortcut to createComponent(), mainly used in Qan.StyleList View to generate item for style pre visualization.
-    Q_INVOKABLE QQuickItem* createFromComponent( QQmlComponent* component, qan::Style* style );
+    Q_INVOKABLE QQuickItem* createFromComponent(QQmlComponent* component, qan::Style* style);
 
 public:
     /*! \brief QML component used to create qan::NodeItem or qan::GroupItem \c selectionItem, could be dynamically changed from either c++ or QML.
@@ -279,14 +318,14 @@ public:
      *  \note Using setSelectionDelegate(nullptr) from c++ or Qan.Graph.selectionDelegate=null from QML is valid, QuickQanava will
      *  default to a basic selection item delegate.
      */
-    Q_PROPERTY( QQmlComponent* selectionDelegate READ getSelectionDelegate WRITE setSelectionDelegate NOTIFY selectionDelegateChanged FINAL )
+    Q_PROPERTY(QQmlComponent* selectionDelegate READ getSelectionDelegate WRITE setSelectionDelegate NOTIFY selectionDelegateChanged FINAL)
     //! \copydoc selectionDelegate
     inline QQmlComponent*   getSelectionDelegate() noexcept { return _selectionDelegate.get(); }
 protected:
     //! \copydoc selectionDelegate
     void                    setSelectionDelegate(QQmlComponent* selectionDelegate) noexcept;
     //! \copydoc selectionDelegate
-    void                    setSelectionDelegate(UniqueQQmlComponentPtr selectionDelegate) noexcept;
+    void                    setSelectionDelegate(std::unique_ptr<QQmlComponent> selectionDelegate) noexcept;
 signals:
     //! \copydoc selectionDelegate
     void                    selectionDelegateChanged();
@@ -296,7 +335,7 @@ public: // should be considered private
      * \arg parent Returned selection item is automatically reparented to \c parent (could be nullptr).
      * \return A selection item or nullptr if graph \c selectionDelegate is invalid, ownershipd goes to the caller with QmlEngine::CppOwnership, might be nullptr.
      */
-    QPointer<QQuickItem>            createSelectionItem(QQuickItem* parent) noexcept;
+    QQuickItem*             createSelectionItem(QQuickItem* parent);
 protected:
 
     struct QObjectDeleteLater {
@@ -307,158 +346,250 @@ protected:
     template<typename T>
     using unique_qptr = std::unique_ptr<T, QObjectDeleteLater>;
 
-    UniqueQQmlComponentPtr  _selectionDelegate{nullptr};
+    std::unique_ptr<QQmlComponent>  _selectionDelegate{nullptr};
 private:
     //! Secure factory for QML components, errors are reported on stderr.
-    UniqueQQmlComponentPtr  createComponent(const QString& url) noexcept;
+    std::unique_ptr<QQmlComponent>  createComponent(const QString& url);
     //! Secure utility to create a QQuickItem from a given QML component \c component (might issue warning if component is nullptr or not successfully loaded).
-    QPointer<QQuickItem>            createItemFromComponent(QQmlComponent* component) noexcept;
+    QQuickItem*                     createItemFromComponent(QQmlComponent* component);
     //@}
     //-------------------------------------------------------------------------
 
     /*! \name Graph Node Management *///---------------------------------------
     //@{
 public:
-    using Node              = typename GraphConfig::FinalNode;
-    using WeakNode          = GTpoGraph::WeakNode;
-    using SharedNode        = GTpoGraph::SharedNode;
-
-    //! Proxy for GTpo graph insertNode().
-    auto    insertNode( SharedNode node ) noexcept( false ) -> WeakNode { return GTpoGraph::insertNode(node); }
+    /*! \brief Insert an already existing node, proxy to GTpo graph insertNode().
+     *
+     * \warning This method is mainly for tests purposes since inserted node delegate and style is
+     * left unconfigured. Handle with a lot of care only to insert "pure topology" non visual nodes.
+     * \note trigger nodeInserted() signal after insertion and generate a call to onNodeInserted().
+     */
+    auto    insertNonVisualNode(Node* node) -> bool;
 
     /*! \brief Insert a new node in this graph and return a pointer on it, or \c nullptr if creation fails.
-     *
-     * A gtpo::bad_topology_error could be thrown if insertion in base graph fails.
      *
      * A default node delegate must have been registered with registerNodeDelegate() if
      * \c nodeComponent is unspecified (ie \c nullptr); it is done automatically if
      * Qan.Graph is used, with a rectangular node delegate for default node.
      *
-     * \note graph keep ownership of the returned node.
+     * \note trigger nodeInserted() signal after insertion and generate a call to onNodeInserted().
+     * \note graph has ownership for returned node.
      */
-    Q_INVOKABLE qan::Node*  insertNode( QQmlComponent* nodeComponent = nullptr );
+    Q_INVOKABLE qan::Node*  insertNode(QQmlComponent* nodeComponent = nullptr, qan::NodeStyle* nodeStyle = nullptr);
 
-    //! Insert a node using Node_t::delegate() and Node_t::style(), it no delegate is defined, default on graph \c nodeDelegate.
-    template < class Node_t >
-    qan::Node*              insertNode( QQmlComponent* nodeComponent = nullptr );
+    /*! \brief Insert a node using Node_t::delegate() and Node_t::style(), if no delegate is defined, default on graph \c nodeDelegate.
+     *
+     * \note trigger nodeInserted() signal after insertion and generate a call to onNodeInserted().
+     */
+    template <class Node_t>
+    Node_t*                 insertNode(QQmlComponent* nodeComponent = nullptr, qan::NodeStyle* nodeStyle = nullptr);
 
-    //! Same semantic than insertNode<>() but for non visual nodes.
-    template < class Node_t >
-    qan::Node*              insertNonVisualNode();
+    /*! \brief Same semantic than insertNode<>() but for non visual nodes.
+     *
+     * \note trigger nodeInserted() signal after insertion and generate a call to onNodeInserted().
+     */
+    template <class Node_t>
+    Node_t*                 insertNonVisualNode();
+
+    /*! \brief Insert and existing node with a specific delegate component and a custom style.
+     *
+     * \warning \c node ownership is set to Cpp in current QmlEngine.
+     *
+     * \return true if \c node has been successfully inserted.
+     */
+    bool                    insertNode(Node* node,
+                                       QQmlComponent* nodeComponent = nullptr,
+                                       qan::NodeStyle* nodeStyle = nullptr);
 
     /*! \brief Remove node \c node from this graph. Shortcut to gtpo::GenGraph<>::removeNode().
+     *
+     *  \arg force if force is true, even locked or protected are removed (default to false).
      */
-    Q_INVOKABLE void        removeNode( qan::Node* node );
+    Q_INVOKABLE bool        removeNode(qan::Node* node, bool force = false);
 
     //! Shortcut to gtpo::GenGraph<>::getNodeCount().
-    Q_INVOKABLE int         getNodeCount() { return GTpoGraph::getNodeCount(); }
+    Q_INVOKABLE int         getNodeCount() const noexcept;
+
+    //! Return true if \c node is registered in graph.
+    bool                    hasNode(const qan::Node* node) const;
 
 public:
     //! Access the list of nodes with an abstract item model interface.
-    Q_PROPERTY( QAbstractItemModel* nodes READ getNodesModel CONSTANT FINAL )
-    QAbstractItemModel*     getNodesModel() const { return getNodes().model(); }
+    Q_PROPERTY(QAbstractItemModel* nodes READ getNodesModel CONSTANT FINAL)
+    QAbstractItemModel*     getNodesModel() const { return get_nodes().model(); }
+
+protected:
+
+    /*! \brief Notify user immediately after a new node \c node has been inserted in graph.
+     *
+     * \warning Since groups are node, onNodeInserted() is also emitted when insertGroup() is called.
+     * \note Signal nodeInserted() is emitted at the same time.
+     * \note Default implementation is empty.
+     */
+    virtual void    onNodeInserted(qan::Node& node);
+
+    /*! \brief Notify user immediately before a node \c node is removed.
+     *
+     * \warning Since groups are node, onNodeRemoved() is also emitted when removeGroup() is called.
+     * \note Signal nodeRemoved() is emitted at the same time.
+     * \note Default implementation is empty.
+     */
+    virtual void    onNodeRemoved(qan::Node& node);
+
+signals:
+
+    //! \copydoc onNodeInserted()
+    void            nodeInserted(qan::Node* node);
+
+    //! \copydoc onNodeRemoved()
+    void            nodeRemoved(qan::Node* node);
 
 signals:
     /*! \brief Emitted whenever a node registered in this graph is clicked.
      */
-    void            nodeClicked( qan::Node* node, QPointF pos );
+    void            nodeClicked(qan::Node* node, QPointF pos);
     /*! \brief Emitted whenever a node registered in this graph is right clicked.
      */
-    void            nodeRightClicked( qan::Node* node, QPointF pos );
+    void            nodeRightClicked(qan::Node* node, QPointF pos);
     /*! \brief Emitted whenever a node registered in this graph is double clicked.
      */
-    void            nodeDoubleClicked( qan::Node* node, QPointF pos );
+    void            nodeDoubleClicked(qan::Node* node, QPointF pos);
+
+signals:
+    //! \brief Emitted _after_ a node (or a group...) has been grouped.
+    void            nodeGrouped(qan::Node* node, qan::Group* group);
+    //! \brief Emitted _after_ a node (or a group...) has been un grouped.
+    void            nodeUngrouped(qan::Node* node, qan::Group* group);
+
+    /*! \brief Emitted immediatly _before_ a node is moved.
+     */
+    void            nodeAboutToBeMoved(qan::Node* node);
+    /*! \brief Emitted _after_ a node has been moved.
+     */
+    void            nodeMoved(qan::Node* node);
+
+    /*! \brief Emitted immediatly _before_ a selection of nodes is moved.
+     *  `nodes` might also include groups. Trigerred when selection is
+     *  dragged by mouse or using keyboard keys.
+     */
+    void            nodesAboutToBeMoved(std::vector<qan::Node*> nodes);
+    /*! \brief Emitted _after_ a selection of nodes has been moved.
+     *  `nodes` might also include groups. Trigerred when selection is
+     *  dragged by mouse or using keyboard keys.
+     */
+    void            nodesMoved(std::vector<qan::Node*> nodes);
+
+    //! \brief Emitted immediately _before_ a node is resized.
+    void            nodeAboutToBeResized(qan::Node* node);
+    //! \brief Emitted _after_ a node has been resized.
+    void            nodeResized(qan::Node* node);
+
+    //! \brief Emitted immediately _before_ a group is resized.
+    void            groupAboutToBeResized(qan::Group* group);
+    //! \brief Emitted _after_ a group has been resized.
+    void            groupResized(qan::Group* group);
+
+    //! Emitted when a node setLabel() method is called.
+    void            nodeLabelChanged(qan::Node* node);
     //-------------------------------------------------------------------------
 
     /*! \name Graph Edge Management *///---------------------------------------
     //@{
 public:
     //! QML shortcut to insertEdge() method.
-    Q_INVOKABLE qan::Edge*  insertEdge( QObject* source, QObject* destination, QQmlComponent* edgeComponent = nullptr );
+    Q_INVOKABLE qan::Edge*  insertEdge(QObject* source, QObject* destination, QQmlComponent* edgeComponent = nullptr);
 
     //! Shortcut to gtpo::GenGraph<>::insertEdge().
-    virtual qan::Edge*      insertEdge( qan::Node* source, qan::Node* destination, QQmlComponent* edgeComponent = nullptr );
-
-    //! Shortcut to gtpo::GenGraph<>::insertEdge().
-    virtual qan::Edge*      insertEdge( qan::Node* source, qan::Edge* destination, QQmlComponent* edgeComponent = nullptr );
+    virtual qan::Edge*      insertEdge(qan::Node* source, qan::Node* destination, QQmlComponent* edgeComponent = nullptr);
 
     //! Bind an existing edge source to a visual out port from QML.
-    Q_INVOKABLE void        bindEdgeSource( qan::Edge* edge, qan::PortItem* outPort ) noexcept;
+    Q_INVOKABLE void        bindEdgeSource(qan::Edge* edge, qan::PortItem* outPort) noexcept;
 
     //! Bind an existing edge destination to a visual in port from QML.
-    Q_INVOKABLE void        bindEdgeDestination( qan::Edge* edge, qan::PortItem* inPort ) noexcept;
+    Q_INVOKABLE void        bindEdgeDestination(qan::Edge* edge, qan::PortItem* inPort) noexcept;
 
     //! Shortcut to bindEdgeSource() and bindEdgeDestination() for edge on \c outPort and \c inPort.
-    Q_INVOKABLE  virtual void        bindEdge(qan::Edge* edge, qan::PortItem* outPort, qan::PortItem* inPort ) noexcept;
+    Q_INVOKABLE void        bindEdge(qan::Edge* edge, qan::PortItem* outPort, qan::PortItem* inPort) noexcept;
 
     /*! \brief Test if an edge source is actually bindable to a given port.
      *
      * This method could be used to check if an edge is bindable to a given port
-     * _before_ actually creating the edge and calling bindEdgeSource(). Port \c multiplicity
+     * _before_ creating the edge and calling bindEdgeSource(). Port \c multiplicity
      * and \c connectable properties are taken into account to return a result.
      *
      * Example: for an out port with \c Single \c multiplicity where an out edge already
      * exists, this method returns false.
      */
-    virtual bool            isEdgeSourceBindable( const qan::PortItem& outPort) const noexcept;
+    virtual bool            isEdgeSourceBindable(const qan::PortItem& outPort) const noexcept;
 
     /*! \brief Test if an edge destination is bindable to a visual in port.
      *
      * Same behaviour than isEdgeSourceBindable() for edge destination port.
      */
-    virtual bool            isEdgeDestinationBindable( const qan::PortItem& inPort ) const noexcept;
+    virtual bool            isEdgeDestinationBindable(const qan::PortItem& inPort) const noexcept;
 
     //! Bind an existing edge source to a visual out port.
-    virtual void            bindEdgeSource( qan::Edge& edge, qan::PortItem& outPort) noexcept;
+    virtual void            bindEdgeSource(qan::Edge& edge, qan::PortItem& outPort) noexcept;
 
     //! Bind an existing edge destination to a visual in port.
-    virtual void            bindEdgeDestination( qan::Edge& edge, qan::PortItem& inPort ) noexcept;
+    virtual void            bindEdgeDestination(qan::Edge& edge, qan::PortItem& inPort) noexcept;
 
 public:
-    template < class Edge_t >
-    qan::Edge*              insertEdge( qan::Node& src, qan::Node* dstNode, qan::Edge* dstEdge = nullptr, QQmlComponent* edgeComponent = nullptr );
+    template <class Edge_t>
+    qan::Edge*              insertEdge(qan::Node& src, qan::Node* dstNode, QQmlComponent* edgeComponent = nullptr);
 private:
     /*! \brief Internal utility used to insert an existing edge \c edge to either a destination \c dstNode node OR edge \c dstEdge.
      *
      * \note insertEdgeImpl() will automatically create \c edge graphical delegate using \c edgeComponent and \c style.
      */
-    bool                    configureEdge( qan::Edge& source, QQmlComponent& edgeComponent, qan::EdgeStyle& style,
-                                           qan::Node& src, qan::Node* dstNode, qan::Edge* dstEdge = nullptr );
+    bool                    configureEdge(qan::Edge& source, QQmlComponent& edgeComponent, qan::EdgeStyle& style,
+                                          qan::Node& src, qan::Node* dst);
 public:
-    template < class Edge_t >
-    qan::Edge*              insertNonVisualEdge( qan::Node& src, qan::Node* dstNode, qan::Edge* dstEdge = nullptr );
+    template <class Edge_t>
+    qan::Edge*              insertNonVisualEdge(qan::Node& src, qan::Node* dstNode);
 
 public:
     //! Shortcut to gtpo::GenGraph<>::removeEdge().
-    Q_INVOKABLE void        removeEdge( qan::Node* source, qan::Node* destination );
+    Q_INVOKABLE virtual bool    removeEdge(qan::Node* source, qan::Node* destination);
 
     //! Shortcut to gtpo::GenGraph<>::removeEdge().
-    Q_INVOKABLE void        removeEdge( qan::Edge* edge );
+    Q_INVOKABLE virtual bool    removeEdge(qan::Edge* edge, bool force = false);
 
     //! Return true if there is at least one directed edge between \c source and \c destination (Shortcut to gtpo::GenGraph<>::hasEdge()).
-    Q_INVOKABLE bool        hasEdge( qan::Node* source, qan::Node* destination ) const;
+    Q_INVOKABLE bool        hasEdge(const qan::Node* source, const qan::Node* destination) const;
+
+    //! Return true if edge is in graph.
+    Q_INVOKABLE bool        hasEdge(const qan::Edge* edge) const;
 
 public:
     //! Access the list of edges with an abstract item model interface.
     Q_PROPERTY( QAbstractItemModel* edges READ getEdgesModel CONSTANT FINAL )
-    QAbstractItemModel* getEdgesModel() const { return getEdges().model(); }
+    QAbstractItemModel* getEdgesModel() const { return get_edges().model(); }
 
 signals:
     /*! \brief Emitted whenever a node registered in this graph is clicked.
      *
      *  \sa nodeClicked()
      */
-    void            edgeClicked( qan::Edge* edge, QPointF pos );
+    void            edgeClicked(qan::Edge* edge, QPointF pos);
     /*! \brief Emitted whenever a node registered in this graph is right clicked.
      *
      *  \sa nodeRightClicked()
      */
-    void            edgeRightClicked( qan::Edge* edge, QPointF pos );
+    void            edgeRightClicked(qan::Edge* edge, QPointF pos);
     /*! \brief Emitted whenever a node registered in this graph is double clicked.
      *
      *  \sa nodeDoubleClicked()
      */
-    void            edgeDoubleClicked( qan::Edge* edge, QPointF pos );
+    void            edgeDoubleClicked(qan::Edge* edge, QPointF pos);
+
+    /*! \brief Emitted _after_ an edge has been inserted (usually with insertEdge()).
+     */
+    void            edgeInserted(qan::Edge* edge);
+
+    /*! \brief Emitted immediately _before_ an edge is removed.
+     */
+    void            onEdgeRemoved(qan::Edge* edge);
     //@}
     //-------------------------------------------------------------------------
 
@@ -466,43 +597,81 @@ signals:
     //@{
 public:
     //! Shortcut to gtpo::GenGraph<>::insertGroup().
-    Q_INVOKABLE qan::Group* insertGroup();
+    Q_INVOKABLE virtual qan::Group* insertGroup(QQmlComponent* groupComponent = nullptr);
+
+    //! Insert a `qan::TableGroup` table.
+    Q_INVOKABLE virtual qan::Group* insertTable(int cols, int rows);
+signals:
+    //! Emitted when a table rows/cols are modified or moved.
+    void    tableModified(qan::TableGroup*);
+
+public:
+    /*! \brief Insert a new group in this graph and return a pointer on it, or \c nullptr if creation fails.
+     *
+     * If group insertion fails, method return \c false, no exception is thrown.
+     *
+     * If \c groupComponent is unspecified (ie \c nullptr), default qan::Graph::groupDelegate is
+     * used.
+     *
+     * \note trigger nodeInserted() signal after insertion and generate a call to onNodeInserted().
+     * \note graph keep ownership of the returned node.
+     */
+    bool                    insertGroup(Group* group,
+                                        QQmlComponent* groupComponent = nullptr,
+                                        qan::NodeStyle* groupStyle = nullptr);
 
     //! Insert a group using its static delegate() and style() factories.
-    template < class Group_t >
-    qan::Group*             insertGroup();
+    template <class Group_t>
+    qan::Group*             insertGroup(QQmlComponent* groupComponent = nullptr);
 
-    //! Shortcut to gtpo::GenGraph<>::removeGroup().
-    Q_INVOKABLE void        removeGroup( qan::Group* group );
+    //! Insert a group using its static delegate() and style() factories.
+    template <class TableGroup_t>
+    qan::Group*             insertTable(int cols, int rows);
 
+    /*! Shortcut to gtpo::GenGraph<>::removeGroup().
+     *
+     *  \note When remove content is set to true group nodes (and any eventual subgroup
+     *  is removed too). When false (default behaviour), group nodes are reparented to
+     *  graph root.
+     */
+    Q_INVOKABLE virtual void    removeGroup(qan::Group* group, bool removeContent = false, bool force = false);
+
+protected:
+    void        removeGroupContent_rec(qan::Group* group);
+
+public:
     //! Return true if \c group is registered in graph.
-    bool                    hasGroup( qan::Group* group ) const;
+    bool                    hasGroup(qan::Group* group) const;
 
     //! Shortcut to gtpo::GenGraph<>::getGroupCount().
-    Q_INVOKABLE int         getGroupCount( ) const { return gtpo::GenGraph< qan::GraphConfig >::getGroupCount(); }
+    Q_INVOKABLE int         getGroupCount() const { return get_group_count(); }
 
-    //! \copydoc gtpo::GenGraph::groupNode()
-    Q_INVOKABLE void        groupNode( qan::Group* group, qan::Node* node, bool transformPosition = true ) noexcept(false);
-
-    //! Empty, defined to provide a compatible interface for qan::DraggableCtrl<>.
-    void                    groupNode( qan::Group*, qan::Group* ) noexcept(false) { }
+    /*! \brief Group a node \c node inside \c group group.
+     *
+     * To disable node item coordinates transformation to group item, set transform to false then
+     * manually position node item (usefull when programmatically grouping node for persistence for example).
+     *
+     * `groupCell` might be used to request grouping in a specific cell when `group` is a `qan::TableGroup`.
+     *
+     * \sa gtpo::GenGraph::groupNode()
+     */
+    Q_INVOKABLE virtual bool    groupNode(qan::Group* group, qan::Node* node, qan::TableCell* groupCell = nullptr,
+                                          bool transform = true) noexcept;
 
     //! Ungroup node \c node from group \c group (using nullptr for \c group ungroup node from it's current group without further topology checks).
-    Q_INVOKABLE void        ungroupNode( qan::Node* node, qan::Group* group = nullptr) noexcept(false);
-
-    //! Empty, defined to provide a compatible interface for qan::DraggableCtrl<>.
-    void                    ungroupNode( qan::Group*, qan::Group* ) noexcept(false) { }
+    Q_INVOKABLE virtual bool    ungroupNode(qan::Node* node, qan::Group* group = nullptr, bool transform = true) noexcept;
 
 signals:
+
     /*! \brief Emitted when a group registered in this graph is clicked.
      */
-    void            groupClicked( qan::Group* group, QPointF pos );
+    void            groupClicked(qan::Group* group, QPointF pos);
     /*! \brief Emitted when a group registered in this graph is right clicked.
      */
-    void            groupRightClicked( qan::Group* group, QPointF pos );
+    void            groupRightClicked(qan::Group* group, QPointF pos);
     /*! \brief Emitted when a group registered in this graph is double clicked.
      */
-    void            groupDoubleClicked( qan::Group* group, QPointF pos );
+    void            groupDoubleClicked(qan::Group* group, QPointF pos);
     //@}
     //-------------------------------------------------------------------------
 
@@ -514,7 +683,11 @@ public:
      * \li \c SelectOnClick (default): Node is selected when clicked, multiple selection is allowed with CTRL.
      * \li \c SelectOnCtrlClick: Node is selected only when CTRL is pressed, multiple selection is allowed with CTRL.
      */
-    enum SelectionPolicy { NoSelection, SelectOnClick, SelectOnCtrlClick };
+    enum class SelectionPolicy : int {
+        NoSelection         = 1,
+        SelectOnClick       = 2,
+        SelectOnCtrlClick   = 4
+    };
     Q_ENUM(SelectionPolicy)
 
 public:
@@ -522,19 +695,32 @@ public:
      *
      * \warning setting NoSeleciton will clear the actual \c selectedNodes model.
      */
-    Q_PROPERTY( SelectionPolicy selectionPolicy READ getSelectionPolicy WRITE setSelectionPolicy NOTIFY selectionPolicyChanged FINAL )
-    void                    setSelectionPolicy( SelectionPolicy selectionPolicy ) noexcept;
-    inline SelectionPolicy  getSelectionPolicy() const noexcept { return _selectionPolicy; }
+    Q_PROPERTY(SelectionPolicy selectionPolicy READ getSelectionPolicy WRITE setSelectionPolicy NOTIFY selectionPolicyChanged FINAL)
+    void                    setSelectionPolicy(SelectionPolicy selectionPolicy);
+    SelectionPolicy         getSelectionPolicy() const { return _selectionPolicy; }
 private:
-    SelectionPolicy         _selectionPolicy{ SelectionPolicy::SelectOnClick };
+    SelectionPolicy         _selectionPolicy = SelectionPolicy::SelectOnClick;
 signals:
     void                    selectionPolicyChanged();
+
+public:
+    /*! \brief Enable mutliple selection (default to true ie multiple selection with CTRL is enabled).
+     *
+     * \warning setting \c multipleSelectionEnabled to \c false will clear the actual \c selectedNodes model.
+     */
+    Q_PROPERTY(bool multipleSelectionEnabled READ getMultipleSelectionEnabled WRITE setMultipleSelectionEnabled NOTIFY multipleSelectionEnabledChanged FINAL)
+    auto                setMultipleSelectionEnabled(bool multipleSelectionEnabled) -> bool;
+    auto                getMultipleSelectionEnabled() const -> bool { return _multipleSelectionEnabled; }
+private:
+    bool                _multipleSelectionEnabled = true;
+signals:
+    void                multipleSelectionEnabledChanged();
 
 
 public:
     //! Color for the node selection hilgither component (default to dodgerblue).
-    Q_PROPERTY( QColor selectionColor READ getSelectionColor WRITE setSelectionColor NOTIFY selectionColorChanged FINAL )
-    void            setSelectionColor( QColor selectionColor ) noexcept;
+    Q_PROPERTY(QColor selectionColor READ getSelectionColor WRITE setSelectionColor NOTIFY selectionColorChanged FINAL)
+    void            setSelectionColor(QColor selectionColor) noexcept;
     inline QColor   getSelectionColor() const noexcept { return _selectionColor; }
 private:
     QColor          _selectionColor{30, 144, 255};  // dodgerblue=rgb(30, 144, 255)
@@ -543,21 +729,21 @@ signals:
 
 public:
     //! Selection hilgither item stroke width (default to 3.0).
-    Q_PROPERTY( qreal selectionWeight READ getSelectionWeight WRITE setSelectionWeight NOTIFY selectionWeightChanged FINAL )
-    void            setSelectionWeight( qreal selectionWeight ) noexcept;
+    Q_PROPERTY(qreal selectionWeight READ getSelectionWeight WRITE setSelectionWeight NOTIFY selectionWeightChanged FINAL)
+    void            setSelectionWeight(qreal selectionWeight) noexcept;
     inline qreal    getSelectionWeight() const noexcept { return _selectionWeight; }
 private:
-    qreal           _selectionWeight{ 3. };
+    qreal           _selectionWeight = 3.;
 signals:
-    void            selectionWeightChanged( );
+    void            selectionWeightChanged();
 
 public:
     //! Margin between the selection hilgither item and a selected item (default to 3.0).
-    Q_PROPERTY( qreal selectionMargin READ getSelectionMargin WRITE setSelectionMargin NOTIFY selectionMarginChanged FINAL )
-    void            setSelectionMargin( qreal selectionMargin ) noexcept;
+    Q_PROPERTY(qreal selectionMargin READ getSelectionMargin WRITE setSelectionMargin NOTIFY selectionMarginChanged FINAL)
+    void            setSelectionMargin(qreal selectionMargin) noexcept;
     inline qreal    getSelectionMargin() const noexcept { return _selectionMargin; }
 private:
-    qreal           _selectionMargin{ 3. };
+    qreal           _selectionMargin = 3.;
 signals:
     void            selectionMarginChanged();
 
@@ -567,62 +753,166 @@ protected:
     void            configureSelectionItems() noexcept;
 
 public:
-    /*! \brief Request insertion of a node in the current selection according to current policy and return true if the node was successfully added.
+    /*! \brief Request insertion of a node in the current selection according to current policy and return true if the node was successfully selected.
+     *
+     * \note A call to selectNode() on an already selected node will deselect it, to set an "absolute" selection, use setNodeSelected().
      *
      * \note If \c selectionPolicy is set to Qan.AbstractGraph.NoSelection or SelextionPolicy::NoSelection,
      * method will always return false.
      */
-    bool            selectNode( qan::Node& node, Qt::KeyboardModifiers modifiers );
+    bool                selectNode(qan::Node& node, Qt::KeyboardModifiers modifiers = Qt::NoModifier);
+    Q_INVOKABLE bool    selectNode(qan::Node* node, Qt::KeyboardModifiers modifiers);
+    Q_INVOKABLE bool    selectNode(qan::Node* node);
+
+    //! Set the node selection state (graph selectionPolicy is not taken into account).
+    void                setNodeSelected(qan::Node& node, bool selected);
+    //! \copydoc setNodeSelected
+    Q_INVOKABLE void    setNodeSelected(qan::Node* node, bool selected);
 
     //! Similar to selectNode() for qan::Group (internally group is a node).
-    bool            selectGroup( qan::Group& group, Qt::KeyboardModifiers modifiers );
+    bool                selectGroup(qan::Group& group, Qt::KeyboardModifiers modifiers = Qt::NoModifier);
+    Q_INVOKABLE bool    selectGroup(qan::Group* group);
+
+    //! Set an edge selection state (usefull to unselect).
+    void                setEdgeSelected(qan::Edge* edge, bool selected);
+
+    //! Similar to selectNode() for qan::Edge.
+    bool                selectEdge(qan::Edge& edge, Qt::KeyboardModifiers modifiers = Qt::NoModifier);
+    Q_INVOKABLE bool    selectEdge(qan::Edge* edge);
 
     /*! \brief Add a node in the current selection.
      */
-    void            addToSelection( qan::Node& node );
+    void            addToSelection(qan::Node& node);
     //! \copydoc addToSelection
-    void            addToSelection( qan::Group& node );
+    void            addToSelection(qan::Group& group);
+    //! \copydoc addToSelection
+    void            addToSelection(qan::Edge& edge);
 
     //! Remove a node from the selection.
-    void            removeFromSelection( qan::Node& node );
+    void            removeFromSelection(qan::Node& node);
     //! \copydoc removeFromSelection
-    void            removeFromSelection( qan::Group& node );
+    void            removeFromSelection(qan::Group& node);
     //! \copydoc removeFromSelection
-    void            removeFromSelection( QQuickItem* item );
+    void            removeFromSelection(QQuickItem* item);
+
+    //! Select all graph content (nodes, groups and edges).
+    Q_INVOKABLE void    selectAll();
+
+    //! Remove all selected nodes and groups and clear selection.
+    Q_INVOKABLE void    removeSelection();
 
     //! Clear the current selection.
-    void            clearSelection();
+    Q_INVOKABLE void    clearSelection();
 
-    //! Return true if multiple node are selected.
-    inline  bool    hasMultipleSelection() const noexcept { return _selectedNodes.size() > 0 || _selectedGroups.size() > 0; }
+    //! Return true if either a nodes, groups, edges (or multiple nodes, groups, edges) is selected.
+    Q_INVOKABLE bool    hasSelection() const;
+
+    //! Return true if multiple nodes, groups or edges are selected.
+    Q_INVOKABLE bool    hasMultipleSelection() const;
 
 public:
-    using SelectedNodes = qcm::Container< QVector, qan::Node* > ;
-    using SelectedGroups = qcm::Container< QVector, qan::Group* > ;
+    using SelectedNodes = qcm::Container<std::vector, QPointer<qan::Node>>;
 
     //! Read-only list model of currently selected nodes.
-    Q_PROPERTY( QAbstractListModel* selectedNodes READ getSelectedNodesModel NOTIFY selectedNodesChanged FINAL )
+    Q_PROPERTY(QAbstractItemModel* selectedNodes READ getSelectedNodesModel NOTIFY selectedNodesChanged FINAL)  // In fact non-notifiable, avoid QML warning
+    Q_PROPERTY(qan::Node* selectedNode READ getSelectedNode WRITE setSelectedNode NOTIFY selectedNodeChanged FINAL)
+    QAbstractItemModel* getSelectedNodesModel() { return qobject_cast<QAbstractItemModel*>(_selectedNodes.model()); }
+    qan::Node*          getSelectedNode() const noexcept { return _selectedNode.data(); }
+    void                setSelectedNode(qan::Node* selectedNode);
 
-    Q_PROPERTY(qan::Node* selectedNode READ selectedNode WRITE setSelectedNode NOTIFY selectedNodeChanged)
-
-    QAbstractListModel* getSelectedNodesModel() { return qobject_cast<QAbstractListModel*>( &_selectedNodes ); }
-
-    inline auto         getSelectedNodes() noexcept -> SelectedNodes& { return _selectedNodes; }
-    inline auto         getSelectedNodes() const noexcept -> const SelectedNodes& { return _selectedNodes; }
-signals:
-    void                selectedNodesChanged();
-public:
-    inline auto         getSelectedGroups() noexcept -> SelectedGroups& { return _selectedGroups; }
-    inline auto         getSelectedGroups() const noexcept -> const SelectedGroups& { return _selectedGroups; }
+    inline auto         getSelectedNodes() -> SelectedNodes& { return _selectedNodes; }
+    inline auto         getSelectedNodes() const -> const SelectedNodes& { return _selectedNodes; }
 private:
     SelectedNodes       _selectedNodes;
+    QPointer<qan::Node> _selectedNode;
+signals:
+    void                selectedNodesChanged();
+    void                selectedNodeChanged(qan::Node* selectedNode);
+    //! Emitted whenever nodes/groups/edge selection change.
+    void                selectionChanged();
+
+public:
+    using SelectedGroups = qcm::Container<std::vector, QPointer<qan::Group>>;
+
+    //! Read-only list model of currently selected groups.
+    Q_PROPERTY(QAbstractItemModel* selectedGroups READ getSelectedGroupsModel NOTIFY selectedGroupsChanged FINAL)   // In fact non-notifiable, avoid QML warning
+    QAbstractItemModel* getSelectedGroupsModel() { return qobject_cast<QAbstractItemModel*>(_selectedGroups.model()); }
+
+    inline auto         getSelectedGroups() -> SelectedGroups& { return _selectedGroups; }
+    inline auto         getSelectedGroups() const -> const SelectedGroups& { return _selectedGroups; }
+private:
     SelectedGroups      _selectedGroups;
+signals:
+    void                selectedGroupsChanged();
+
+public:
+    using SelectedEdges = qcm::Container<std::vector, QPointer<qan::Edge>>;
+
+    //! \copydoc _selectedEdges
+    Q_PROPERTY(QAbstractItemModel* selectedEdges READ getSelectedEdgesModel NOTIFY selectedEdgesChanged FINAL)   // In fact non-notifiable, avoid QML warning
+    //! \copydoc _selectedEdges
+    QAbstractItemModel* getSelectedEdgesModel() { return qobject_cast<QAbstractItemModel*>(_selectedEdges.model()); }
+    //! \copydoc _selectedEdges
+    inline auto         getSelectedEdges() -> SelectedEdges& { return _selectedEdges; }
+    //! \copydoc _selectedEdges
+    inline auto         getSelectedEdges() const -> const SelectedEdges& { return _selectedEdges; }
+private:
+    //! Read-only list model of currently selected edges.
+    SelectedEdges       _selectedEdges;
+signals:
+    //! \copydoc _selectedEdges
+    void                selectedEdgesChanged();
 
 protected:
-    virtual void        mousePressEvent(QMouseEvent* event ) override;
+    //! \brief Return a vector of currently selected nodes/groups items.
+    std::vector<QQuickItem*>    getSelectedItems() const;
+    //@}
+    //-------------------------------------------------------------------------
 
+    /*! \name Grid and Alignment Management *///-------------------------------
+    //@{
+public:
+    //! Snap dragged objects (both groups and nodes) to grid based on \c snapGridSize (default to false is no snap).
+    Q_PROPERTY(bool snapToGrid READ getSnapToGrid WRITE setSnapToGrid NOTIFY snapToGridChanged FINAL)
+    bool            setSnapToGrid(bool snapToGrid) noexcept;
+    bool            getSnapToGrid() const noexcept { return _snapToGrid; }
+private:
+    bool            _snapToGrid = false;
 signals:
-    void                rightClicked(QPointF pos);
+    void            snapToGridChanged();
+
+public:
+    //! Snap to grid size (default to 10x10), active only when \c snapToGrid is true.
+    Q_PROPERTY(QSizeF snapToGridSize READ getSnapToGridSize WRITE setSnapToGridSize NOTIFY snapToGridSizeChanged FINAL)
+    bool            setSnapToGridSize(QSizeF snapToGridSize) noexcept;
+    QSizeF          getSnapToGridSize() const noexcept { return _snapToGridSize; }
+private:
+    QSizeF          _snapToGridSize{10., 10.};
+signals:
+    void            snapToGridSizeChanged();
+
+public:
+    //! \brief Align selected nodes/groups items horizontal center.
+    Q_INVOKABLE void    alignSelectionHorizontalCenter();
+    //! \brief Align selected nodes/groups items right.
+    Q_INVOKABLE void    alignSelectionRight();
+    //! \brief Align selected nodes/groups items left.
+    Q_INVOKABLE void    alignSelectionLeft();
+    //! \brief Align selected nodes/groups items top.
+    Q_INVOKABLE void    alignSelectionTop();
+    //! \brief Align selected nodes/groups items bottom.
+    Q_INVOKABLE void    alignSelectionBottom();
+protected:
+    //! \brief Align \c items horizontal center.
+    void    alignHorizontalCenter(std::vector<QQuickItem*>&& items);
+    //! \brief Align \c items right.
+    void    alignRight(std::vector<QQuickItem*>&& items);
+    //! \brief Align \c items left.
+    void    alignLeft(std::vector<QQuickItem*>&& items);
+    //! \brief Align \c items top.
+    void    alignTop(std::vector<QQuickItem*>&& items);
+    //! \brief Align \c items bottom.
+    void    alignBottom(std::vector<QQuickItem*>&& items);
     //@}
     //-------------------------------------------------------------------------
 
@@ -631,11 +921,11 @@ signals:
 public:
     /*! \brief Graph style manager (ie list of style applicable to graph primitive).
      */
-    Q_PROPERTY( qan::StyleManager* styleManager READ getStyleManager CONSTANT FINAL )
-    inline qan::StyleManager*       getStyleManager() noexcept { return &_styleManager; }
-    inline const qan::StyleManager* getStyleManager() const noexcept { return &_styleManager; }
+    Q_PROPERTY(qan::StyleManager* styleManager READ getStyleManager CONSTANT FINAL)
+    qan::StyleManager*       getStyleManager() noexcept { return &_styleManager; }
+    const qan::StyleManager* getStyleManager() const noexcept { return &_styleManager; }
 private:
-    qan::StyleManager   _styleManager;
+    qan::StyleManager       _styleManager;
     //@}
     //-------------------------------------------------------------------------
 
@@ -655,82 +945,11 @@ public:
      * \param label port visible label.
      * \param id    Optional unique ID for the port (caller must ensure uniqueness), could be used to retrieve ports using qan::NodeItem::getPort().
      */
-
     Q_INVOKABLE qan::PortItem*  insertPort(qan::Node* node,
                                            qan::NodeItem::Dock dock,
                                            qan::PortItem::Type portType = qan::PortItem::Type::InOut,
                                            QString label = "",
                                            QString id = "" ) noexcept;
-
-
-    template <typename Port_t>
-    Port_t*  insertPort(qan::Node* node,
-                                           qan::NodeItem::Dock dock,
-                                           qan::PortItem::Type portType = qan::PortItem::Type::InOut,
-                                           QString label = "",
-                                           QString id = "" ) noexcept
-    {
-        // PRECONDITIONS:
-            // node can't be nullptr
-            // node must have an item (to access node style)
-            // default _portDelegate must be valid
-        if ( node == nullptr ||
-             node->getItem() == nullptr )
-            return nullptr;
-        if ( !_portDelegate ) {
-            qWarning() << "qan::Graph::insertPort(): no default port delegate available.";
-            return nullptr;
-        }
-
-        Port_t* portItem{nullptr};
-        const auto nodeStyle = node->getItem()->getStyle();     // Use node style for dock item
-        if ( nodeStyle ) {
-            portItem = qobject_cast<Port_t*>(createFromComponent(_portDelegate.get(), *nodeStyle ));
-           //  portItem=qobject_cast<qan::PortItem*>(portItem);
-            if ( portItem != nullptr ) {
-                portItem->setType(portType);
-                portItem->setLabel(label);
-                portItem->setId(id);
-                portItem->setDockType(dock);
-
-                // Configure port mouse events forwarding to qan::Graph
-                const auto notifyPortClicked = [this] (qan::NodeItem* nodeItem, QPointF p) {
-                    const auto portItem = qobject_cast<qan::PortItem*>(nodeItem);
-                    if ( portItem != nullptr &&
-                         portItem->getNode() != nullptr )
-                        emit this->portClicked(portItem, p);
-                };
-                connect( portItem, &qan::NodeItem::nodeClicked, notifyPortClicked );
-
-                const auto notifyPortRightClicked = [this] (qan::NodeItem* nodeItem, QPointF p) {
-                    const auto portItem = qobject_cast<qan::PortItem*>(nodeItem);
-                    if ( portItem != nullptr &&
-                         portItem->getNode() != nullptr )
-                        emit this->portRightClicked(portItem, p);
-                };
-                connect( portItem, &qan::NodeItem::nodeRightClicked, notifyPortRightClicked );
-
-                if ( node->getItem() != nullptr ) {
-                    portItem->setNode(node); // portitem node in fact map to this concrete node.
-                    node->getItem()->getPorts().append(portItem);
-                    auto dockItem = node->getItem()->getDock(dock);
-                    if ( dockItem == nullptr ) {
-                        // Create a dock item from the default dock delegate
-                        dockItem = createDockFromDelegate(dock, *node);
-                        if ( dockItem != nullptr )
-                            node->getItem()->setDock(dock, dockItem);
-                    }
-                    if ( dockItem != nullptr )
-                        portItem->setParentItem(dockItem);
-                    else {
-                        portItem->setParentItem(node->getItem());
-                        portItem->setZ(1.5);    // 1.5 because port item should be on top of selection item and under node resizer (selection item z=1.0, resizer z=2.0)
-                    }
-                }
-            }
-        }
-        return portItem;
-    }
 
     /*! Remove a port from a node.
      *
@@ -741,66 +960,62 @@ public:
 
 public:
     //! Default delegate for node in/out port.
-    Q_PROPERTY( QQmlComponent* portDelegate READ getPortDelegate WRITE qmlSetPortDelegate NOTIFY portDelegateChanged FINAL )
+    Q_PROPERTY(QQmlComponent* portDelegate READ getPortDelegate WRITE qmlSetPortDelegate NOTIFY portDelegateChanged FINAL)
     //! \copydoc portDelegate
     inline QQmlComponent*   getPortDelegate() noexcept { return _portDelegate.get(); }
 protected:
     //! \copydoc portDelegate
     void                    qmlSetPortDelegate(QQmlComponent* portDelegate) noexcept;
     //! \copydoc portDelegate
-    void                    setPortDelegate(UniqueQQmlComponentPtr portDelegate) noexcept;
+    void                    setPortDelegate(std::unique_ptr<QQmlComponent> portDelegate) noexcept;
 signals:
     //! \copydoc portDelegate
     void                    portDelegateChanged();
 private:
     //! \copydoc portDelegate
-    UniqueQQmlComponentPtr _portDelegate;
+    std::unique_ptr<QQmlComponent> _portDelegate;
 
 signals:
     /*! \brief Emitted whenever a port node registered in this graph is clicked.
      */
-    void            portClicked( qan::PortItem* port, QPointF pos );
+    void            portClicked(qan::PortItem* port, QPointF pos);
     /*! \brief Emitted whenever a port node registered in this graph is right clicked.
      */
-    void            portRightClicked( qan::PortItem* port, QPointF pos );
+    void            portRightClicked(qan::PortItem* port, QPointF pos);
 
 public:
     //! Default delegate for horizontal (either NodeItem::Dock::Top or NodeItem::Dock::Bottom) docks.
-    Q_PROPERTY( QQmlComponent* horizontalDockDelegate READ getHorizontalDockDelegate WRITE setHorizontalDockDelegate NOTIFY horizontalDockDelegateChanged FINAL )
+    Q_PROPERTY(QQmlComponent* horizontalDockDelegate READ getHorizontalDockDelegate WRITE setHorizontalDockDelegate NOTIFY horizontalDockDelegateChanged FINAL)
     //! \copydoc horizontalDockDelegate
     inline QQmlComponent*   getHorizontalDockDelegate() noexcept { return _horizontalDockDelegate.get(); }
 protected:
     //! \copydoc horizontalDockDelegate
     void                    setHorizontalDockDelegate(QQmlComponent* horizontalDockDelegate) noexcept;
     //! \copydoc horizontalDockDelegate
-    void                    setHorizontalDockDelegate(UniqueQQmlComponentPtr horizontalDockDelegate) noexcept;
+    void                    setHorizontalDockDelegate(std::unique_ptr<QQmlComponent> horizontalDockDelegate) noexcept;
 signals:
     //! \copydoc horizontalDockDelegate
     void                    horizontalDockDelegateChanged();
 private:
     //! \copydoc horizontalDockDelegate
-    UniqueQQmlComponentPtr _horizontalDockDelegate;
+    std::unique_ptr<QQmlComponent> _horizontalDockDelegate;
 
 public:
     //! Default delegate for vertical (either NodeItem::Dock::Left or NodeItem::Dock::Right) docks.
-    Q_PROPERTY( QQmlComponent* verticalDockDelegate READ getVerticalDockDelegate WRITE setVerticalDockDelegate NOTIFY verticalDockDelegateChanged FINAL )
+    Q_PROPERTY(QQmlComponent* verticalDockDelegate READ getVerticalDockDelegate WRITE setVerticalDockDelegate NOTIFY verticalDockDelegateChanged FINAL)
     //! \copydoc horizontalDockDelegate
     inline QQmlComponent*   getVerticalDockDelegate() noexcept { return _verticalDockDelegate.get(); }
 protected:
     //! \copydoc horizontalDockDelegate
     void                    setVerticalDockDelegate(QQmlComponent* verticalDockDelegate) noexcept;
     //! \copydoc horizontalDockDelegate
-    void                    setVerticalDockDelegate(UniqueQQmlComponentPtr verticalDockDelegate) noexcept;
+    void                    setVerticalDockDelegate(std::unique_ptr<QQmlComponent> verticalDockDelegate) noexcept;
 signals:
     //! \copydoc horizontalDockDelegate
     void                    verticalDockDelegateChanged();
-    void selectedNodeChanged(qan::Node* selectedNode);
-
 private:
     //! \copydoc verticalDockDelegate
-    UniqueQQmlComponentPtr _verticalDockDelegate;
-
-    qan::Node* m_selectedNode=0;
+    std::unique_ptr<QQmlComponent> _verticalDockDelegate;
 
 protected:
     //! Create a dock item from an existing dock item delegate.
@@ -808,33 +1023,167 @@ protected:
     //@}
     //-------------------------------------------------------------------------
 
-    /*! \name Node auto-positioning *///----------------------------------------
+    /*! \name Stacking Management *///-----------------------------------------
     //@{
 public:
-    //! Auto-position nodes using Graphviz's dot layout.
-    Q_INVOKABLE void autoPositionNodes() noexcept;
+    /*! \brief Send a graphic item (either a node or a group) to top.
+     *
+     * \note When item is a group, the node is moved to top inside it's group, and group is also send
+     * to top.
+     * \note Method is non const as it might affect \c maxZ property.
+     */
+    Q_INVOKABLE void    sendToFront(QQuickItem* item);
+
+    //! Send a graphic item (either a node or a group) to back.
+    Q_INVOKABLE void    sendToBack(QQuickItem* item);
+
+public:
+    /*! \brief Iterate over all graph container items, find and update the minZ and maxZ property.
+     *
+     * \note O(N) with N beeing the graph item count (might be quite costly, mainly defined to update
+     * maxZ after in serialization for example).
+     */
+    Q_INVOKABLE void    updateMinMaxZ() noexcept;
+
+    /*! \brief Maximum global z for nodes and groups (ie top-most item).
+     *
+     * \note By global we mean that z value for a node parented to a group is parent(s) group(s)
+     * a plus item z.
+     */
+    Q_PROPERTY(qreal    maxZ READ getMaxZ WRITE setMaxZ NOTIFY maxZChanged FINAL)
+    qreal               getMaxZ() const noexcept;
+    void                setMaxZ(const qreal maxZ) noexcept;
+private:
+    qreal               _maxZ = 0.;
+signals:
+    void                maxZChanged();
+
+public:
+    //! Add 1. to \c maxZ and return the new \c maxZ.
+    qreal               nextMaxZ() noexcept;
+    //! Update maximum z value if \c z is greater than actual \c maxZ value.
+    Q_INVOKABLE void    updateMaxZ(const qreal z) noexcept;
+
+public:
+    //! \brief Minimum global z for nodes and groups (ie bottom-less item).
+    Q_PROPERTY(qreal    minZ READ getMinZ WRITE setMinZ NOTIFY minZChanged FINAL)
+    qreal               getMinZ() const noexcept;
+    void                setMinZ(const qreal minZ) noexcept;
+private:
+    qreal               _minZ = 0.;
+signals:
+    void                minZChanged();
+
+public:
+    //! Substract 1. to \c minZ and return the new \c minZ.
+    qreal               nextMinZ() noexcept;
+    //! Update minimum z value if \c z is less than actual \c minZ value.
+    Q_INVOKABLE void    updateMinZ(const qreal z) noexcept;
     //@}
     //-------------------------------------------------------------------------
-    qan::Node* selectedNode() const
-    {
-        return m_selectedNode;
-    }
-public slots:
-    void setSelectedNode(qan::Node* selectedNode)
-    {
-        if (m_selectedNode == selectedNode)
-            return;
 
-        m_selectedNode = selectedNode;
-        emit selectedNodeChanged(m_selectedNode);
-    }
+    /*! \name Topology Algorithms *///-----------------------------------------
+    //@{
+public:
+    /*! \brief Synchronously collect all graph nodes of \c node using DFS.
+     *
+     * \warning this method is synchronous and recursive.
+     */
+    std::vector<QPointer<const qan::Node>>   collectRootNodes() const noexcept;
+
+    /*! \brief Synchronously collect all sub-nodes of graph root nodes using DFS.
+     *
+     * \warning this method is synchronous and recursive.
+     */
+    std::vector<const qan::Node*>   collectDfs(bool collectGroup = false) const noexcept;
+
+    /*! \brief Synchronously collect all child nodes of \c node using DFS.
+     *
+     * \note \c node is automatically added to the result and returned as the first
+     * node of the return set.
+     * \warning this method is synchronous and recursive.
+     */
+    std::vector<const qan::Node*>   collectDfs(const qan::Node& node, bool collectGroup = false) const noexcept;
+
+    //! Collect all out nodes of \c nodes using DFS, return an unordered set of subnodes (nodes in node are _not_ in returned set).
+    auto    collectSubNodes(const QVector<qan::Node*> nodes, bool collectGroup = false) const noexcept -> std::unordered_set<const qan::Node*>;
+
+private:
+    void    collectDfsRec(const qan::Node*,
+                          std::unordered_set<const qan::Node*>& marks,
+                          std::vector<const qan::Node*>& childs,
+                          bool collectGroup) const noexcept;
+
+public:
+    //! Return a set of all edges strongly connected to a set of nodes (ie where source AND destination is in \c nodes).
+    auto    collectInnerEdges(const std::vector<const qan::Node*>& nodes) const -> std::unordered_set<const qan::Edge*>;
+
+public:
+    /*! \brief Recursively collect all "neighbours" of \c node, neighbours are nodes in the same group or the same parent groups.
+     *
+     * Neighbours are not linked from a topology point of view by edges, only by common group membership.
+     *
+     * Exemple:
+     *             +---------------------------+
+     *             | G2                        |
+     * +--------+  |     +---------------+     |
+     * |G3      |  |     |       G1      |     |
+     * |   N4---+--+-----+->N1       N2  | N3  |
+     * |        |  |     |               |     |
+     * |   N5   |  |     +---------------+     |
+     * +--------+  |                           |
+     *             +---------------------------+
+     *
+     * Neighbours of N1: [N1, N2, G1, G2, N3]  note presence of N3 in N1 parent group.
+     * Neighbours of N4: [N4, N5, G3]
+     *
+     * \warning this method is synchronous and recursive.
+     */
+    std::vector<const qan::Node*>   collectNeighbours(const qan::Node& node) const;
+
+    //! FIXME.
+    std::vector<const qan::Node*>   collectGroups(const qan::Node& node) const;
+
+    /*! \brief Synchronously collect all parent nodes of \c node.
+     *
+     * \note All ancestors "neighbours" nodes are also added to set.
+     * \note \c node is _not_ added to result.
+     * \sa collectNeighbours()
+     * \warning this method is synchronous and recursive.
+     */
+    std::vector<const qan::Node*>   collectAncestors(const qan::Node& node) const;
+
+    //! FIXME.
+    std::vector<const qan::Node*>   collectChilds(const qan::Node& node) const;
+
+public:
+    //! \copydoc isAncestor()
+    Q_INVOKABLE bool        isAncestor(qan::Node* node, qan::Node* candidate) const;
+
+    /*! \brief Return true if \c candidate node is an ancestor of given \c node.
+     *
+     * \warning this method is synchronous and recursive.
+     * \return true if \c candidate is an ancestor of \c node (ie \c node is an out
+     * node of \c candidate at any degree).
+     */
+    bool                    isAncestor(const qan::Node& node, const qan::Node& candidate) const noexcept;
+
+public:
+    /*! Collect all nodes and groups contained in given groups.
+     *
+     * \note Recursively collect \c groups nodes and sub groups and group sub group nodes.
+     */
+    auto    collectGroupsNodes(const QVector<const qan::Group*>& groups) const noexcept -> std::unordered_set<const qan::Node*>;
+protected:
+
+    // Recursive utility for collectGroupsNodes().
+    auto    collectGroupNodes_rec(const qan::Group* group, std::unordered_set<const qan::Node*>& nodes) const -> void;
+    //@}
+    //-------------------------------------------------------------------------
 };
 
 } // ::qan
 
 #include "./qanGraph.hpp"
 
-QML_DECLARE_TYPE( qan::Graph::WeakNode )
-
-#endif // qanGraph_h
-
+QML_DECLARE_TYPE(qan::Graph)

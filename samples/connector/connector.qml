@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2008-2017, Benoit AUTHEMAN All rights reserved.
+ Copyright (c) 2008-2024, Benoit AUTHEMAN All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
@@ -30,8 +30,7 @@ import QtQuick.Controls.Material 2.1
 import QtQuick.Layouts           1.3
 import QtQuick.Shapes            1.0
 
-import QuickQanava 2.0 as Qan
-import "qrc:/QuickQanava" as Qan
+import QuickQanava as Qan
 import "." as Qan
 
 ApplicationWindow {
@@ -45,11 +44,12 @@ ApplicationWindow {
         anchors.fill: parent
         TabBar {
             id: tabBar
-            Layout.preferredWidth: 450; Layout.fillHeight: false
-            TabButton { text: qsTr("Docking") }
-            TabButton { text: qsTr("Custom Docks") }
-            TabButton { text: qsTr("Default Connector") }
-            TabButton { text: qsTr("Custom Connector") }
+            Layout.preferredWidth: 750
+            Layout.fillHeight: false
+            TabButton { width: 170; text: qsTr("Docking") }
+            TabButton { width: 170; text: qsTr("Custom Docks") }
+            TabButton { width: 190; text: qsTr("Default Connector") }
+            TabButton { width: 170; text: qsTr("Custom Connector") }
         }
         StackLayout {
             clip: true

@@ -1,4 +1,0 @@
-module QuickQanava
-plugin QuickQanava ../
-typeinfo plugins.qmltypes
-

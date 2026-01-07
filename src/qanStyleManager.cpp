@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2008-2018, Benoit AUTHEMAN All rights reserved.
+ Copyright (c) 2008-2024, Benoit AUTHEMAN All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
@@ -62,10 +62,10 @@ void    StyleManager::clear()
 /* Style Management *///-------------------------------------------------------
 void    StyleManager::setStyleComponent(qan::Style* style, QQmlComponent* component) noexcept
 {
-    if ( style != nullptr &&
-         component != nullptr ) {
-        _styleComponentMap.insert( style, component );
-        if ( !_styles.contains(style) )
+    if (style != nullptr &&
+        component != nullptr) {
+        _styleComponentMap.insert(style, component);
+        if (!_styles.contains(style))
             _styles.append(style);
     }
 }
@@ -111,6 +111,13 @@ qan::EdgeStyle* StyleManager::getEdgeStyle( QQmlComponent* delegate )
     return nullptr;
 }
 
+qan::EdgeStyle* StyleManager::createEdgeStyle()
+{
+    const auto edgeStyle = new qan::EdgeStyle{};
+    _styles.push_back(edgeStyle);
+    return edgeStyle;
+}
+
 qan::Style*     StyleManager::getStyleAt( int s )
 {
     if ( s < _styles.size() ) {
@@ -121,7 +128,6 @@ qan::Style*     StyleManager::getStyleAt( int s )
     }
     return nullptr;
 }
-
 //-----------------------------------------------------------------------------
 
 } // ::qan

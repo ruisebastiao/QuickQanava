@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2008-2017, Benoit AUTHEMAN All rights reserved.
+ Copyright (c) 2008-2024, Benoit AUTHEMAN All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
@@ -33,34 +33,34 @@
 //-----------------------------------------------------------------------------
 
 // QuickQanava headers
-#include "../../src/QuickQanava.h"
+#include "QuickQanava.h"
 #include "./qanDataFlow.h"
 
 namespace qan { // ::qan
 
-void    FlowNodeBehaviour::inNodeInserted( qan::Node& inNode, qan::Edge& edge ) noexcept
+void    FlowNodeBehaviour::inNodeInserted(qan::Node& inNode, qan::Edge& edge) noexcept
 {
+    Q_UNUSED(edge);
     const auto inFlowNode = qobject_cast<qan::FlowNode*>(&inNode);
     const auto flowNodeHost = qobject_cast<qan::FlowNode*>(getHost());
-    if ( inFlowNode != nullptr &&
-         flowNodeHost != nullptr ) {
-        //
+    if (inFlowNode != nullptr &&
+        flowNodeHost != nullptr) {
         QObject::connect(inFlowNode,    &qan::FlowNode::outputChanged,
                          flowNodeHost,  &qan::FlowNode::inNodeOutputChanged);
     }
     flowNodeHost->inNodeOutputChanged();    // Force a call since with a new edge insertion, actual value might aready be initialized
 }
 
-void    FlowNodeBehaviour::inNodeRemoved( qan::Node& inNode, qan::Edge& edge ) noexcept
+void    FlowNodeBehaviour::inNodeRemoved(qan::Node& inNode, qan::Edge& edge) noexcept
 {
-
+    Q_UNUSED(inNode); Q_UNUSED(edge);
 }
 
 QQmlComponent*  FlowNode::delegate(QQmlEngine& engine) noexcept
 {
     static std::unique_ptr<QQmlComponent>   qan_FlowNode_delegate;
     if ( !qan_FlowNode_delegate )
-        qan_FlowNode_delegate = std::make_unique<QQmlComponent>(&engine, "qrc:/FlowNode.qml");
+        qan_FlowNode_delegate = std::make_unique<QQmlComponent>(&engine, ":/qt/qml/SampleDataFlow/FlowNode.qml");
     return qan_FlowNode_delegate.get();
 }
 
@@ -79,7 +79,7 @@ QQmlComponent*  PercentageNode::delegate(QQmlEngine& engine) noexcept
 {
     static std::unique_ptr<QQmlComponent>   delegate;
     if ( !delegate )
-        delegate = std::make_unique<QQmlComponent>(&engine, "qrc:/PercentageNode.qml");
+        delegate = std::make_unique<QQmlComponent>(&engine, ":/qt/qml/SampleDataFlow/PercentageNode.qml");
     return delegate.get();
 }
 
@@ -87,13 +87,13 @@ QQmlComponent*  OperationNode::delegate(QQmlEngine& engine) noexcept
 {
     static std::unique_ptr<QQmlComponent>   delegate;
     if ( !delegate )
-        delegate = std::make_unique<QQmlComponent>(&engine, "qrc:/OperationNode.qml");
+        delegate = std::make_unique<QQmlComponent>(&engine, ":/qt/qml/SampleDataFlow/OperationNode.qml");
     return delegate.get();
 }
 
 void    OperationNode::setOperation(Operation operation) noexcept
 {
-    if ( _operation != operation ) {
+    if (_operation != operation) {
         _operation = operation;
         emit operationChanged();
     }
@@ -102,20 +102,20 @@ void    OperationNode::setOperation(Operation operation) noexcept
 void    OperationNode::inNodeOutputChanged()
 {
     FlowNode::inNodeOutputChanged();
-    qreal o{0.}; // For the example sake we do not deal with overflow
+    qreal o = 0.; // For the example sake we do not deal with overflow
     bool oIsInitialized{false};
-    for ( const auto& inNode : getInNodes() ) {
-        const auto inFlowNode = qobject_cast<qan::FlowNode*>(inNode.lock().get());
-        if ( inFlowNode == nullptr ||
-             !inFlowNode->getOutput().isValid())
+    for (const auto inNode : get_in_nodes()) {
+        const auto inFlowNode = qobject_cast<qan::FlowNode*>(inNode);
+        if (inFlowNode == nullptr ||
+            !inFlowNode->getOutput().isValid())
             continue;
-        bool ok{false};
+        bool ok = false;
         const auto inOutput = inFlowNode->getOutput().toReal(&ok);
-        if ( ok ) {
-            switch ( _operation ) {
-            case Operation::Add:        o += inOutput; break;
+        if (ok) {
+            switch (_operation) {
+            case Operation::Add:    o += inOutput; break;
             case Operation::Multiply:
-                if ( !oIsInitialized ) {
+                if (!oIsInitialized) {
                     o = inOutput;
                     oIsInitialized = true;
                 } else
@@ -131,7 +131,7 @@ QQmlComponent*  ImageNode::delegate(QQmlEngine& engine) noexcept
 {
     static std::unique_ptr<QQmlComponent>   delegate;
     if ( !delegate )
-        delegate = std::make_unique<QQmlComponent>(&engine, "qrc:/ImageNode.qml");
+        delegate = std::make_unique<QQmlComponent>(&engine, ":/qt/qml/SampleDataFlow/ImageNode.qml");
     return delegate.get();
 }
 
@@ -139,7 +139,7 @@ QQmlComponent*  ColorNode::delegate(QQmlEngine& engine) noexcept
 {
     static std::unique_ptr<QQmlComponent>   delegate;
     if ( !delegate )
-        delegate = std::make_unique<QQmlComponent>(&engine, "qrc:/ColorNode.qml");
+        delegate = std::make_unique<QQmlComponent>(&engine, ":/qt/qml/SampleDataFlow/ColorNode.qml");
     return delegate.get();
 }
 
@@ -147,7 +147,7 @@ QQmlComponent*  TintNode::delegate(QQmlEngine& engine) noexcept
 {
     static std::unique_ptr<QQmlComponent>   delegate;
     if ( !delegate )
-        delegate = std::make_unique<QQmlComponent>(&engine, "qrc:/TintNode.qml");
+        delegate = std::make_unique<QQmlComponent>(&engine, ":/qt/qml/SampleDataFlow/TintNode.qml");
     return delegate.get();
 }
 
@@ -171,29 +171,28 @@ void    TintNode::inNodeOutputChanged()
 {
     FlowNode::inNodeOutputChanged();
     qDebug() << "TintNode::inNodeOutputValueChanged()";
-    if ( getInNodes().size() != 3 )
+    if (get_in_nodes().size() != 3)
         return;
 
     // FIXME: Do not find port item by index, but by id with qan::NodeItem::findPort()...
-
-    const auto inFactorNode = qobject_cast<qan::FlowNode*>(getInNodes().at(0).lock().get());
-    const auto inColorNode = qobject_cast<qan::FlowNode*>(getInNodes().at(1).lock().get());
-    const auto inImageNode = qobject_cast<qan::FlowNode*>(getInNodes().at(2).lock().get());
+    const auto inFactorNode = qobject_cast<qan::FlowNode*>(get_in_nodes().at(0));
+    const auto inColorNode = qobject_cast<qan::FlowNode*>(get_in_nodes().at(1));
+    const auto inImageNode = qobject_cast<qan::FlowNode*>(get_in_nodes().at(2));
     qDebug() << "inFactorNode=" << inFactorNode << "\tinColorNode=" << inColorNode << "\tinImageNode=" << inImageNode;
-    if ( inFactorNode == nullptr ||
-         inColorNode == nullptr ||
-         inImageNode == nullptr )
+    if (inFactorNode == nullptr ||
+        inColorNode == nullptr ||
+        inImageNode == nullptr)
         return;
-    bool factorOk{false};
+    bool factorOk = false;
     const auto factor = inFactorNode->getOutput().toReal(&factorOk);
     auto       tint =   inColorNode->getOutput().value<QColor>();
     const auto source = inImageNode->getOutput().toUrl();
     qDebug() << "factor=" << factor;
     qDebug() << "tint=" << tint;
     qDebug() << "source=" << source.toString();
-    if ( factorOk &&
-         !source.isEmpty() &&
-         tint.isValid() ) {
+    if (factorOk &&
+        !source.isEmpty() &&
+        tint.isValid()) {
         tint.setAlpha(qBound(0., factor, 1.0) * 255);
         setSource(source);
         setTintColor(tint);
@@ -202,6 +201,7 @@ void    TintNode::inNodeOutputChanged()
 
 qan::Node* FlowGraph::insertFlowNode(FlowNode::Type type)
 {
+    qWarning() << "FlowGraph::insertFlowNode(): type=" << type;
     qan::Node* flowNode = nullptr;
     switch ( type ) {
     case qan::FlowNode::Type::Percentage:
@@ -236,7 +236,7 @@ qan::Node* FlowGraph::insertFlowNode(FlowNode::Type type)
         break;
     default: return nullptr;
     }
-    if ( flowNode )
+    if (flowNode)
         flowNode->installBehaviour(std::make_unique<FlowNodeBehaviour>());
     return flowNode;
 }

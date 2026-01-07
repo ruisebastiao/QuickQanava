@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2008-2018, Benoit AUTHEMAN All rights reserved.
+ Copyright (c) 2008-2024, Benoit AUTHEMAN All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
@@ -37,204 +37,274 @@
 
 // QuickQanava headers
 #include "./qanStyle.h"
-#include "./qanGraph.h"
 
 namespace qan { // ::qan
 
 /* Style Object Management *///------------------------------------------------
-Style::Style( QString name, QObject* parent ) :
-    QObject{ parent },
-    _name{ name }
-{
+Style::Style(QObject* parent) :
+    QObject{parent} { /* Nil */ }
 
-}
+Style::Style(QString name, QObject* parent) :
+    QObject{parent},
+    _name{name} { /* Nil */ }
 //-----------------------------------------------------------------------------
 
 /* Node Style Object Management *///-------------------------------------------
-NodeStyle::NodeStyle( QString name, QObject* parent ) :
-    qan::Style( name, parent )
-{
-}
+NodeStyle::NodeStyle(QString name, QObject* parent) : qan::Style(name, parent) { /* Nil */ }
+NodeStyle::NodeStyle(QObject* parent) : qan::Style(parent) { /* Nil */ }
 //-----------------------------------------------------------------------------
 
 /* Node Style Properties *///--------------------------------------------------
-void    NodeStyle::setBackRadius( qreal backRadius ) noexcept
+bool    NodeStyle::setBackRadius(qreal backRadius) noexcept
 {
     // PRECONDITIONS:
         // backRadius must be >= 0.
-    if ( backRadius < -0.00001 ) {
+    if (backRadius < -0.00001) {
         qWarning() << "qan::NodeStyle::setBackRadius(): Node background radius can't be < 0.";
-        return;
+        return false;
     }
-    if ( !qFuzzyCompare( 1. + _backRadius, 1. + backRadius ) ) {
+    if (!qFuzzyCompare(1. + _backRadius, 1. + backRadius)) {
         _backRadius = backRadius;
         emit backRadiusChanged();
+        return true;
     }
+    return false;
 }
 
-void    NodeStyle::setBackOpacity( qreal backOpacity ) noexcept
+bool    NodeStyle::setBackOpacity(qreal backOpacity) noexcept
 {
-    if ( !qFuzzyCompare( 1. + _backOpacity, 1. + backOpacity ) ) {
+    if (!qFuzzyCompare(1. + _backOpacity, 1. + backOpacity)) {
         _backOpacity = backOpacity;
         emit backOpacityChanged();
+        return true;
     }
+    return false;
 }
 
-void    NodeStyle::setFillType(NodeStyle::FillType fillType) noexcept
+bool    NodeStyle::setFillType(NodeStyle::FillType fillType) noexcept
 {
-    if ( _fillType != fillType ) {
+    if (_fillType != fillType) {
         _fillType = fillType;
         emit fillTypeChanged();
+        return true;
     }
+    return false;
 }
 
-void    NodeStyle::setBackColor( const QColor& backColor ) noexcept
+bool    NodeStyle::setBackColor(const QColor& backColor) noexcept
 {
-    if ( _backColor != backColor ) {
+    if (_backColor != backColor) {
         _backColor = backColor;
         emit backColorChanged();
+        return true;
     }
+    return false;
 }
 
-void    NodeStyle::setBaseColor( const QColor& baseColor ) noexcept
+bool    NodeStyle::setBaseColor(const QColor& baseColor) noexcept
 {
-    if ( _baseColor != baseColor ) {
+    if (_baseColor != baseColor) {
         _baseColor = baseColor;
         emit baseColorChanged();
+        return true;
     }
+    return false;
 }
 
-void    NodeStyle::setBorderColor( const QColor& borderColor ) noexcept
+bool    NodeStyle::setBorderColor(const QColor& borderColor) noexcept
 {
-    if ( _borderColor != borderColor ) {
+    if (_borderColor != borderColor) {
         _borderColor = borderColor;
         emit borderColorChanged();
+        return true;
     }
+    return false;
 }
 
-void    NodeStyle::setBorderWidth( qreal borderWidth ) noexcept
+bool    NodeStyle::setBorderWidth(qreal borderWidth) noexcept
 {
-    if ( !qFuzzyCompare( 1. + _borderWidth, 1. + borderWidth ) ) {
+    if (!qFuzzyCompare(1. + _borderWidth, 1. + borderWidth)) {
         _borderWidth = borderWidth;
         emit borderWidthChanged();
+        return true;
     }
+    return false;
 }
 
-void    NodeStyle::setEffectType(NodeStyle::EffectType effectType) noexcept
+bool    NodeStyle::setEffectType(NodeStyle::EffectType effectType) noexcept
 {
-    if ( _effectType != effectType ) {
+    if (_effectType != effectType) {
         setEffectEnabled(effectType == EffectType::EffectNone ? false : true);
         _effectType = effectType;
         emit effectTypeChanged();
+        return true;
     }
+    return false;
 }
 
-void    NodeStyle::setEffectEnabled(bool effectEnabled) noexcept
+bool    NodeStyle::setEffectEnabled(bool effectEnabled) noexcept
 {
-    if ( _effectEnabled != effectEnabled ) {
+    if (_effectEnabled != effectEnabled) {
         _effectEnabled = effectEnabled;
         emit effectEnabledChanged();
+        return true;
     }
+    return false;
 }
 
-void    NodeStyle::setEffectColor(QColor effectColor) noexcept
+bool    NodeStyle::setEffectColor(QColor effectColor) noexcept
 {
-    if ( _effectColor != effectColor ) {
+    if (_effectColor != effectColor) {
         _effectColor = effectColor;
         emit effectColorChanged();
+        return true;
     }
+    return false;
 }
 
-void    NodeStyle::setEffectRadius( qreal effectRadius ) noexcept
+bool    NodeStyle::setEffectRadius(qreal effectRadius) noexcept
 {
     if (effectRadius < 0.0)
-            return;
-    if ( !qFuzzyCompare( 1. + _effectRadius, 1. + effectRadius ) ) {
+        return false;
+    if (!qFuzzyCompare(1. + _effectRadius, 1. + effectRadius)) {
         _effectRadius = effectRadius;
         emit effectRadiusChanged();
+        return true;
     }
+    return false;
 }
 
-void    NodeStyle::setEffectOffset( qreal effectOffset ) noexcept
+bool    NodeStyle::setEffectOffset(qreal effectOffset) noexcept
 {
     if ( !qFuzzyCompare( 1. + _effectOffset, 1. + effectOffset ) ) {
         _effectOffset = effectOffset;
         emit effectOffsetChanged();
+        return true;
     }
+    return false;
 }
 
-void    NodeStyle::setFontPointSize( int fontPointSize ) noexcept
+bool    NodeStyle::setFontPointSize(int fontPointSize) noexcept
 {
     if ( _fontPointSize != fontPointSize ) {
         _fontPointSize = fontPointSize;
         emit fontPointSizeChanged();
+        return true;
     }
+    return false;
 }
 
-void    NodeStyle::setFontBold( bool fontBold ) noexcept
+bool    NodeStyle::setFontBold(bool fontBold) noexcept
 {
-    if ( _fontBold != fontBold ) {
+    if (_fontBold != fontBold) {
         _fontBold = fontBold;
         emit fontBoldChanged();
+        return true;
     }
+    return false;
+}
+
+bool    NodeStyle::setLabelColor(QColor labelColor) noexcept
+{
+    if (_labelColor != labelColor) {
+        _labelColor = labelColor;
+        emit labelColorChanged();
+        return true;
+    }
+    return false;
 }
 //-----------------------------------------------------------------------------
 
 
 /* Edge Style Object Management *///-------------------------------------------
-EdgeStyle::EdgeStyle( QString name, QObject* parent ) :
-    qan::Style( name, parent )
-{
-}
+EdgeStyle::EdgeStyle(QString name, QObject* parent) : qan::Style(name, parent) { /* Nil */ }
 
-void    EdgeStyle::setLineType( LineType lineType ) noexcept
+EdgeStyle::EdgeStyle(QObject* parent) : qan::Style(parent) { /* Nil */ }
+
+bool    EdgeStyle::setLineType(LineType lineType) noexcept
 {
-    if ( lineType != _lineType ) {
+    if (lineType != _lineType) {
         _lineType = lineType;
         emit lineTypeChanged();
         emit styleModified();
+        return true;
     }
+    return false;
 }
 
-void    EdgeStyle::setLineColor( const QColor& lineColor ) noexcept
+bool    EdgeStyle::setLineColor(const QColor& lineColor) noexcept
 {
-    if ( lineColor != _lineColor ) {
+    if (lineColor != _lineColor) {
         _lineColor = lineColor;
         emit lineColorChanged();
         emit styleModified();
+        return true;
     }
+    return false;
 }
 
-void    EdgeStyle::setLineWidth( qreal lineWidth ) noexcept
+bool    EdgeStyle::setLineWidth(qreal lineWidth) noexcept
 {
-    if ( !qFuzzyCompare( 1.0 + lineWidth, 1.0 + _lineWidth ) ) {
+    if (!qFuzzyCompare(1.0 + lineWidth, 1.0 + _lineWidth)) {
         _lineWidth = lineWidth;
         emit lineWidthChanged();
         emit styleModified();
+        return true;
     }
+    return false;
 }
 
-void    EdgeStyle::setArrowSize( qreal arrowSize ) noexcept
+bool    EdgeStyle::setArrowSize(qreal arrowSize) noexcept
 {
-    if ( !qFuzzyCompare(1. + arrowSize, 1. + _arrowSize ) ) {
+    if (!qFuzzyCompare(1. + arrowSize, 1. + _arrowSize)) {
         _arrowSize = arrowSize;
         emit arrowSizeChanged();
         emit styleModified();
+        return true;
     }
+    return false;
 }
 
-void    EdgeStyle::setDashed( bool dashed ) noexcept
+auto    EdgeStyle::setSrcShape(ArrowShape srcShape) noexcept -> bool
 {
-    if ( dashed != _dashed ) {
+    if (_srcShape != srcShape) {
+        _srcShape = srcShape;
+        emit srcShapeChanged();
+        emit styleModified();
+        return true;
+    }
+    return false;
+}
+
+auto    EdgeStyle::setDstShape(ArrowShape dstShape) noexcept -> bool
+{
+    if (_dstShape != dstShape) {
+        _dstShape = dstShape;
+        emit dstShapeChanged();
+        emit styleModified();
+        return true;
+    }
+    return false;
+}
+
+bool    EdgeStyle::setDashed(bool dashed) noexcept
+{
+    if (dashed != _dashed) {
         _dashed = dashed;
         emit dashedChanged();
+        return true;
     }
+    return false;
 }
 
-void    EdgeStyle::setDashPattern( const QVector<qreal>& dashPattern ) noexcept
+bool    EdgeStyle::setDashPattern(const QVector<qreal>& dashPattern) noexcept
 {
-    _dashPattern = dashPattern;
-    emit dashPatternChanged();
+    if (_dashPattern != dashPattern) {
+        _dashPattern = dashPattern;
+        emit dashPatternChanged();
+        return true;
+    }
+    return false;
 }
 
 const QVector<qreal>& EdgeStyle::getDashPattern() const noexcept { return _dashPattern; }

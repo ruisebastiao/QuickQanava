@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2008-2017, Benoit AUTHEMAN All rights reserved.
+ Copyright (c) 2008-2024, Benoit AUTHEMAN All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
@@ -25,21 +25,19 @@
 */
 
 //-----------------------------------------------------------------------------
-// This file is a part of the QuickQanava software library. Copyright 2015 Benoit AUTHEMAN.
+// This file is a part of the QuickQanava software library. Copyright 2024 Benoit AUTHEMAN.
 //
-// \file	FlowNode.qml
+// \file	OperationNode.qml
 // \author	benoit@destrat.io
 // \date	2017 12 12
 //-----------------------------------------------------------------------------
 
-import QtQuick              2.7
-import QtQuick.Controls     2.0
-import QtQuick.Layouts      1.3
-import QtGraphicalEffects   1.0
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Layouts
 
-import QuickQanava          2.0 as Qan
-import "qrc:/QuickQanava"   as Qan
-import QuickQanava.Samples  1.0
+import QuickQanava as Qan
+import SampleDataFlow
 
 Qan.NodeItem {
     id: operationNodeItem
@@ -51,7 +49,7 @@ Qan.NodeItem {
 
     Connections {       // Observe "node item" "node" ouput value changes andupdate out port label
         target: node
-        onOutputChanged: {
+        function onOutputChanged() {
             if ( ports.itemCount > 0 )
                 ports.listReference.itemAt(0).label = "OUT=" + node.output.toFixed(1)
         }

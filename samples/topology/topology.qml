@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2020, Benoit AUTHEMAN All rights reserved.
+ Copyright (c) 2008-2024, Benoit AUTHEMAN All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
@@ -23,17 +23,15 @@
  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-import QtQuick 2.13
-import QtQuick.Controls 2.13
-import QtQuick.Layouts  1.3
-import QtQuick.Dialogs  1.2
-import QtQuick.Controls.Material 2.1
-import QtQuick.Shapes            1.0
-import QtGraphicalEffects   1.0
 
-import QuickQanava      2.0 as Qan
-import TopologySample   1.0 as Qan
-import "qrc:/QuickQanava" as Qan
+import QtQuick.Window
+import QtQuick
+import QtQuick.Layouts
+import QtQuick.Controls.Material
+import Qt.labs.platform as Labs
+
+import QuickQanava as Qan
+import TopologySample as Qan
 
 ApplicationWindow {
     id: window
@@ -52,10 +50,12 @@ ApplicationWindow {
     Menu {
         id: menu
         title: "Main Menu"
+        closePolicy: Popup.CloseOnPressOutside | Popup.CloseOnEscape
         property var targetNode: undefined
         property var targetGroup: undefined
         property var targetEdge: undefined
-        onClosed: {
+        onClosed: resetMenu()
+        function resetMenu() {
             menu.targetNode = undefined
             menu.targetGroup = undefined
             menu.targetEdge = undefined
@@ -66,6 +66,7 @@ ApplicationWindow {
                 var n = topology.insertNode()
                 centerItem(n.item)
                 n.label = "Node #" + topology.getNodeCount()
+                menu.resetMenu()
             }
         }
         MenuItem {
@@ -190,7 +191,7 @@ ApplicationWindow {
         }
         MenuItem {
             text: "Fit Graph in View"
-            onTriggered: graphView.fitInView()
+            onTriggered: graphView.fitContentInView()
         }
         MenuItem {
             text: "Clear Graph"
@@ -244,38 +245,38 @@ ApplicationWindow {
             selectionColor: Material.accent
             connectorColor: Material.accent
             connectorEdgeColor: Material.accent
-            onConnectorEdgeInserted: {
+            onConnectorEdgeInserted: (edge) => {
                 if (edge)
                     edge.label = "My edge"
             }
             property Component faceNodeComponent: Qt.createComponent("qrc:/FaceNode.qml")
-            onNodeClicked: {
+            onNodeClicked: (node) => {
                 portsListView.model = node.item.ports
             }
-            onNodeRightClicked: {
-                var globalPos = node.item.mapToItem(topology, pos.x, pos.y)
+            onNodeRightClicked: (node, pos) => {
+                const globalPos = node.item.mapToItem(topology, pos.x, pos.y)
                 menu.x = globalPos.x
                 menu.y = globalPos.y
                 menu.targetNode = node
                 menu.open()
             }
-            onGroupRightClicked: {
-                var globalPos = group.item.mapToItem(topology, pos.x, pos.y)
+            onGroupRightClicked: (group, pos) => {
+                const globalPos = group.item.mapToItem(topology, pos.x, pos.y)
                 menu.x = globalPos.x
                 menu.y = globalPos.y
                 menu.targetGroup = group
                 menu.open()
             }
-            onEdgeRightClicked: {
+            onEdgeRightClicked: (edge, pos) => {
                 if (!edge || !edge.item)
                     return
-                var globalPos = edge.item.mapToItem(topology, pos.x, pos.y)
+                const globalPos = edge.item.mapToItem(topology, pos.x, pos.y)
                 menu.x = globalPos.x
                 menu.y = globalPos.y
                 menu.targetEdge = edge
                 menu.open()
             }
-            onPortRightClicked: {
+            onPortRightClicked: (port, pos) => {
                 var globalPos = port.parent.mapToItem(topology, pos.x, pos.y)
                 menuRmPort.x = globalPos.x
                 menuRmPort.y = globalPos.y
@@ -400,13 +401,7 @@ ApplicationWindow {
                 var dd3p1 = topology.insertPort(dd3, Qan.NodeItem.Top)
                 dd3p1.label = "P#1"
 
-                // Generate random connections
-                //var e = topology.insertEdge(bw1, js1)
-                //console.error('e=' + e)
-                //topology.bindEdgeSource(e, bw1p1)
-                //topology.bindEdgeDestination(e, js1p1)
-
-               /* e = topology.insertEdge(bw2, bw1)
+                let e = topology.insertEdge(bw2, bw1)
                 topology.bindEdgeSource(e, bw2p1)
                 topology.bindEdgeDestination(e, bw1p2)
                 e = topology.insertEdge(bw3, bw1)
@@ -439,13 +434,11 @@ ApplicationWindow {
 
                 e = topology.insertEdge(vd3, vd1)
                 topology.bindEdgeSource(e, vd3p1)
-                topology.bindEdgeDestination(e, vd1p3)*/
+                topology.bindEdgeDestination(e, vd1p3)
             }
         } // Qan.Graph: graph
-        onRightClicked: {
-            var globalPos = graphView.mapToItem(topology, pos.x, pos.y)
-            menu.x = globalPos.x
-            menu.y = globalPos.y
+        onRightClicked: pos => {
+            //let globalPos = graphView.mapToItem(topology, pos.x, pos.y)
             menu.targetNode = undefined
             menu.targetEdge = undefined
             menu.open()
@@ -576,7 +569,7 @@ ApplicationWindow {
         } // portList
     }  // RowLayout nodes / nodes ports / edge debug control
 
-    ColorDialog {
+    Labs.ColorDialog {
         id: selectionColorDialog
         title: "Selection hilight color"
         onAccepted: {
@@ -780,10 +773,10 @@ ApplicationWindow {
                     model: ["Straight", "Curved"]
                     enabled: defaultEdgeStyle !== undefined
                     currentIndex: defaultEdgeStyle.lineType === Qan.EdgeStyle.Straight ? 0 : 1
-                    onActivated: {
-                        if (index == 0)
+                    onActivated: (index) => {
+                        if (index === 0)
                             defaultEdgeStyle.lineType = Qan.EdgeStyle.Straight
-                        else if (index == 1)
+                        else if (index === 1)
                             defaultEdgeStyle.lineType = Qan.EdgeStyle.Curved
                     }
                 }
@@ -799,7 +792,7 @@ ApplicationWindow {
     Qan.GraphPreview {
         id: graphPreview
         source: graphView
-        visibleWindowColor: Material.accent
+        viewWindowColor: Material.accent
         anchors.right: graphView.right; anchors.bottom: graphView.bottom
         anchors.rightMargin: 8; anchors.bottomMargin: 8
         width: previewMenu.mediumPreview.width

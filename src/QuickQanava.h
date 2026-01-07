@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2008-2018, Benoit AUTHEMAN All rights reserved.
+ Copyright (c) 2008-2024, Benoit AUTHEMAN All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
@@ -32,20 +32,15 @@
 // \date	2016 02 04
 //-----------------------------------------------------------------------------
 
-#ifndef QuickQanava_h
-#define QuickQanava_h
-
-// GTpo headers
-#include "GTpo.h"
+#pragma once
 
 // QuickContainers headers
-#include "../QuickContainers/src/QuickContainers.h"
+#include "./quickcontainers/QuickContainers.h"
 
 // Qt header
 #include <QQmlEngine>
 
 // QuickQanava headers
-#include "./qanGraphConfig.h"
 #include "./qanEdge.h"
 #include "./qanEdgeItem.h"
 #include "./qanNode.h"
@@ -54,19 +49,46 @@
 #include "./qanConnector.h"
 #include "./qanGroup.h"
 #include "./qanGroupItem.h"
+#include "./qanTableGroupItem.h"
+#include "./qanTableBorder.h"
 #include "./qanGraph.h"
 #include "./qanNavigable.h"
 #include "./qanGrid.h"
+#include "./qanLineGrid.h"
 #include "./qanGraphView.h"
 #include "./qanStyle.h"
 #include "./qanStyleManager.h"
 #include "./qanBottomRightResizer.h"
+#include "./qanRightResizer.h"
+#include "./qanBottomResizer.h"
 #include "./qanNavigablePreview.h"
+#include "./qanAnalysisTimeHeatMap.h"
+#include "./qanTreeLayouts.h"
 
+struct QuickQanava {
+    static void initialize(QQmlEngine* engine) {
+        QuickContainers::initialize();
+
+        if (engine != nullptr) {
+            engine->rootContext()->setContextProperty("defaultNodeStyle", QVariant::fromValue(qan::Node::style()));
+            engine->rootContext()->setContextProperty("defaultEdgeStyle", QVariant::fromValue(qan::Edge::style()));
+            engine->rootContext()->setContextProperty("defaultGroupStyle", QVariant::fromValue(qan::Group::style()));
+
+            engine->rootContext()->setContextProperty("qanEdgeStraightPathComponent", new QQmlComponent(engine, "qrc:/QuickQanava/EdgeStraightPath.qml", engine));
+            engine->rootContext()->setContextProperty("qanEdgeOrthoPathComponent", new QQmlComponent(engine, "qrc:/QuickQanava/EdgeOrthoPath.qml", engine));
+            engine->rootContext()->setContextProperty("qanEdgeCurvedPathComponent", new QQmlComponent(engine, "qrc:/QuickQanava/EdgeCurvedPath.qml", engine));
+
+            engine->rootContext()->setContextProperty("qanEdgeSrcArrowPathComponent", new QQmlComponent(engine, "qrc:/QuickQanava/EdgeSrcArrowPath.qml", engine));
+            engine->rootContext()->setContextProperty("qanEdgeSrcCirclePathComponent", new QQmlComponent(engine, "qrc:/QuickQanava/EdgeSrcCirclePath.qml", engine));
+            engine->rootContext()->setContextProperty("qanEdgeSrcRectPathComponent", new QQmlComponent(engine, "qrc:/QuickQanava/EdgeSrcRectPath.qml", engine));
+
+            engine->rootContext()->setContextProperty("qanEdgeDstArrowPathComponent", new QQmlComponent(engine, "qrc:/QuickQanava/EdgeDstArrowPath.qml", engine));
+            engine->rootContext()->setContextProperty("qanEdgeDstCirclePathComponent", new QQmlComponent(engine, "qrc:/QuickQanava/EdgeDstCirclePath.qml", engine));
+            engine->rootContext()->setContextProperty("qanEdgeDstRectPathComponent", new QQmlComponent(engine, "qrc:/QuickQanava/EdgeDstRectPath.qml", engine));
+        }
+    } // initialize()
+};
 
 namespace qan { // ::qan
 
 } // ::qan
-
-#endif // QuickQanava_h
-

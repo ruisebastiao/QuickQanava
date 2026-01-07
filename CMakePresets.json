@@ -1,0 +1,44 @@
+{
+  "version": 3,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 16,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "qt6-debug",
+      "displayName": "Qt 6 Debug",
+      "description": "Qt 6.9.1 with samples disabled",
+      "generator": "Unix Makefiles",
+      "binaryDir": "${sourceDir}/build/qt6-debug",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_PREFIX_PATH": "/opt/Qt/6.9.1/gcc_64",
+        "QUICK_QANAVA_BUILD_SAMPLES": "OFF"
+      }
+    },
+    {
+      "name": "qt6-release",
+      "displayName": "Qt 6 Release",
+      "description": "Qt 6.9.1 with samples disabled",
+      "generator": "Unix Makefiles",
+      "binaryDir": "${sourceDir}/build/qt6-release",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_PREFIX_PATH": "/opt/Qt/6.9.1/gcc_64",
+        "QUICK_QANAVA_BUILD_SAMPLES": "OFF"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "qt6-debug",
+      "configurePreset": "qt6-debug"
+    },
+    {
+      "name": "qt6-release",
+      "configurePreset": "qt6-release"
+    }
+  ]
+}

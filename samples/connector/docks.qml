@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2008-2017, Benoit AUTHEMAN All rights reserved.
+ Copyright (c) 2008-2024, Benoit AUTHEMAN All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
@@ -24,20 +24,29 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-import QtQuick                   2.8
+import QtQuick                   2.12
 import QtQuick.Controls          2.1
 import QtQuick.Controls.Material 2.1
 import QtQuick.Layouts           1.3
 import Qt.labs.platform          1.0    // ColorDialog
 
-import QuickQanava 2.0 as Qan
-import "qrc:/QuickQanava" as Qan
+import QuickQanava as Qan
 import "." as Qan
 
 Qan.GraphView {
     id: graphView
     anchors.fill: parent
     navigable   : true
+    PinchHandler {
+        target: null
+        onActiveScaleChanged: {
+            console.error('centroid.position=' + centroid.position)
+            console.error('activeScale=' + activeScale)
+            var p = centroid.position
+            var f = activeScale > 1.0 ? 1. : -1.
+            graphView.zoomOn(p, graphView.zoom + (f * 0.03))
+        }
+    }
     graph: Qan.Graph {
         id: graph
         connectorEnabled: true
@@ -69,10 +78,9 @@ Qan.GraphView {
             n3p2.label = "OUT #2"
 
             var e1 = graph.insertEdge(n11, n2);
-            var e2 = graph.insertEdge(n12, n2);
             graph.bindEdgeDestination(e1, n2p1)
+            var e2 = graph.insertEdge(n12, n2);
             graph.bindEdgeDestination(e2, n2p2)
-
 
             graph.setConnectorSource(n2)
         }

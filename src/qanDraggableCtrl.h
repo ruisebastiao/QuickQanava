@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2008-2018, Benoit AUTHEMAN All rights reserved.
+ Copyright (c) 2008-2024, Benoit AUTHEMAN All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
@@ -32,8 +32,7 @@
 // \date	2017 03 15
 //-----------------------------------------------------------------------------
 
-#ifndef qanDraggableCtrl_h
-#define qanDraggableCtrl_h
+#pragma once
 
 // Qt headers
 #include <QQuickItem>
@@ -43,9 +42,7 @@
 #include <QPointer>
 
 // QuickQanava headers
-#include "./qanGraphConfig.h"
 #include "./qanAbstractDraggableCtrl.h"
-#include "./qanStyle.h"         // Used in handleDropEvent()
 #include "./qanGroup.h"
 
 namespace qan { // ::qan
@@ -54,30 +51,36 @@ namespace qan { // ::qan
  *
  * \nosubgrouping
  */
-template < class Node_t, class NodeItem_t >
 class DraggableCtrl : public qan::AbstractDraggableCtrl
 {
     /*! \name Node Object Management *///--------------------------------------
     //@{
 public:
     //! DraggableCtrl constructor.
-    explicit DraggableCtrl();
-    virtual ~DraggableCtrl();
-    DraggableCtrl( const DraggableCtrl& ) = delete;
+    explicit DraggableCtrl() = default;
+    virtual ~DraggableCtrl() override = default;
+    DraggableCtrl(const DraggableCtrl&) = delete;
 
 public:
-    inline auto getTarget() noexcept -> Node_t* { return _target.data(); }
-    inline auto getTarget() const noexcept -> const Node_t* { return _target.data(); }
-    inline auto setTarget(Node_t* target) noexcept { _target = target; }
+    inline auto getTarget() noexcept -> qan::Node* { return _target.data(); }
+    inline auto getTarget() const noexcept -> const qan::Node* { return _target.data(); }
+    inline auto setTarget(qan::Node* target) noexcept { _target = target; }
 private:
-    QPointer<Node_t>    _target{nullptr};
+    QPointer<qan::Node>    _target{nullptr};
 
 public:
-    inline auto getTargetItem() noexcept -> NodeItem_t* { return _targetItem.data(); }
-    inline auto getTargetItem() const noexcept -> const NodeItem_t* { return _targetItem.data(); }
-    inline auto setTargetItem(NodeItem_t* targetItem) noexcept { _targetItem = targetItem; }
+    inline auto getTargetItem() noexcept -> qan::NodeItem* { return _targetItem.data(); }
+    inline auto getTargetItem() const noexcept -> const qan::NodeItem* { return _targetItem.data(); }
+    inline auto setTargetItem(qan::NodeItem* targetItem) noexcept { _targetItem = targetItem; }
 private:
-    QPointer<NodeItem_t>    _targetItem{nullptr};
+    QPointer<qan::NodeItem>    _targetItem{nullptr};
+
+public:
+    inline auto getTargetEdgeItem() noexcept -> qan::EdgeItem* { return _targetEdgeItem.data(); }
+    inline auto getTargetEdgeItem() const noexcept -> const qan::EdgeItem* { return _targetEdgeItem.data(); }
+    inline auto setTargetEdgeItem(qan::EdgeItem* targetEdgeItem) noexcept { _targetEdgeItem = targetEdgeItem; }
+private:
+    QPointer<qan::EdgeItem>    _targetEdgeItem{nullptr};
 
 protected:
     inline qan::Graph*  getGraph() noexcept { return _target ? _target->getGraph() : nullptr; }
@@ -87,36 +90,36 @@ protected:
     /*! \name Node DnD Management *///-----------------------------------------
     //@{
 public:
-    bool    handleDragEnterEvent( QDragEnterEvent* event );
-    void    handleDragMoveEvent( QDragMoveEvent* event );
-    void    handleDragLeaveEvent( QDragLeaveEvent* event );
-    void    handleDropEvent( QDropEvent* event );
+    bool    handleDragEnterEvent(QDragEnterEvent* event);
+    void    handleDragMoveEvent(QDragMoveEvent* event);
+    void    handleDragLeaveEvent(QDragLeaveEvent* event);
+    void    handleDropEvent(QDropEvent* event);
 
-    void    handleMouseDoubleClickEvent( QMouseEvent* event );
-    bool    handleMouseMoveEvent( QMouseEvent* event );
-    void    handleMousePressEvent( QMouseEvent* event );
-    void    handleMouseReleaseEvent( QMouseEvent* event );
+    void    handleMouseDoubleClickEvent(QMouseEvent* event);
+    bool    handleMouseMoveEvent(QMouseEvent* event);
+    void    handleMousePressEvent(QMouseEvent* event);
+    void    handleMouseReleaseEvent(QMouseEvent* event);
 
 public:
-    //! \c dragInitialMousePos in window coordinate system.
-    virtual void    beginDragMove( const QPointF& dragInitialMousePos, bool dragSelection = true ) override;
-    //! \c delta in scene coordinate system.
-    virtual void    dragMove( const QPointF& dragInitialMousePos, const QPointF& delta, bool dragSelection = true ) override;
-    virtual void    endDragMove( bool dragSelection = true ) override;
+    //! \c sceneDragPos is current mouse drag position in scene coordinate system.
+    virtual void    beginDragMove(const QPointF& sceneDragPos, bool dragSelection = true, bool notify = true) override;
+    //! \c sceneDragPos is current mouse drag position in scene coordinate system.
+    virtual void    dragMove(const QPointF& sceneDragPos, bool dragSelection = true,
+                             bool disableSnapToGrid = false, bool disableOrientation = false) override;
+    virtual void    endDragMove(bool dragSelection = true, bool notify = true) override;
 
 private:
-    //! Initial global mouse position at the beginning of a node drag operation.
-    QPointF                 _dragInitialMousePos{ 0., 0. };
-    //! Node position at the beginning of a node drag.
-    QPointF                 _dragInitialPos{ 0., 0. };
+    //! Internal (mouse) initial dragging position.
+    QPointF                 _initialSceneDragPos{0., 0.};
+    //! Internal (target) initial dragging position.
+    QPointF                 _initialTargetScenePos{0., 0.};
+    //! Internal (target) initial dragging z.
+    double                  _initialTargetZ = 0.;
+
     //! Last group hovered during a node drag (cached to generate a dragLeave signal on qan::Group).
-    QPointer<qan::Group>    _lastProposedGroup{ nullptr };
+    QPointer<qan::Group>    _lastProposedGroup{nullptr};
     //@}
     //-------------------------------------------------------------------------
 };
 
 } // ::qan
-
-#include "./qanDraggableCtrl.hpp"
-
-#endif // qanDraggableCtrl_h
