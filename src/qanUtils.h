@@ -63,6 +63,8 @@ struct default_delete<QQmlComponent> {
 };
 }
 
+using UniqueQQmlComponentPtr = std::unique_ptr<QQmlComponent>;
+
 //! Main QuickQanava namespace
 namespace qan { // ::qan
 
