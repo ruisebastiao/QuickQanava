@@ -126,7 +126,7 @@ Qan.Connector {
 
     onVisibleChanged: {     // Note 20170323: Necessary for custom connectorItem until they are reparented to this
         if ( connectorItem )
-            connectorItem.visible = visible && sourceNode   // Visible only if visual connector is visible and a valid source node is set
+            connectorItem.visible = visible && (sourceNode || sourcePort)   // Visible only with a valid source node or port
     }
 
     Drag.active: dropDestArea.drag.active

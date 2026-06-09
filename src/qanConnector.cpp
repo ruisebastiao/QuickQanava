@@ -206,7 +206,7 @@ auto    Connector::setConnectorItem(QQuickItem* connectorItem) noexcept -> void
         if ( _connectorItem ) {
             _connectorItem->setParentItem(this);
             _connectorItem->setVisible( isVisible() &&
-                                        _sourceNode != nullptr );
+                                        (_sourceNode != nullptr || _sourcePort != nullptr) );
         }
         emit connectorItemChanged();
     }
